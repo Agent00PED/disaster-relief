@@ -18,7 +18,7 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -28,15 +28,28 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
+    // Supabase Auth ผูกกับอีเมลเสมอ แต่แต่ละคนสมัครด้วยอีเมลจริงของตัวเอง
+    // (คนละโดเมนกัน) เลยต้องแปลง username → อีเมลจริงก่อน ผ่าน RPC
+    // (docs/sql/11_username_login.sql) แล้วค่อยเอาอีเมลนั้นไป signIn ตามปกติ
+    const { data: email, error: lookupError } = await supabase.rpc(
+      'get_email_by_username',
+      { p_username: username.trim() },
+    )
+
+    if (lookupError || !email) {
+      // ข้อความเดียวกับตอนรหัสผ่านผิด เพื่อไม่บอกคนนอกว่า username นี้มีอยู่จริงไหม
+      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
+      setLoading(false)
+      return
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email,
       password,
     })
 
     if (error) {
-      // ไม่บอกว่า "อีเมลผิด" หรือ "รหัสผ่านผิด" แยกกัน
-      // เพราะจะกลายเป็นการบอกคนนอกว่าอีเมลนี้มีอยู่ในระบบจริง
-      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง')
+      setError('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
       setLoading(false)
       return
     }
@@ -63,18 +76,18 @@ export default function LoginPage() {
         >
           <div>
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="mb-1 block text-sm font-medium text-slate-700"
             >
-              อีเมล
+              ชื่อผู้ใช้
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
             />
           </div>
