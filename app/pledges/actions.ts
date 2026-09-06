@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 
 // ยืนยันคำร้อง = สร้างผู้บริจาค + ล็อตของบริจาคจริง แล้วผูก converted_donation_id
 // ไว้ย้อนดูได้ ตรงกับความสัมพันธ์ "แปลงเป็น" ใน ER diagram
@@ -35,17 +36,17 @@ export async function confirmPledge(formData: FormData) {
     )
   }
 
-  const { data: donor } = await supabase
-    .from('donors')
-    .insert({ name: pledge.donor_name, phone: pledge.donor_phone, email: pledge.donor_email })
-    .select('id')
-    .single()
+  const donorId = await findOrCreateDonor(supabase, {
+    name: pledge.donor_name,
+    phone: pledge.donor_phone,
+    email: pledge.donor_email,
+  })
 
   const { data: donation, error: donationError } = await supabase
     .from('donations')
     .insert({
       center_id: profile.center_id,
-      donor_id: donor?.id ?? null,
+      donor_id: donorId,
       item_name: pledge.item_name,
       category: pledge.category,
       quantity_received: pledge.quantity,
