@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 
 export async function createDonation(formData: FormData) {
   const supabase = await createClient()
@@ -24,17 +25,8 @@ export async function createDonation(formData: FormData) {
     )
   }
 
-  // ไม่ค้นหาผู้บริจาคเดิม เพื่อความง่าย — สร้างแถวใหม่ทุกครั้งที่กรอกชื่อมา
   const donorName = String(formData.get('donor_name') || '').trim()
-  let donorId: string | null = null
-  if (donorName) {
-    const { data: donor } = await supabase
-      .from('donors')
-      .insert({ name: donorName })
-      .select('id')
-      .single()
-    donorId = donor?.id ?? null
-  }
+  const donorId = donorName ? await findOrCreateDonor(supabase, { name: donorName }) : null
 
   const quantity = Number(formData.get('quantity_received'))
 
