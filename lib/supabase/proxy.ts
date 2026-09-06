@@ -1,0 +1,76 @@
+// =====================================================================
+// ตัวรีเฟรช session + ตัวกันหน้าที่ต้อง login
+// ถูกเรียกจาก proxy.ts ที่รากโปรเจกต์ ทุก request ก่อนหน้าจะถูก render
+//
+// ทำไมต้องมี: access token ของ Supabase อายุสั้น (ราว 1 ชม.)
+//   Server Component เขียน cookie ไม่ได้ ถ้าไม่รีเฟรชตรงนี้
+//   ผู้ใช้จะโดนเตะออกจากระบบเองระหว่างใช้งาน
+//
+// ไฟล์นี้เป็น "ของกลาง" — ห้ามแก้โดยไม่แจ้งทีม
+// =====================================================================
+
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
+
+// หน้าที่เข้าได้โดยยังไม่ต้อง login
+// /pledge = ฟอร์มสาธารณะแจ้งความประสงค์บริจาค (role "ผู้ใช้ทั่วไป", docs/sql/10_public_pledges.sql)
+const PUBLIC_PATHS = ['/login', '/pledge']
+
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({ request })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          // ต้องเขียน cookie ลง 2 ที่:
+          // 1. request  — เพื่อให้โค้ดที่รันต่อจากนี้ในรอบเดียวกันเห็น token ใหม่
+          // 2. response — เพื่อให้เบราว์เซอร์เก็บ token ใหม่ไว้ใช้รอบถัดไป
+          // ถ้าเขียนแค่ที่เดียวจะเกิดอาการ "ล็อกอินแล้วแต่เด้งกลับหน้า login"
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          )
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          )
+        },
+      },
+    },
+  )
+
+  // ใช้ getUser() ไม่ใช่ getSession()
+  // getUser() ยิงไปถามเซิร์ฟเวอร์ Supabase ว่า token นี้จริงไหม
+  // ส่วน getSession() แค่อ่านจาก cookie ซึ่งผู้ใช้แก้เองได้ จึงเชื่อไม่ได้
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const path = request.nextUrl.pathname
+  const isPublic = PUBLIC_PATHS.some(
+    (p) => path === p || path.startsWith(p + '/'),
+  )
+
+  // ยังไม่ล็อกอิน แต่พยายามเข้าหน้าที่ต้องล็อกอิน → ส่งไปหน้า login
+  if (!user && !isPublic) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.redirect(url)
+  }
+
+  // ล็อกอินแล้ว แต่ยังวนอยู่หน้า login → ส่งเข้าหน้าหลัก
+  if (user && path === '/login') {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
+  // ต้อง return ตัว response ก้อนเดิมที่ setAll แก้ไว้เท่านั้น
+  // ถ้าสร้าง NextResponse ใหม่ตรงนี้ cookie ที่เพิ่งรีเฟรชจะหายไป
+  return response
+}
