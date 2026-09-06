@@ -40,7 +40,7 @@ export default async function HomePage() {
   // .single() = คาดว่าจะได้แถวเดียว ถ้าได้ 0 หรือมากกว่า 1 แถวจะเป็น error
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role, centers(name)')
+    .select('full_name, username, role, centers(name)')
     .eq('id', user.id)
     .single()
 
@@ -51,7 +51,7 @@ export default async function HomePage() {
           ระบบติดตามการบริจาคและกระจายสิ่งของ
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          {profile?.full_name || user.email}
+          {profile?.full_name || profile?.username || 'ผู้ใช้งาน'}
           {profile?.role === 'admin' ? ' · ผู้ดูแลระบบ' : ' · เจ้าหน้าที่'}
         </p>
       </header>
