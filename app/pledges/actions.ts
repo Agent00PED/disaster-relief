@@ -1,0 +1,92 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
+
+// ยืนยันคำร้อง = สร้างผู้บริจาค + ล็อตของบริจาคจริง แล้วผูก converted_donation_id
+// ไว้ย้อนดูได้ ตรงกับความสัมพันธ์ "แปลงเป็น" ใน ER diagram
+export async function confirmPledge(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const id = String(formData.get('id'))
+
+  const { data: pledge } = await supabase
+    .from('donation_pledges')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (!pledge) redirect('/pledges?error=' + encodeURIComponent('ไม่พบคำร้องนี้'))
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('center_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.center_id) {
+    redirect(
+      '/pledges?error=' + encodeURIComponent('บัญชีนี้ยังไม่ได้ผูกกับศูนย์ ให้ admin ตั้งค่าก่อน'),
+    )
+  }
+
+  const { data: donor } = await supabase
+    .from('donors')
+    .insert({ name: pledge.donor_name, phone: pledge.donor_phone, email: pledge.donor_email })
+    .select('id')
+    .single()
+
+  const { data: donation, error: donationError } = await supabase
+    .from('donations')
+    .insert({
+      center_id: profile.center_id,
+      donor_id: donor?.id ?? null,
+      item_name: pledge.item_name,
+      category: pledge.category,
+      quantity_received: pledge.quantity,
+      quantity_remaining: pledge.quantity,
+      received_by: user.id,
+    })
+    .select('id')
+    .single()
+
+  if (donationError) {
+    redirect('/pledges?error=' + encodeURIComponent(donationError.message))
+  }
+
+  await supabase
+    .from('donation_pledges')
+    .update({
+      status: 'confirmed',
+      converted_donation_id: donation?.id,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+
+  revalidatePath('/pledges')
+  revalidatePath('/donations')
+  revalidatePath('/inventory')
+  redirect('/pledges')
+}
+
+export async function dismissPledge(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  await supabase
+    .from('donation_pledges')
+    .update({ status: 'dismissed', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
+    .eq('id', String(formData.get('id')))
+
+  revalidatePath('/pledges')
+  redirect('/pledges')
+}
