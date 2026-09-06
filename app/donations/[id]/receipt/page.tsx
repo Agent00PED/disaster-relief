@@ -57,7 +57,7 @@ export default async function ReceiptPage({
           </div>
           <div className="flex justify-between">
             <dt className="text-slate-500">เจ้าหน้าที่ผู้รับ</dt>
-            <dd className="text-slate-900">{receiver?.full_name ?? '—'}</dd>
+            <dd className="text-slate-900">{receiver?.full_name || '—'}</dd>
           </div>
         </dl>
 

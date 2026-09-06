@@ -15,31 +15,53 @@ const LINKS = [
 ]
 
 export function Nav({ isAdmin }: { isAdmin: boolean }) {
+  const linkClass = 'text-sm font-medium text-slate-600 hover:text-blue-700'
+
   return (
     <nav className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-x-4 gap-y-2 px-6 py-3">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-slate-600 hover:text-blue-700"
-            >
-              {link.label}
-            </Link>
-          ))}
-          {isAdmin && (
-            <Link
-              href="/admin/centers"
-              className="text-sm font-medium text-slate-600 hover:text-blue-700"
-            >
-              จัดการศูนย์/ผู้ใช้
-            </Link>
-          )}
+      <div className="mx-auto w-full max-w-5xl px-6 py-3">
+        {/* จอกว้าง (md+): แสดงลิงก์ทั้งหมดแถวเดียว ไม่ต้องกดเปิด */}
+        <div className="hidden md:flex md:items-center md:justify-between md:gap-x-4">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className={linkClass}>
+                {link.label}
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link href="/admin/centers" className={linkClass}>
+                จัดการศูนย์/ผู้ใช้
+              </Link>
+            )}
+          </div>
+          <div className="shrink-0">
+            <LogoutButton />
+          </div>
         </div>
-        <div className="shrink-0">
-          <LogoutButton />
-        </div>
+
+        {/* จอมือถือ: พับเมนูไว้ในปุ่มเดียว ใช้ details/summary ของ HTML ล้วนๆ
+            ไม่ต้องพึ่ง client-side JS หรือ state ใดๆ */}
+        <details className="group md:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">
+            <span>เมนู</span>
+            <span className="text-slate-400 group-open:rotate-180">▾</span>
+          </summary>
+          <div className="flex flex-col gap-1 border-t border-slate-100 pb-2 pt-3">
+            {LINKS.map((link) => (
+              <Link key={link.href} href={link.href} className={`${linkClass} py-1.5`}>
+                {link.label}
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link href="/admin/centers" className={`${linkClass} py-1.5`}>
+                จัดการศูนย์/ผู้ใช้
+              </Link>
+            )}
+            <div className="mt-1 border-t border-slate-100 pt-2">
+              <LogoutButton />
+            </div>
+          </div>
+        </details>
       </div>
     </nav>
   )

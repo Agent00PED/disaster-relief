@@ -58,7 +58,7 @@ export default async function AdminCentersPage({
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium text-slate-700">ศูนย์ในระบบ</h2>
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
               <tr>
                 <th className="px-4 py-2 font-medium">ชื่อศูนย์</th>
@@ -122,7 +122,7 @@ export default async function AdminCentersPage({
       <section>
         <h2 className="mb-3 text-sm font-medium text-slate-700">ผู้ใช้ในระบบ</h2>
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
               <tr>
                 <th className="px-4 py-2 font-medium">ชื่อ</th>

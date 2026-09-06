@@ -96,7 +96,7 @@ export default async function InventoryPage() {
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
                 <tr>
                   {isAdmin && <th className="px-4 py-2 font-medium">ศูนย์</th>}
