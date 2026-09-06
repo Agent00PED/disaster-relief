@@ -15,6 +15,7 @@
 | 8 | `08_promote_admin.sql` | เลื่อนบัญชีตัวเองเป็น admin (ต้องเอา id จากไฟล์ 7 มาแทนก่อนรัน) |
 | — | `09_reset_data.sql` | (ไม่บังคับ) ล้างข้อมูลใน `centers`/`donors`/`donations`/`requests`/`allocations` ทั้งหมด — ไม่แตะ `auth.users`/`profiles` จึงไม่กระทบสิทธิ์ admin |
 | — | `10_public_pledges.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): แจ้งความประสงค์บริจาคผ่านตาราง `donation_pledges` — เพิ่มแบบ additive ไม่แตะ RLS/role เดิม |
+| — | `11_username_login.sql` | เข้าสู่ระบบด้วย username แทนอีเมล — เพิ่มคอลัมน์ `profiles.username` + ฟังก์ชัน `get_email_by_username` |
 
 หลังรันครบ 1–6 แล้ว:
 
@@ -24,8 +25,12 @@
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
    ```
    แล้วตั้งค่าเดียวกันใน Vercel > Settings > Environment Variables ด้วย
-2. สมัครสมาชิกผ่านหน้าเว็บ (หรือ Dashboard > Authentication > Add user)
+2. สมัครสมาชิกผ่าน Dashboard > Authentication > Add user ด้วย**อีเมลจริง**ของแต่ละคน (ติ๊ก Auto Confirm User ด้วย ไม่งั้นต้องไปยืนยันอีเมลก่อน)
 3. รัน `07_find_user_id.sql` เพื่อดู id ของตัวเอง แล้วนำไปแทนใน `08_promote_admin.sql` ก่อนรัน เพื่อเลื่อนตัวเองเป็น admin
-4. เริ่มสร้างศูนย์ (`centers`) และข้อมูลจริงผ่านหน้าเว็บได้เลย — ไฟล์ชุดนี้จงใจ **ไม่มีข้อมูลตัวอย่าง (seed data)** ตารางว่างพร้อมใช้งานทันที
+4. ตั้ง username ให้ตัวเอง (หลังรัน `11_username_login.sql` แล้ว) — Dashboard ไม่มีช่อง username ให้กรอกตรงๆ ต้องรัน SQL เอง:
+   ```sql
+   update public.profiles set username = 'ชื่อที่อยากใช้ login' where id = 'user-id-จากข้อ-3';
+   ```
+5. เริ่มสร้างศูนย์ (`centers`) และข้อมูลจริงผ่านหน้าเว็บได้เลย — ไฟล์ชุดนี้จงใจ **ไม่มีข้อมูลตัวอย่าง (seed data)** ตารางว่างพร้อมใช้งานทันที
 
 หมายเหตุ: ไฟล์ `supabase_schema.sql` เดิม (ไฟล์รวมไฟล์เดียว, มีข้อมูลตัวอย่าง) ยังอยู่ในโฟลเดอร์ `docs/` เผื่ออ้างอิง แต่ไม่ต้องใช้แล้วหลังจากมีชุดไฟล์นี้
