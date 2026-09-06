@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* เดิมไฟล์นี้มาจาก create-next-app scaffold ซึ่งมี dark mode ตาม
+   prefers-color-scheme ของเบราว์เซอร์ผู้ใช้ ทำให้ทั้งเว็บกลายเป็นพื้นดำ
+   ทับ bg-slate-100/bg-white ที่ตั้งใจไว้ทุกหน้า (ระบบนี้ไม่ได้ออกแบบ
+   มาเป็น dark mode) จึงล็อกให้เป็นสว่างเสมอ ไม่ตามเครื่องผู้ใช้ */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,15 +16,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
