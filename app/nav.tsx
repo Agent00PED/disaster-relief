@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/allocations', label: 'จัดสรร' },
   { href: '/donors', label: 'ผู้บริจาค' },
   { href: '/pledges', label: 'คำร้องบริจาค' },
+  { href: '/help-requests', label: 'คำขอช่วยเหลือ' },
 ]
 
 export function Nav({ isAdmin }: { isAdmin: boolean }) {

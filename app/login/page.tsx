@@ -129,12 +129,23 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-slate-500">
-          อยากบริจาค?{' '}
-          <a href="/pledge" className="font-medium text-slate-700 underline hover:text-slate-900">
-            แจ้งความประสงค์โดยไม่ต้องเข้าสู่ระบบ
-          </a>
-        </p>
+        <div className="mt-4 space-y-1 text-center text-sm text-slate-500">
+          <p>
+            อยากบริจาค?{' '}
+            <a href="/pledge" className="font-medium text-slate-700 underline hover:text-slate-900">
+              แจ้งความประสงค์
+            </a>
+          </p>
+          <p>
+            ต้องการความช่วยเหลือ?{' '}
+            <a
+              href="/help-request"
+              className="font-medium text-slate-700 underline hover:text-slate-900"
+            >
+              ขอความช่วยเหลือ
+            </a>
+          </p>
+        </div>
       </div>
     </main>
   )

@@ -21,6 +21,7 @@ const MENU = [
   { href: '/donors', label: 'ทะเบียนผู้บริจาค', desc: 'ข้อมูลผู้บริจาคและประวัติ', ready: true },
   { href: '/admin/centers', label: 'จัดการศูนย์และผู้ใช้', desc: 'เฉพาะผู้ดูแลระบบ', ready: true },
   { href: '/pledges', label: 'คำร้องขอบริจาค', desc: 'จากผู้ใช้ทั่วไป (ไม่ต้อง login)', ready: true },
+  { href: '/help-requests', label: 'คำขอความช่วยเหลือ', desc: 'จากผู้ใช้ทั่วไป (ไม่ต้อง login)', ready: true },
 ]
 
 export default async function HomePage() {

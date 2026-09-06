@@ -14,7 +14,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // หน้าที่เข้าได้โดยยังไม่ต้อง login
 // /pledge = ฟอร์มสาธารณะแจ้งความประสงค์บริจาค (role "ผู้ใช้ทั่วไป", docs/sql/10_public_pledges.sql)
-const PUBLIC_PATHS = ['/login', '/pledge']
+// /help-request = ฟอร์มสาธารณะขอความช่วยเหลือ (docs/sql/12_public_help_requests.sql)
+const PUBLIC_PATHS = ['/login', '/pledge', '/help-request']
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })

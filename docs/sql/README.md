@@ -16,6 +16,7 @@
 | — | `09_reset_data.sql` | (ไม่บังคับ) ล้างข้อมูลใน `centers`/`donors`/`donations`/`requests`/`allocations` ทั้งหมด — ไม่แตะ `auth.users`/`profiles` จึงไม่กระทบสิทธิ์ admin |
 | — | `10_public_pledges.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): แจ้งความประสงค์บริจาคผ่านตาราง `donation_pledges` — เพิ่มแบบ additive ไม่แตะ RLS/role เดิม |
 | — | `11_username_login.sql` | เข้าสู่ระบบด้วย username แทนอีเมล — เพิ่มคอลัมน์ `profiles.username` + ฟังก์ชัน `get_email_by_username` |
+| — | `12_public_help_requests.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): ขอความช่วยเหลือผ่านตาราง `request_pledges` — คู่กับ `10_public_pledges.sql` แต่กลับทิศทาง เพิ่มแบบ additive |
 
 หลังรันครบ 1–6 แล้ว:
 
