@@ -76,6 +76,17 @@ export default async function EditDonorPage({
           />
           ไม่ประสงค์ออกนาม
         </label>
+        {/* ห้ามลบผู้บริจาคที่มีประวัติแล้ว (trigger กันลบใน 05_functions.sql)
+            ใช้ปิดใช้งานแทนเสมอ — เดิมฟอร์มนี้ไม่มีช่องให้ตั้งเลย */}
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            name="is_active"
+            type="checkbox"
+            defaultChecked={donor.is_active}
+            className="rounded border-slate-300"
+          />
+          ใช้งานอยู่ (ยกเลิกติ๊กเพื่อปิดใช้งานแทนการลบ)
+        </label>
         <button
           type="submit"
           className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
