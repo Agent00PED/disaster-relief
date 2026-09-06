@@ -60,7 +60,7 @@ export async function confirmPledge(formData: FormData) {
     redirect('/pledges?error=' + encodeURIComponent(donationError.message))
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('donation_pledges')
     .update({
       status: 'confirmed',
@@ -69,6 +69,10 @@ export async function confirmPledge(formData: FormData) {
       reviewed_at: new Date().toISOString(),
     })
     .eq('id', id)
+
+  if (updateError) {
+    redirect('/pledges?error=' + encodeURIComponent(updateError.message))
+  }
 
   revalidatePath('/pledges')
   revalidatePath('/donations')
@@ -83,10 +87,14 @@ export async function dismissPledge(formData: FormData) {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  await supabase
+  const { error } = await supabase
     .from('donation_pledges')
     .update({ status: 'dismissed', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
     .eq('id', String(formData.get('id')))
+
+  if (error) {
+    redirect('/pledges?error=' + encodeURIComponent(error.message))
+  }
 
   revalidatePath('/pledges')
   redirect('/pledges')

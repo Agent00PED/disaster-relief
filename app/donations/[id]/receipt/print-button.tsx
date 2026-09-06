@@ -6,7 +6,7 @@ export function PrintButton() {
   return (
     <button
       onClick={() => window.print()}
-      className="mt-4 w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 print:hidden"
+      className="mt-4 w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 print:hidden"
     >
       พิมพ์ใบรับ
     </button>

@@ -20,17 +20,24 @@ export async function createDonor(formData: FormData) {
   // ไม่ส่ง is_active ตอนสร้าง ปล่อยให้ DB ใช้ default (true) — ฟอร์มสร้างใหม่
   // ไม่มีช่องนี้ ถ้าไปอ่าน formData.get('is_active') ตรงนี้จะได้ null แล้วตีความ
   // เป็น false โดยไม่ตั้งใจ (ผู้บริจาคใหม่จะถูกสร้างมาเป็น "ปิดใช้งาน" ทันที)
-  await supabase.from('donors').insert(donorPayload(formData))
+  const { error } = await supabase.from('donors').insert(donorPayload(formData))
+  if (error) {
+    redirect('/donors/new?error=' + encodeURIComponent(error.message))
+  }
   revalidatePath('/donors')
   redirect('/donors')
 }
 
 export async function updateDonor(formData: FormData) {
   const supabase = await createClient()
-  await supabase
+  const id = String(formData.get('id'))
+  const { error } = await supabase
     .from('donors')
     .update({ ...donorPayload(formData), is_active: formData.get('is_active') === 'on' })
-    .eq('id', String(formData.get('id')))
+    .eq('id', id)
+  if (error) {
+    redirect(`/donors/${id}/edit?error=` + encodeURIComponent(error.message))
+  }
   revalidatePath('/donors')
   redirect('/donors')
 }

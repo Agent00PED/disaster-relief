@@ -9,7 +9,12 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { addCenter, updateUser } from './actions'
 
-export default async function AdminCentersPage() {
+export default async function AdminCentersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error } = await searchParams
   const supabase = await createClient()
 
   const {
@@ -43,6 +48,12 @@ export default async function AdminCentersPage() {
         <h1 className="text-2xl font-semibold text-slate-900">จัดการศูนย์และผู้ใช้</h1>
         <p className="mt-2 text-sm text-slate-500">เฉพาะผู้ดูแลระบบ</p>
       </header>
+
+      {error && (
+        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
 
       <section className="mb-10">
         <h2 className="mb-3 text-sm font-medium text-slate-700">ศูนย์ในระบบ</h2>
@@ -101,7 +112,7 @@ export default async function AdminCentersPage() {
           />
           <button
             type="submit"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 sm:col-span-2"
+            className="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 sm:col-span-2"
           >
             เพิ่มศูนย์
           </button>
@@ -153,7 +164,7 @@ export default async function AdminCentersPage() {
                       </select>
                       <button
                         type="submit"
-                        className="rounded-md bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800"
+                        className="rounded-md bg-blue-700 px-3 py-1 text-xs font-medium text-white hover:bg-blue-800"
                       >
                         บันทึก
                       </button>

@@ -42,7 +42,7 @@ export async function confirmHelpRequest(formData: FormData) {
     redirect('/help-requests?error=' + encodeURIComponent(requestError.message))
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('request_pledges')
     .update({
       status: 'confirmed',
@@ -51,6 +51,10 @@ export async function confirmHelpRequest(formData: FormData) {
       reviewed_at: new Date().toISOString(),
     })
     .eq('id', id)
+
+  if (updateError) {
+    redirect('/help-requests?error=' + encodeURIComponent(updateError.message))
+  }
 
   revalidatePath('/help-requests')
   revalidatePath('/requests')
@@ -65,10 +69,14 @@ export async function dismissHelpRequest(formData: FormData) {
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  await supabase
+  const { error } = await supabase
     .from('request_pledges')
     .update({ status: 'dismissed', reviewed_by: user.id, reviewed_at: new Date().toISOString() })
     .eq('id', String(formData.get('id')))
+
+  if (error) {
+    redirect('/help-requests?error=' + encodeURIComponent(error.message))
+  }
 
   revalidatePath('/help-requests')
   redirect('/help-requests')

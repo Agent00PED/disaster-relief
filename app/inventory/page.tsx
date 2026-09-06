@@ -163,7 +163,7 @@ export default async function InventoryPage() {
                 </div>
                 <div className="h-2 w-full rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-slate-900"
+                    className="h-2 rounded-full bg-blue-700"
                     style={{ width: `${(row.shortage / maxShortage) * 100}%` }}
                   />
                 </div>

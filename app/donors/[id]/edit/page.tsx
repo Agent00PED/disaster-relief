@@ -4,10 +4,13 @@ import { updateDonor } from '../../actions'
 
 export default async function EditDonorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ error?: string }>
 }) {
   const { id } = await params
+  const { error } = await searchParams
   const supabase = await createClient()
   const { data: donor } = await supabase.from('donors').select('*').eq('id', id).single()
   if (!donor) notFound()
@@ -15,6 +18,13 @@ export default async function EditDonorPage({
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900">แก้ไขผู้บริจาค</h1>
+
+      {error && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
       <form
         action={updateDonor}
         className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
@@ -89,7 +99,7 @@ export default async function EditDonorPage({
         </label>
         <button
           type="submit"
-          className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
         >
           บันทึก
         </button>

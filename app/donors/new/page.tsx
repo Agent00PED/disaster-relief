@@ -1,9 +1,22 @@
 import { createDonor } from '../actions'
 
-export default function NewDonorPage() {
+export default async function NewDonorPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error } = await searchParams
+
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900">เพิ่มผู้บริจาค</h1>
+
+      {error && (
+        <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+
       <form
         action={createDonor}
         className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
@@ -56,7 +69,7 @@ export default function NewDonorPage() {
         </label>
         <button
           type="submit"
-          className="w-full rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
         >
           บันทึก
         </button>

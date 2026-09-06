@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Sarabun } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "./nav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+// Sarabun เป็นฟอนต์มาตรฐานที่ใช้ในเอกสารราชการ/ทางการของไทย เลือกใช้เพื่อ
+// สื่อความน่าเชื่อถือกับผู้อ่าน โดยเฉพาะกลุ่มผู้ประสบภัยที่ต้องการความมั่นใจ
+// ว่าระบบนี้เป็นทางการ ไม่ใช่เพื่อความสวยงามส่วนตัวของผู้พัฒนา
+const sarabun = Sarabun({
+  variable: "--font-sarabun",
+  subsets: ["thai", "latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sarabun.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-100">
         {user && <Nav isAdmin={isAdmin} />}

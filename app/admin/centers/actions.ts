@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
@@ -7,24 +8,30 @@ import { createClient } from '@/lib/supabase/server'
 // แต่หน้าเรียกฟังก์ชันนี้แสดงเฉพาะกับ admin เท่านั้น (เช็คใน page.tsx)
 export async function addCenter(formData: FormData) {
   const supabase = await createClient()
-  await supabase.from('centers').insert({
+  const { error } = await supabase.from('centers').insert({
     name: String(formData.get('name')),
     type: String(formData.get('type')),
     address: String(formData.get('address') || '') || null,
     contact_phone: String(formData.get('contact_phone') || '') || null,
   })
+  if (error) {
+    redirect('/admin/centers?error=' + encodeURIComponent(error.message))
+  }
   revalidatePath('/admin/centers')
 }
 
 export async function updateUser(formData: FormData) {
   const supabase = await createClient()
   const centerId = String(formData.get('center_id') || '')
-  await supabase
+  const { error } = await supabase
     .from('profiles')
     .update({
       role: String(formData.get('role')),
       center_id: centerId || null,
     })
     .eq('id', String(formData.get('id')))
+  if (error) {
+    redirect('/admin/centers?error=' + encodeURIComponent(error.message))
+  }
   revalidatePath('/admin/centers')
 }

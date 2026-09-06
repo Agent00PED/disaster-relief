@@ -39,7 +39,7 @@ export default async function DonationsPage() {
         </div>
         <Link
           href="/donations/new"
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
         >
           + บันทึกของเข้า
         </Link>
