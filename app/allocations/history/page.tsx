@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmDelivery } from '../actions'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -15,10 +15,7 @@ export default async function AllocationHistoryPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  await requireStaffOrAdmin(supabase)
 
   const { data: allocations } = await supabase
     .from('allocations')
