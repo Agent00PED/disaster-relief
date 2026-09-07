@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { AllocateForm } from './allocate-form'
+import { PageHeader } from '../page-header'
 
 export default async function AllocationsPage({
   searchParams,
@@ -37,18 +38,24 @@ export default async function AllocationsPage({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-12">
-      <header className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">จัดสรรของ</h1>
-          <p className="mt-2 text-sm text-slate-500">เลือกคำขอ + เลือกล็อตในคลัง แล้วยืนยันจัดสรร</p>
-        </div>
-        <Link
-          href="/allocations/history"
-          className="text-sm font-medium text-slate-600 underline hover:text-slate-900"
-        >
-          ดูประวัติการจัดสรร →
-        </Link>
-      </header>
+      <PageHeader
+        color="rose"
+        icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        }
+        title="จัดสรรของ"
+        subtitle="เลือกคำขอ + เลือกล็อตในคลัง แล้วยืนยันจัดสรร"
+        action={
+          <Link
+            href="/allocations/history"
+            className="whitespace-nowrap text-sm font-medium text-slate-600 underline hover:text-slate-900"
+          >
+            ดูประวัติการจัดสรร →
+          </Link>
+        }
+      />
 
       {error && (
         <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
