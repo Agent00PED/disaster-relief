@@ -38,3 +38,20 @@ export async function confirmDelivery(formData: FormData) {
   revalidatePath('/allocations/history')
   redirect('/allocations/history')
 }
+
+// ยกเลิกการจัดสรร — คืนยอดกลับทั้งสองฝั่งใน cancel_allocation (05_functions.sql)
+// ฟังก์ชันบังคับ is_admin() เองอีกชั้นแล้ว ฝั่งนี้แค่เรียกผ่าน rpc
+export async function cancelAllocation(formData: FormData) {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('cancel_allocation', {
+    p_allocation_id: String(formData.get('id')),
+  })
+  if (error) {
+    redirect('/allocations/history?error=' + encodeURIComponent(error.message))
+  }
+  revalidatePath('/allocations/history')
+  revalidatePath('/requests')
+  revalidatePath('/donations')
+  revalidatePath('/inventory')
+  redirect('/allocations/history')
+}
