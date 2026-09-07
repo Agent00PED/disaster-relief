@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
-import { confirmDelivery } from '../actions'
+import { confirmDelivery, cancelAllocation } from '../actions'
 
 const STATUS_LABEL: Record<string, string> = {
   allocated: 'จัดสรรแล้ว',
@@ -15,7 +15,12 @@ export default async function AllocationHistoryPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
-  await requireStaffOrAdmin(supabase)
+  const user = await requireStaffOrAdmin(supabase)
+
+  // ยกเลิกการจัดสรรเป็นสิทธิ์ admin เท่านั้น (บังคับซ้ำใน cancel_allocation
+  // เองอยู่แล้ว) เช็คตรงนี้แค่เพื่อไม่โชว์ปุ่มที่กดแล้วจะโดนปฏิเสธเปล่าๆ
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const isAdmin = me?.role === 'admin'
 
   const { data: allocations } = await supabase
     .from('allocations')
@@ -74,15 +79,28 @@ export default async function AllocationHistoryPage({
                     </td>
                     <td className="px-4 py-2">
                       {a.status === 'allocated' && (
-                        <form action={confirmDelivery}>
-                          <input type="hidden" name="id" value={a.id} />
-                          <button
-                            type="submit"
-                            className="text-xs font-medium text-slate-600 underline hover:text-slate-900"
-                          >
-                            ยืนยันส่งมอบ
-                          </button>
-                        </form>
+                        <div className="flex items-center gap-3">
+                          <form action={confirmDelivery}>
+                            <input type="hidden" name="id" value={a.id} />
+                            <button
+                              type="submit"
+                              className="text-xs font-medium text-slate-600 underline hover:text-slate-900"
+                            >
+                              ยืนยันส่งมอบ
+                            </button>
+                          </form>
+                          {isAdmin && (
+                            <form action={cancelAllocation}>
+                              <input type="hidden" name="id" value={a.id} />
+                              <button
+                                type="submit"
+                                className="text-xs font-medium text-red-600 underline hover:text-red-800"
+                              >
+                                ยกเลิก
+                              </button>
+                            </form>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
