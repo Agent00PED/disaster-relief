@@ -5,8 +5,8 @@
 // ได้เฉพาะ admin แต่เช็คซ้ำที่นี่เพื่อไม่ให้ staff เห็นฟอร์มแล้วกดพังเปล่าๆ
 // =====================================================================
 
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { requireStaffOrAdmin } from '@/lib/guard'
 import { addCenter, updateUser } from './actions'
 
 export default async function AdminCentersPage({
@@ -17,7 +17,10 @@ export default async function AdminCentersPage({
   const { error } = await searchParams
   const supabase = await createClient()
 
-  const user = await requireStaffOrAdmin(supabase)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 

@@ -131,12 +131,6 @@ export default function LoginPage() {
 
         <div className="mt-4 space-y-1 text-center text-sm text-slate-500">
           <p>
-            เป็นอาสาสมัครแต่ยังไม่มีบัญชี?{' '}
-            <a href="/register" className="font-medium text-slate-700 underline hover:text-slate-900">
-              สมัครสมาชิก
-            </a>
-          </p>
-          <p>
             อยากบริจาค?{' '}
             <a href="/pledge" className="font-medium text-slate-700 underline hover:text-slate-900">
               แจ้งความประสงค์
