@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { LogoutButton } from './logout-button'
+import { BrandMark } from './brand-mark'
 
 // แสดงเฉพาะตอน login แล้วเท่านั้น (root layout เป็นคนเช็ค user ก่อนค่อยเรียก
 // nav นี้) — /login กับ /pledge (สาธารณะ) จะไม่เห็นแถบนี้เลย
-const LINKS = [
+const STAFF_LINKS = [
   { href: '/', label: 'หน้าหลัก' },
   { href: '/donations', label: 'รับของเข้าคลัง' },
   { href: '/inventory', label: 'คลังสินค้า' },
@@ -14,15 +15,24 @@ const LINKS = [
   { href: '/help-requests', label: 'คำขอช่วยเหลือ' },
 ]
 
-export function Nav({ isAdmin }: { isAdmin: boolean }) {
-  const linkClass = 'text-sm font-medium text-slate-600 hover:text-blue-700'
+// อาสาสมัครมีแค่หน้าเดียวของตัวเอง ไม่เห็นเมนูของ staff/admin เลย — สิทธิ์
+// จริงถูกกันด้วย RLS อยู่แล้ว แต่ไม่โชว์ลิงก์ที่กดไปแล้วเจอ redirect เปล่าๆ
+const VOLUNTEER_LINKS = [{ href: '/volunteer', label: 'หน้าหลักอาสาสมัคร' }]
+
+export function Nav({ role }: { role: string | null }) {
+  const linkClass = 'text-sm font-medium text-slate-600 hover:text-brand-accent'
+  const isAdmin = role === 'admin'
+  const LINKS = role === 'volunteer' ? VOLUNTEER_LINKS : STAFF_LINKS
 
   return (
     <nav className="border-b border-slate-200 bg-white">
       <div className="mx-auto w-full max-w-5xl px-6 py-3">
         {/* จอกว้าง (md+): แสดงลิงก์ทั้งหมดแถวเดียว ไม่ต้องกดเปิด */}
-        <div className="hidden md:flex md:items-center md:justify-between md:gap-x-4">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <div className="hidden md:flex md:items-center md:justify-between md:gap-x-6">
+          <Link href="/" className="shrink-0">
+            <BrandMark size="sm" />
+          </Link>
+          <div className="flex flex-1 flex-wrap items-center gap-x-5 gap-y-2">
             {LINKS.map((link) => (
               <Link key={link.href} href={link.href} className={linkClass}>
                 {link.label}
@@ -43,7 +53,7 @@ export function Nav({ isAdmin }: { isAdmin: boolean }) {
             ไม่ต้องพึ่ง client-side JS หรือ state ใดๆ */}
         <details className="group md:hidden">
           <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">
-            <span>เมนู</span>
+            <BrandMark size="sm" />
             <span className="text-slate-400 group-open:rotate-180">▾</span>
           </summary>
           <div className="flex flex-col gap-1 border-t border-slate-100 pb-2 pt-3">
