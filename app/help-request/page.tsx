@@ -11,6 +11,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { submitHelpRequest } from './actions'
+import { BrandMark } from '../brand-mark'
 
 export default async function HelpRequestPage({
   searchParams,
@@ -28,9 +29,12 @@ export default async function HelpRequestPage({
     .order('name')
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
+    <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="mb-3 flex justify-center">
+            <BrandMark />
+          </div>
           <h1 className="text-xl font-semibold text-slate-900">ขอความช่วยเหลือ</h1>
           <p className="mt-1 text-sm text-slate-500">
             ไม่ต้องเข้าสู่ระบบ — เจ้าหน้าที่ศูนย์ที่คุณเลือกจะติดต่อกลับ
@@ -155,7 +159,7 @@ export default async function HelpRequestPage({
             </div>
             <button
               type="submit"
-              className="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+              className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
             >
               ส่งคำขอ
             </button>
