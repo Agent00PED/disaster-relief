@@ -4,8 +4,8 @@
 // =====================================================================
 
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { requireStaffOrAdmin } from '@/lib/guard'
 
 export default async function DonorsPage({
   searchParams,
@@ -14,7 +14,10 @@ export default async function DonorsPage({
 }) {
   const { q } = await searchParams
   const supabase = await createClient()
-  await requireStaffOrAdmin(supabase)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   let query = supabase.from('donors').select('*').order('name')
   if (q) query = query.ilike('name', `%${q}%`)
