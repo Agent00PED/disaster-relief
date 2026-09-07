@@ -9,16 +9,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
-import { allocate } from './actions'
-
-const CATEGORY_LABEL: Record<string, string> = {
-  food: 'อาหาร',
-  water: 'น้ำดื่ม',
-  medicine: 'ยา',
-  clothing: 'เสื้อผ้า',
-  hygiene: 'ของใช้ส่วนตัว',
-  other: 'อื่นๆ',
-}
+import { AllocateForm } from './allocate-form'
 
 export default async function AllocationsPage({
   searchParams,
@@ -65,61 +56,16 @@ export default async function AllocationsPage({
         </p>
       )}
 
-      <form
-        action={allocate}
-        className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-3"
-      >
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">คำขอ</label>
-          <select
-            name="request_id"
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">— เลือกคำขอ —</option>
-            {(requests ?? []).map((r) => (
-              <option key={r.id} value={r.id}>
-                {(r.centers as unknown as { name?: string } | null)?.name} — {r.item_name} (
-                {CATEGORY_LABEL[r.category] ?? r.category}) เหลือขอ{' '}
-                {r.quantity_requested - r.quantity_fulfilled}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">ล็อตของในคลัง</label>
-          <select
-            name="donation_id"
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">— เลือกล็อต —</option>
-            {(donations ?? []).map((d) => (
-              <option key={d.id} value={d.id}>
-                {(d.centers as unknown as { name?: string } | null)?.name} — {d.item_name} คงเหลือ{' '}
-                {d.quantity_remaining} {d.unit}
-                {d.expiry_date ? ` (หมดอายุ ${d.expiry_date})` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">จำนวนที่จัดสรร</label>
-          <input
-            name="quantity"
-            type="number"
-            min={1}
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
-        <button
-          type="submit"
-          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-3"
-        >
-          ยืนยันจัดสรร
-        </button>
-      </form>
+      <AllocateForm
+        requests={(requests ?? []).map((r) => ({
+          ...r,
+          centers: r.centers as unknown as { name?: string } | null,
+        }))}
+        donations={(donations ?? []).map((d) => ({
+          ...d,
+          centers: d.centers as unknown as { name?: string } | null,
+        }))}
+      />
     </main>
   )
 }
