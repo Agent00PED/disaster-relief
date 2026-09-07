@@ -118,7 +118,7 @@ export default async function AllocationsPage({
         </div>
         <button
           type="submit"
-          className="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 sm:col-span-3"
+          className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-3"
         >
           ยืนยันจัดสรร
         </button>
