@@ -1,15 +1,71 @@
 // =====================================================================
-// หน้าหลักหลังเข้าสู่ระบบ — เป็น "โครง" ให้แต่ละฟีเจอร์มาต่อ
+// เส้นทางเดียว 2 หน้าจอ:
+//   - ยังไม่ login  → Entry Hub ให้เลือกว่าจะเข้าเว็บในฐานะอะไร
+//   - login แล้ว    → Dashboard เดิม (volunteer เด้งไปหน้าของตัวเองที่ /volunteer)
 //
 // เป็น Server Component (ไม่มี 'use client') เพราะแค่ดึงข้อมูลมาแสดง
 // ไม่มี state ไม่มีปุ่มที่ต้อง onClick
-//
-// คนที่ทำ F3 (คลัง + Dashboard) จะมาแทนที่ส่วน "การ์ดสรุป" ทีหลัง
 // =====================================================================
 
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+
+function EntryHub() {
+  const CHOICES = [
+    {
+      href: '/login',
+      icon: '🧑‍💼',
+      label: 'เจ้าหน้าที่ / ผู้ดูแลระบบ',
+      desc: 'สำหรับผู้ที่มีบัญชีอยู่แล้ว',
+    },
+    {
+      href: '/register',
+      icon: '🙋',
+      label: 'อาสาสมัคร',
+      desc: 'สมัครหรือเข้าสู่ระบบเพื่อช่วยงานที่ศูนย์',
+    },
+    {
+      href: '/pledge',
+      icon: '❤️',
+      label: 'อยากบริจาค',
+      desc: 'แจ้งความประสงค์บริจาคสิ่งของ ไม่ต้องมีบัญชี',
+    },
+    {
+      href: '/help-request',
+      icon: '🆘',
+      label: 'ขอความช่วยเหลือ',
+      desc: 'แจ้งความต้องการจากศูนย์พักพิง ไม่ต้องมีบัญชี',
+    },
+  ]
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
+      <div className="w-full max-w-2xl">
+        <header className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold text-slate-900">
+            ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ
+          </h1>
+          <p className="mt-2 text-sm text-slate-500">เลือกว่าคุณต้องการเข้าใช้งานในฐานะอะไร</p>
+        </header>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {CHOICES.map((c) => (
+            <Link
+              key={c.href}
+              href={c.href}
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-700"
+            >
+              <div className="text-2xl">{c.icon}</div>
+              <h2 className="mt-2 font-medium text-slate-900">{c.label}</h2>
+              <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </main>
+  )
+}
 
 // รายการเมนู = 6 ฟีเจอร์ตามตารางแบ่งงานใน docs/Week10_Topic8_Analysis.md
 // หน้าไหนยังไม่มีคนทำ ให้ตั้ง ready: false ไว้ก่อน จะได้ไม่กดแล้ว 404
@@ -33,7 +89,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    return <EntryHub />
   }
 
   // ดึงชื่อและบทบาทจากตาราง profiles มาแสดงหัวหน้าจอ
@@ -43,6 +99,11 @@ export default async function HomePage() {
     .select('full_name, username, role, centers(name)')
     .eq('id', user.id)
     .single()
+
+  // อาสาสมัครมีหน้าของตัวเองแยกต่างหาก ไม่ใช้ dashboard ชุดนี้
+  if (profile?.role === 'volunteer') {
+    redirect('/volunteer')
+  }
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12">

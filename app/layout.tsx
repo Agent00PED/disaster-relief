@@ -36,14 +36,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let isAdmin = false;
+  let role: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
-    isAdmin = profile?.role === "admin";
+    role = profile?.role ?? null;
   }
 
   return (
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${sarabun.variable} ${prompt.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-brand-cream">
-        {user && <Nav isAdmin={isAdmin} />}
+        {user && <Nav role={role} />}
         {children}
       </body>
     </html>

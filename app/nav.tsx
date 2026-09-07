@@ -4,7 +4,7 @@ import { BrandMark } from './brand-mark'
 
 // แสดงเฉพาะตอน login แล้วเท่านั้น (root layout เป็นคนเช็ค user ก่อนค่อยเรียก
 // nav นี้) — /login กับ /pledge (สาธารณะ) จะไม่เห็นแถบนี้เลย
-const LINKS = [
+const STAFF_LINKS = [
   { href: '/', label: 'หน้าหลัก' },
   { href: '/donations', label: 'รับของเข้าคลัง' },
   { href: '/inventory', label: 'คลังสินค้า' },
@@ -15,8 +15,14 @@ const LINKS = [
   { href: '/help-requests', label: 'คำขอช่วยเหลือ' },
 ]
 
-export function Nav({ isAdmin }: { isAdmin: boolean }) {
+// อาสาสมัครมีแค่หน้าเดียวของตัวเอง ไม่เห็นเมนูของ staff/admin เลย — สิทธิ์
+// จริงถูกกันด้วย RLS อยู่แล้ว แต่ไม่โชว์ลิงก์ที่กดไปแล้วเจอ redirect เปล่าๆ
+const VOLUNTEER_LINKS = [{ href: '/volunteer', label: 'หน้าหลักอาสาสมัคร' }]
+
+export function Nav({ role }: { role: string | null }) {
   const linkClass = 'text-sm font-medium text-slate-600 hover:text-brand-accent'
+  const isAdmin = role === 'admin'
+  const LINKS = role === 'volunteer' ? VOLUNTEER_LINKS : STAFF_LINKS
 
   return (
     <nav className="border-b border-slate-200 bg-white">
