@@ -44,8 +44,11 @@ export function Nav({ role }: { role: string | null }) {
               </Link>
             )}
           </div>
-          <div className="shrink-0">
+          <div className="flex shrink-0 items-center gap-3">
             <LogoutButton />
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
+              {role === 'admin' ? 'A' : role === 'volunteer' ? 'V' : 'S'}
+            </span>
           </div>
         </div>
 
