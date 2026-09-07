@@ -3,8 +3,8 @@
 // เห็นเฉพาะคำขอของศูนย์ตัวเอง (RLS) / admin เห็นทุกศูนย์
 // =====================================================================
 
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmHelpRequest, dismissHelpRequest } from './actions'
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -30,10 +30,7 @@ export default async function HelpRequestsPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  await requireStaffOrAdmin(supabase)
 
   const { data: pledges } = await supabase
     .from('request_pledges')
