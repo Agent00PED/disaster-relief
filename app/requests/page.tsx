@@ -4,8 +4,8 @@
 // =====================================================================
 
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 
 const CATEGORY_LABEL: Record<string, string> = {
   food: 'อาหาร',
@@ -25,10 +25,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default async function RequestsPage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  await requireStaffOrAdmin(supabase)
 
   const { data: requests } = await supabase
     .from('requests')
