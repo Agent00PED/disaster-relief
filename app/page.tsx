@@ -10,6 +10,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { BrandMark } from './brand-mark'
 
 function EntryHub() {
   const CHOICES = [
@@ -40,10 +41,13 @@ function EntryHub() {
   ]
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
-      <div className="w-full max-w-2xl">
+    <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="relative z-10 w-full max-w-2xl">
         <header className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-slate-900">
+          <div className="mb-3 flex justify-center">
+            <BrandMark size="lg" />
+          </div>
+          <h1 className="text-xl font-semibold text-slate-900">
             ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ
           </h1>
           <p className="mt-2 text-sm text-slate-500">เลือกว่าคุณต้องการเข้าใช้งานในฐานะอะไร</p>
@@ -54,7 +58,7 @@ function EntryHub() {
             <Link
               key={c.href}
               href={c.href}
-              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-700"
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand"
             >
               <div className="text-2xl">{c.icon}</div>
               <h2 className="mt-2 font-medium text-slate-900">{c.label}</h2>
