@@ -1,11 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmDelivery, cancelAllocation } from '../actions'
+import { PageHeader } from '../../page-header'
 
 const STATUS_LABEL: Record<string, string> = {
   allocated: 'จัดสรรแล้ว',
   delivered: 'ส่งมอบแล้ว',
   cancelled: 'ยกเลิก',
+}
+
+// สีป้ายสถานะ — ให้ความหมายตรงกันทั้งเว็บ: ฟ้า=กำลังดำเนินการ,
+// เขียว=จบสมบูรณ์, แดง=ยกเลิก (ชุดสีเดียวกับที่ F2 ใช้ในตารางของบริจาค)
+const STATUS_PILL: Record<string, string> = {
+  allocated: 'bg-blue-50 text-blue-700',
+  delivered: 'bg-emerald-50 text-emerald-700',
+  cancelled: 'bg-red-50 text-red-700',
 }
 
 export default async function AllocationHistoryPage({
@@ -31,10 +40,17 @@ export default async function AllocationHistoryPage({
 
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-slate-900">ประวัติการจัดสรร</h1>
-        <p className="mt-2 text-sm text-slate-500">ยืนยันการส่งมอบให้ศูนย์พักพิงเมื่อของถึงมือแล้ว</p>
-      </header>
+      <PageHeader
+        color="blue"
+        icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        }
+        title="ประวัติการจัดสรร"
+        subtitle="ยืนยันการส่งมอบให้ศูนย์พักพิงเมื่อของถึงมือแล้ว"
+      />
 
       {error && (
         <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -55,7 +71,7 @@ export default async function AllocationHistoryPage({
                 <th className="px-4 py-2 font-medium">รายการ</th>
                 <th className="px-4 py-2 font-medium">จำนวน</th>
                 <th className="px-4 py-2 font-medium">สถานะ</th>
-                <th className="px-4 py-2 font-medium"></th>
+                <th className="px-4 py-2 font-medium">จัดการ</th>
               </tr>
             </thead>
             <tbody>
@@ -74,19 +90,26 @@ export default async function AllocationHistoryPage({
                     <td className="px-4 py-2 text-slate-600">
                       {a.quantity_allocated} {don?.unit}
                     </td>
-                    <td className="px-4 py-2 text-slate-600">
-                      {STATUS_LABEL[a.status] ?? a.status}
+                    <td className="px-4 py-2">
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_PILL[a.status] ?? 'bg-slate-100 text-slate-600'}`}
+                      >
+                        {STATUS_LABEL[a.status] ?? a.status}
+                      </span>
                     </td>
                     <td className="px-4 py-2">
                       {a.status === 'allocated' && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <form action={confirmDelivery}>
                             <input type="hidden" name="id" value={a.id} />
                             <button
                               type="submit"
-                              className="text-xs font-medium text-slate-600 underline hover:text-slate-900"
+                              title="ยืนยันส่งมอบ"
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
                             >
-                              ยืนยันส่งมอบ
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
                             </button>
                           </form>
                           {isAdmin && (
@@ -94,9 +117,12 @@ export default async function AllocationHistoryPage({
                               <input type="hidden" name="id" value={a.id} />
                               <button
                                 type="submit"
-                                className="text-xs font-medium text-red-600 underline hover:text-red-800"
+                                title="ยกเลิกการจัดสรร"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100"
                               >
-                                ยกเลิก
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
                               </button>
                             </form>
                           )}
