@@ -20,17 +20,19 @@ const STAFF_LINKS = [
 const VOLUNTEER_LINKS = [{ href: '/volunteer', label: 'หน้าหลักอาสาสมัคร' }]
 
 export function Nav({ role }: { role: string | null }) {
-  const linkClass = 'text-sm font-medium text-slate-600 hover:text-brand-accent'
+  // แถบเมนูพื้นกรมท่าเข้ม (ตามที่ชมพู่ทำ mockup ไว้) ต้องใช้ตัวหนังสือสี
+  // อ่อนแทน slate เข้มแบบพื้นขาวเดิม
+  const linkClass = 'text-sm font-medium text-blue-100 hover:text-white'
   const isAdmin = role === 'admin'
   const LINKS = role === 'volunteer' ? VOLUNTEER_LINKS : STAFF_LINKS
 
   return (
-    <nav className="border-b border-slate-200 bg-white">
+    <nav className="bg-brand">
       <div className="mx-auto w-full max-w-5xl px-6 py-3">
         {/* จอกว้าง (md+): แสดงลิงก์ทั้งหมดแถวเดียว ไม่ต้องกดเปิด */}
         <div className="hidden md:flex md:items-center md:justify-between md:gap-x-6">
           <Link href="/" className="shrink-0">
-            <BrandMark size="sm" />
+            <BrandMark size="sm" onDark />
           </Link>
           <div className="flex flex-1 flex-wrap items-center gap-x-5 gap-y-2">
             {LINKS.map((link) => (
@@ -45,8 +47,8 @@ export function Nav({ role }: { role: string | null }) {
             )}
           </div>
           <div className="flex shrink-0 items-center gap-3">
-            <LogoutButton />
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
+            <LogoutButton onDark />
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand">
               {role === 'admin' ? 'A' : role === 'volunteer' ? 'V' : 'S'}
             </span>
           </div>
@@ -55,11 +57,11 @@ export function Nav({ role }: { role: string | null }) {
         {/* จอมือถือ: พับเมนูไว้ในปุ่มเดียว ใช้ details/summary ของ HTML ล้วนๆ
             ไม่ต้องพึ่ง client-side JS หรือ state ใดๆ */}
         <details className="group md:hidden">
-          <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">
-            <BrandMark size="sm" />
-            <span className="text-slate-400 group-open:rotate-180">▾</span>
+          <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-blue-100 [&::-webkit-details-marker]:hidden">
+            <BrandMark size="sm" onDark />
+            <span className="text-blue-200 group-open:rotate-180">▾</span>
           </summary>
-          <div className="flex flex-col gap-1 border-t border-slate-100 pb-2 pt-3">
+          <div className="flex flex-col gap-1 border-t border-white/10 pb-2 pt-3">
             {LINKS.map((link) => (
               <Link key={link.href} href={link.href} className={`${linkClass} py-1.5`}>
                 {link.label}
@@ -70,8 +72,8 @@ export function Nav({ role }: { role: string | null }) {
                 จัดการศูนย์/ผู้ใช้
               </Link>
             )}
-            <div className="mt-1 border-t border-slate-100 pt-2">
-              <LogoutButton />
+            <div className="mt-1 border-t border-white/10 pt-2">
+              <LogoutButton onDark />
             </div>
           </div>
         </details>
