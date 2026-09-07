@@ -112,7 +112,7 @@ export default async function AdminCentersPage({
           />
           <button
             type="submit"
-            className="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 sm:col-span-2"
+            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-2"
           >
             เพิ่มศูนย์
           </button>
@@ -164,7 +164,7 @@ export default async function AdminCentersPage({
                       </select>
                       <button
                         type="submit"
-                        className="rounded-md bg-blue-700 px-3 py-1 text-xs font-medium text-white hover:bg-blue-800"
+                        className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-deep"
                       >
                         บันทึก
                       </button>

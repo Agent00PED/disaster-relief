@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
-import { Sarabun } from "next/font/google";
+import { Sarabun, Prompt } from "next/font/google";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "./nav";
 
-// Sarabun เป็นฟอนต์มาตรฐานที่ใช้ในเอกสารราชการ/ทางการของไทย เลือกใช้เพื่อ
-// สื่อความน่าเชื่อถือกับผู้อ่าน โดยเฉพาะกลุ่มผู้ประสบภัยที่ต้องการความมั่นใจ
-// ว่าระบบนี้เป็นทางการ ไม่ใช่เพื่อความสวยงามส่วนตัวของผู้พัฒนา
+// Sarabun เป็นฟอนต์มาตรฐานที่ใช้ในเอกสารราชการ/ทางการของไทย ใช้กับเนื้อหา/
+// ฟอร์มที่ต้องอ่านยาวๆ เพื่อสื่อความน่าเชื่อถือกับผู้อ่าน โดยเฉพาะกลุ่ม
+// ผู้ประสบภัยที่ต้องการความมั่นใจว่าระบบนี้เป็นทางการ
 const sarabun = Sarabun({
   variable: "--font-sarabun",
   subsets: ["thai", "latin"],
   weight: ["400", "500", "600", "700"],
 });
 
+// Prompt เป็นฟอนต์ของแบรนด์ WalaiTrack (โลโก้/หัวข้อใหญ่เท่านั้น) — ทีม
+// เลือกธีมนี้เองหลังดู mockup แล้ว ไม่ใช้แทน Sarabun ทั้งเว็บเพราะ Prompt
+// อ่านยาวๆ ไม่สบายตาเท่า เก็บไว้เฉพาะจุดที่ต้องการความรู้สึกของแบรนด์
+const prompt = Prompt({
+  variable: "--font-prompt",
+  subsets: ["thai", "latin"],
+  weight: ["500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ",
+  title: "WalaiTrack — ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ",
   description: "ระบบภายในสำหรับเจ้าหน้าที่ศูนย์รับบริจาคและศูนย์พักพิง",
 };
 
@@ -40,9 +49,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="th"
-      className={`${sarabun.variable} h-full antialiased`}
+      className={`${sarabun.variable} ${prompt.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-100">
+      <body className="min-h-full flex flex-col bg-brand-cream">
         {user && <Nav isAdmin={isAdmin} />}
         {children}
       </body>
