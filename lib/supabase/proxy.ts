@@ -13,13 +13,9 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // หน้าที่เข้าได้โดยยังไม่ต้อง login
-// / = Entry Hub ให้เลือกว่าจะเข้าเว็บในฐานะอะไร (app/page.tsx เช็ค user เอง
-//     แล้ว render คนละแบบ — ถ้าไม่เปิดตรงนี้ด้วย proxy จะเด้งไป /login ก่อน
-//     ถึง component เลย ไม่มีทางเห็น Entry Hub)
-// /register = สมัครสมาชิกอาสาสมัคร (docs/sql/13_volunteer_role.sql)
 // /pledge = ฟอร์มสาธารณะแจ้งความประสงค์บริจาค (role "ผู้ใช้ทั่วไป", docs/sql/10_public_pledges.sql)
 // /help-request = ฟอร์มสาธารณะขอความช่วยเหลือ (docs/sql/12_public_help_requests.sql)
-const PUBLIC_PATHS = ['/', '/login', '/register', '/pledge', '/help-request']
+const PUBLIC_PATHS = ['/login', '/pledge', '/help-request']
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request })

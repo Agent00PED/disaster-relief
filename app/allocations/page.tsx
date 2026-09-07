@@ -6,9 +6,9 @@
 // เพื่อไม่ให้กฎ (หมดอายุ/เกินยอด/หมวดหมู่ไม่ตรง) หลุดไปสองที่
 // =====================================================================
 
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { requireStaffOrAdmin } from '@/lib/guard'
 import { allocate } from './actions'
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -27,7 +27,10 @@ export default async function AllocationsPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
-  await requireStaffOrAdmin(supabase)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const [{ data: requests }, { data: donations }] = await Promise.all([
     supabase

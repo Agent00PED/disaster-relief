@@ -2,8 +2,8 @@
 // หน้ารายการคำร้องขอบริจาค (staff ตรวจสอบ) — มาจากฟอร์มสาธารณะ /pledge
 // =====================================================================
 
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmPledge, dismissPledge } from './actions'
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -28,7 +28,10 @@ export default async function PledgesPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
-  await requireStaffOrAdmin(supabase)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   const { data: pledges } = await supabase
     .from('donation_pledges')
