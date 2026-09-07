@@ -13,8 +13,45 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sarabun);
+  --font-brand: var(--font-prompt);
+
+  /* ธีม WalaiTrack — ทีมเลือกเอง (ไม่ใช่รสนิยมของ agent) แทนที่โทน
+     slate/blue เดิม กรมท่าเป็นสีหลัก (ปุ่ม/nav) แดงเป็น accent จุดเล็กๆ
+     เท่านั้น (โลโก้ + ลิงก์เน้น) ไม่ใช้ทำปุ่มหลักเพราะจะไปชนความหมาย
+     "อันตราย/เร่งด่วน" ที่ใช้สีแดงอยู่แล้วในหน้าคำขอ */
+  --color-brand: #1c3d5a;
+  --color-brand-deep: #142a3d;
+  --color-brand-accent: #d9534f;
+  --color-brand-accent-deep: #b8433f;
+  --color-brand-cream: #f5f1e8;
 }
 
 body {
   font-family: var(--font-sarabun), Arial, Helvetica, sans-serif;
+}
+
+/* พื้นหลังไล่สีโทนอุ่น + เงาภูเขา — ใช้เฉพาะหน้าสาธารณะที่คนเจอครั้งแรก
+   (Entry Hub, login, register, pledge, help-request) ตามธีม WalaiTrack
+   "ทีม" ออกแบบไว้ ไม่ใช้กับหน้าที่เจ้าหน้าที่ใช้งานซ้ำทั้งวัน (dashboard,
+   คลัง ฯลฯ) เพราะพื้นลายจะรบกวนสายตาเวลาต้องจ้องนานๆ — ตัดสินใจนี้ไว้ตอน
+   ทำ mockup เทียบให้ทีมดูก่อนแล้ว */
+.brand-hero-bg {
+  position: relative;
+  background:
+    radial-gradient(1100px 420px at 50% -10%, #fbf7ec 0%, transparent 60%),
+    linear-gradient(180deg, #f8f2e4 0%, #f1e6cd 62%, #e7d6ac 100%);
+  overflow: hidden;
+}
+.brand-hero-bg::after {
+  content: '';
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  bottom: -6%;
+  height: 150px;
+  background:
+    linear-gradient(75deg, transparent 48%, #c9b183 48.5%),
+    linear-gradient(-70deg, transparent 55%, #dcc9a3 55.5%);
+  opacity: 0.55;
+  pointer-events: none;
 }
