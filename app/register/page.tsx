@@ -11,6 +11,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { BrandMark } from '../brand-mark'
 
 type Center = { id: string; name: string; type: string }
 
@@ -71,15 +72,18 @@ export default function RegisterPage() {
 
   if (done) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-        <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
+      <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
+        <div className="relative z-10 w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <div className="mb-3 flex justify-center">
+            <BrandMark />
+          </div>
           <h1 className="text-lg font-semibold text-slate-900">สมัครสำเร็จ</h1>
           <p className="mt-2 text-sm text-slate-500">
             ตรวจอีเมลเพื่อยืนยันบัญชี แล้วเข้าสู่ระบบด้วยชื่อผู้ใช้ที่ตั้งไว้ได้เลย
           </p>
           <a
             href="/login"
-            className="mt-4 inline-block rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800"
+            className="mt-4 inline-block rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
           >
             ไปหน้าเข้าสู่ระบบ
           </a>
@@ -89,10 +93,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-8">
-          <h1 className="text-xl font-semibold text-slate-900">สมัครเป็นอาสาสมัคร</h1>
+    <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="mb-3 flex justify-center">
+            <BrandMark />
+          </div>
+          <h1 className="text-lg font-semibold text-slate-900">สมัครเป็นอาสาสมัคร</h1>
           <p className="mt-1 text-sm text-slate-500">
             ช่วยงานที่ศูนย์รับบริจาคหรือศูนย์พักพิงที่คุณเลือก
           </p>
@@ -108,7 +115,7 @@ export default function RegisterPage() {
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             />
           </div>
 
@@ -118,7 +125,7 @@ export default function RegisterPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             />
           </div>
 
@@ -129,7 +136,7 @@ export default function RegisterPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             />
           </div>
 
@@ -141,7 +148,7 @@ export default function RegisterPage() {
               minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             />
           </div>
 
@@ -151,7 +158,7 @@ export default function RegisterPage() {
               required
               value={centerId}
               onChange={(e) => setCenterId(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-700 focus:ring-1 focus:ring-blue-700"
+              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             >
               <option value="">— เลือกศูนย์ —</option>
               {centers.map((c) => (
@@ -171,7 +178,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? 'กำลังสมัคร...' : 'สมัครสมาชิก'}
           </button>
