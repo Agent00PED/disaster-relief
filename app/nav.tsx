@@ -28,20 +28,19 @@ const QUEUE_LINKS = [
 const VOLUNTEER_LINKS = [{ href: '/volunteer', label: 'หน้าหลักอาสาสมัคร' }]
 
 export function Nav({ role }: { role: string | null }) {
-  // แถบเมนูพื้นกรมท่าเข้ม (ตามที่ชมพู่ทำ mockup ไว้) ต้องใช้ตัวหนังสือสี
-  // อ่อนแทน slate เข้มแบบพื้นขาวเดิม
-  const linkClass = 'text-sm font-medium text-blue-100 hover:text-white'
+  // ใช้ชุดสีร่วมของเว็บเพื่อให้เมนูเปลี่ยนตามโหมดสว่าง/มืดทันที
+  const linkClass = 'text-sm font-medium text-slate-700 hover:text-slate-900'
   const isAdmin = role === 'admin'
   const isVolunteer = role === 'volunteer'
   const LINKS = isVolunteer ? VOLUNTEER_LINKS : STAFF_LINKS
 
   return (
-    <nav className="bg-brand">
+    <nav className="border-b border-slate-200 bg-white">
       <div className="mx-auto w-full max-w-5xl px-6 py-3">
         {/* จอกว้าง (md+): แสดงลิงก์ทั้งหมดแถวเดียว ไม่ต้องกดเปิด */}
         <div className="hidden md:flex md:items-center md:justify-between md:gap-x-6">
           <Link href="/" className="shrink-0">
-            <BrandMark size="sm" onDark />
+            <BrandMark size="sm" />
           </Link>
           <div className="flex flex-1 flex-wrap items-center gap-x-5 gap-y-2">
             {LINKS.map((link) => (
@@ -56,7 +55,7 @@ export function Nav({ role }: { role: string | null }) {
                   className={`flex cursor-pointer list-none items-center gap-1 [&::-webkit-details-marker]:hidden ${linkClass}`}
                 >
                   คำร้องสาธารณะ
-                  <span className="text-blue-200 transition group-open:rotate-180">▾</span>
+                  <span className="text-slate-500 transition group-open:rotate-180">▾</span>
                 </summary>
                 <div className="absolute left-0 top-full z-10 mt-2 w-44 rounded-md border border-slate-200 bg-white py-1 shadow-lg">
                   {QUEUE_LINKS.map((link) => (
@@ -75,7 +74,7 @@ export function Nav({ role }: { role: string | null }) {
 
           <details className="group relative shrink-0">
             <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-semibold text-brand">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-brand">
                 {role === 'admin' ? 'A' : role === 'volunteer' ? 'V' : 'S'}
               </span>
             </summary>
@@ -99,11 +98,11 @@ export function Nav({ role }: { role: string | null }) {
             ไม่ต้องพึ่ง client-side JS หรือ state ใดๆ — หน้าจอเล็กพอจะไล่
             ลิงก์ทั้งหมดเป็นแนวตั้งได้อยู่แล้ว เลยไม่ต้องแยกกลุ่มแบบจอกว้าง */}
         <details className="group md:hidden">
-          <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-blue-100 [&::-webkit-details-marker]:hidden">
-            <BrandMark size="sm" onDark />
-            <span className="text-blue-200 group-open:rotate-180">▾</span>
+          <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-sm font-medium text-slate-700 [&::-webkit-details-marker]:hidden">
+            <BrandMark size="sm" />
+            <span className="text-slate-500 group-open:rotate-180">▾</span>
           </summary>
-          <div className="flex flex-col gap-1 border-t border-white/10 pb-2 pt-3">
+          <div className="flex flex-col gap-1 border-t border-slate-200 pb-2 pt-3">
             {LINKS.map((link) => (
               <Link key={link.href} href={link.href} className={`${linkClass} py-1.5`}>
                 {link.label}
@@ -120,8 +119,8 @@ export function Nav({ role }: { role: string | null }) {
                 จัดการศูนย์/ผู้ใช้
               </Link>
             )}
-            <div className="mt-1 border-t border-white/10 pt-2">
-              <LogoutButton onDark />
+            <div className="mt-1 border-t border-slate-200 pt-2">
+              <LogoutButton />
             </div>
           </div>
         </details>
