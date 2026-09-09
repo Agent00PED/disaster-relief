@@ -6,13 +6,9 @@
   --background: #ffffff;
   --foreground: #171717;
   --brand-logo: #1c3d5a;
-  --page-background: #f5f1e8;
-  --hero-glow: #fbf7ec;
-  --hero-top: #f8f2e4;
-  --hero-middle: #f1e6cd;
-  --hero-bottom: #e7d6ac;
-  --hero-mountain-front: #c9b183;
-  --hero-mountain-back: #dcc9a3;
+  --page-background: #f7f5f0;
+  --hero-glow: #ffffff;
+  --hero-accent: #eee8dc;
 }
 
 @theme inline {
@@ -37,30 +33,14 @@ body {
   font-family: var(--font-sarabun), Arial, Helvetica, sans-serif;
 }
 
-/* พื้นหลังไล่สีโทนอุ่น + เงาภูเขา — ใช้เฉพาะหน้าสาธารณะที่คนเจอครั้งแรก
-   (Entry Hub, login, register, pledge, help-request) ตามธีม WalaiTrack
-   "ทีม" ออกแบบไว้ ไม่ใช้กับหน้าที่เจ้าหน้าที่ใช้งานซ้ำทั้งวัน (dashboard,
-   คลัง ฯลฯ) เพราะพื้นลายจะรบกวนสายตาเวลาต้องจ้องนานๆ — ตัดสินใจนี้ไว้ตอน
-   ทำ mockup เทียบให้ทีมดูก่อนแล้ว */
+/* Soft lighting on public pages; a quiet solid background for work pages. */
 .brand-hero-bg {
   position: relative;
+  flex: 1;
   background:
-    radial-gradient(1100px 420px at 50% -10%, var(--hero-glow) 0%, transparent 60%),
-    linear-gradient(180deg, var(--hero-top) 0%, var(--hero-middle) 62%, var(--hero-bottom) 100%);
-  overflow: hidden;
-}
-.brand-hero-bg::after {
-  content: '';
-  position: absolute;
-  left: -5%;
-  right: -5%;
-  bottom: -6%;
-  height: 150px;
-  background:
-    linear-gradient(75deg, transparent 48%, var(--hero-mountain-front) 48.5%),
-    linear-gradient(-70deg, transparent 55%, var(--hero-mountain-back) 55.5%);
-  opacity: 0.55;
-  pointer-events: none;
+    radial-gradient(ellipse 85% 650px at 50% 0%, var(--hero-glow), transparent 80%),
+    radial-gradient(ellipse 65% 550px at 100% 100%, var(--hero-accent), transparent 85%),
+    var(--page-background);
 }
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
@@ -72,12 +52,8 @@ body {
     --foreground: #e2e8f0;
     --brand-logo: #b9d8f2;
     --page-background: #0d1623;
-    --hero-glow: #263d54;
-    --hero-top: #142235;
-    --hero-middle: #111c2b;
-    --hero-bottom: #0b1320;
-    --hero-mountain-front: #243c53;
-    --hero-mountain-back: #1c3045;
+    --hero-glow: #1a2c40;
+    --hero-accent: #142333;
   }
 
   [data-theme="dark"] input,

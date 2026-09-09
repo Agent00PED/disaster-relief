@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BrandMark } from '../brand-mark'
+import { BackHomeLink } from '../back-home-link'
 
 type Center = { id: string; name: string; type: string }
 
@@ -74,6 +75,7 @@ export default function RegisterPage() {
     return (
       <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
         <div className="relative z-10 w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
+          <BackHomeLink />
           <div className="mb-3 flex justify-center">
             <BrandMark />
           </div>
@@ -95,6 +97,7 @@ export default function RegisterPage() {
   return (
     <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-sm">
+        <BackHomeLink />
         <div className="mb-8 text-center">
           <div className="mb-3 flex justify-center">
             <BrandMark />

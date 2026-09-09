@@ -14,6 +14,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BrandMark } from '../brand-mark'
+import { BackHomeLink } from '../back-home-link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -60,8 +61,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4">
+    <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-sm">
+        <BackHomeLink />
         <div className="mb-8 text-center">
           <div className="mb-3 flex justify-center">
             <BrandMark />
