@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Sarabun, Prompt } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "./nav";
-import { cookies } from "next/headers";
-import { ThemeToggle } from "./theme-toggle";
+import { PublicToggleBar } from "./public-toggle-bar";
+import { getLocale } from "@/lib/i18n/locale";
 
 // Sarabun เป็นฟอนต์มาตรฐานที่ใช้ในเอกสารราชการ/ทางการของไทย ใช้กับเนื้อหา/
 // ฟอร์มที่ต้องอ่านยาวๆ เพื่อสื่อความน่าเชื่อถือกับผู้อ่าน โดยเฉพาะกลุ่ม
@@ -30,7 +31,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const theme = (await cookies()).get('walaitrack-theme')?.value === 'dark' ? 'dark' : 'light';
   // layout ครอบทุกหน้ารวมถึง /login กับ /pledge (สาธารณะ) ด้วย เลยต้องเช็ค
   // session เองตรงนี้ก่อนตัดสินใจว่าจะโชว์แถบเมนูไหม — ไม่งั้นคนที่ยังไม่
   // login จะเห็นแถบเมนูของหน้าที่ตัวเองเข้าไม่ได้อยู่ดี
@@ -49,15 +49,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     role = profile?.role ?? null;
   }
 
+  const locale = await getLocale();
+
+  // อ่านธีมจาก cookie ฝั่ง server แล้วใส่ class ตั้งแต่ HTML แรก — ไม่ต้องมี
+  // สคริปต์กันจอกระพริบ (ไอเดียจาก PR #2 ของทีม) และทำงานแบบเดียวกับภาษา
+  const isDark = (await cookies()).get("theme")?.value === "dark";
+
   return (
     <html
-      lang="th"
-      data-theme={theme}
-      className={`${sarabun.variable} ${prompt.variable} h-full antialiased`}
+      lang={locale}
+      className={`${sarabun.variable} ${prompt.variable} h-full antialiased${isDark ? " dark" : ""}`}
     >
-      <body className="min-h-full flex flex-col bg-brand-cream">
-        <ThemeToggle initialTheme={theme} />
-        {user && <Nav role={role} />}
+      <body className="min-h-full flex flex-col bg-brand-cream dark:bg-slate-950">
+        {user ? <Nav role={role} locale={locale} /> : <PublicToggleBar locale={locale} />}
         {children}
       </body>
     </html>
