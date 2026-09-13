@@ -206,7 +206,7 @@ export default function StockTable({
   const renderPaginationButtons = () => {
     const buttons = [];
     let startPage = Math.max(1, currentPage - 1);
-    let endPage = Math.min(totalPages, startPage + 2);
+    const endPage = Math.min(totalPages, startPage + 2);
 
     if (endPage - startPage < 2) {
       startPage = Math.max(1, endPage - 2);
