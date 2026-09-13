@@ -1,6 +1,10 @@
 import type { Locale } from './locale'
 
 const th = {
+  notFound: {
+    title: 'ไม่พบหน้าที่ต้องการ',
+    description: 'หน้านี้ไม่มีอยู่หรือถูกย้ายแล้ว',
+  },
   common: {
     appName: 'WalaiTrack',
     save: 'บันทึก',
@@ -311,6 +315,10 @@ const th = {
 }
 
 const en: typeof th = {
+  notFound: {
+    title: 'Page not found',
+    description: 'This page does not exist or has been moved.',
+  },
   common: {
     appName: 'WalaiTrack',
     save: 'Save',
