@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 
 // แยกเป็น client component เพราะต้องมี onClick (เหมือน print-button.tsx
 // ของหน้าใบรับของ) — ส่วน nav ที่ครอบมันยังเป็น Server Component ได้ตามปกติ
-export function LogoutButton({ onDark = false }: { onDark?: boolean }) {
+export function LogoutButton({ label, onDark = false }: { label: string; onDark?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -21,10 +21,10 @@ export function LogoutButton({ onDark = false }: { onDark?: boolean }) {
       className={
         onDark
           ? 'text-sm font-medium text-blue-100 hover:text-white'
-          : 'text-sm font-medium text-slate-500 hover:text-slate-900'
+          : 'text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100'
       }
     >
-      ออกจากระบบ
+      {label}
     </button>
   )
 }

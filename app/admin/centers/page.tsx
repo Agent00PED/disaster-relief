@@ -8,6 +8,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { addCenter, updateUser } from './actions'
+import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 
 export default async function AdminCentersPage({
   searchParams,
@@ -16,6 +18,8 @@ export default async function AdminCentersPage({
 }) {
   const { error } = await searchParams
   const supabase = await createClient()
+  const locale = await getLocale()
+  const dict = getDictionary(locale)
 
   const user = await requireStaffOrAdmin(supabase)
 
@@ -24,8 +28,8 @@ export default async function AdminCentersPage({
   if (me?.role !== 'admin') {
     return (
       <main className="mx-auto w-full max-w-2xl px-6 py-12">
-        <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
-          หน้านี้เฉพาะผู้ดูแลระบบเท่านั้น
+        <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          {dict.admin.adminOnly}
         </p>
       </main>
     )
@@ -42,37 +46,37 @@ export default async function AdminCentersPage({
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12">
       <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-slate-900">จัดการศูนย์และผู้ใช้</h1>
-        <p className="mt-2 text-sm text-slate-500">เฉพาะผู้ดูแลระบบ</p>
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.admin.title}</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{dict.admin.subtitle}</p>
       </header>
 
       {error && (
-        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
           {error}
         </p>
       )}
 
       <section className="mb-10">
-        <h2 className="mb-3 text-sm font-medium text-slate-700">ศูนย์ในระบบ</h2>
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{dict.admin.centersInSystem}</h2>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
+            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-2 font-medium">ชื่อศูนย์</th>
-                <th className="px-4 py-2 font-medium">ประเภท</th>
-                <th className="px-4 py-2 font-medium">ที่อยู่</th>
-                <th className="px-4 py-2 font-medium">เบอร์ติดต่อ</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.centerName}</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.type}</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.address}</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.contactPhone}</th>
               </tr>
             </thead>
             <tbody>
               {(centers ?? []).map((c) => (
-                <tr key={c.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-2 text-slate-900">{c.name}</td>
-                  <td className="px-4 py-2 text-slate-600">
-                    {c.type === 'warehouse' ? 'ศูนย์รับบริจาค' : 'ศูนย์พักพิง'}
+                <tr key={c.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
+                  <td className="px-4 py-2 text-slate-900 dark:text-slate-100">{c.name}</td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">
+                    {c.type === 'warehouse' ? dict.admin.centerTypeWarehouse : dict.admin.centerTypeShelter}
                   </td>
-                  <td className="px-4 py-2 text-slate-600">{c.address ?? '—'}</td>
-                  <td className="px-4 py-2 text-slate-600">{c.contact_phone ?? '—'}</td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{c.address ?? '—'}</td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{c.contact_phone ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -81,59 +85,59 @@ export default async function AdminCentersPage({
 
         <form
           action={addCenter}
-          className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2"
+          className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-2"
         >
           <input
             name="name"
             required
-            placeholder="ชื่อศูนย์"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            placeholder={dict.admin.centerName}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
           <select
             name="type"
             required
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="warehouse">ศูนย์รับบริจาค</option>
-            <option value="shelter">ศูนย์พักพิง</option>
+            <option value="warehouse">{dict.admin.centerTypeWarehouse}</option>
+            <option value="shelter">{dict.admin.centerTypeShelter}</option>
           </select>
           <input
             name="address"
-            placeholder="ที่อยู่"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            placeholder={dict.admin.address}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
           <input
             name="contact_phone"
-            placeholder="เบอร์ติดต่อ"
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            placeholder={dict.admin.contactPhone}
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
           <button
             type="submit"
             className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-2"
           >
-            เพิ่มศูนย์
+            {dict.admin.addCenter}
           </button>
         </form>
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-medium text-slate-700">ผู้ใช้ในระบบ</h2>
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{dict.admin.usersInSystem}</h2>
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
+            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               <tr>
-                <th className="px-4 py-2 font-medium">ชื่อ</th>
-                <th className="px-4 py-2 font-medium">บทบาท</th>
-                <th className="px-4 py-2 font-medium">ศูนย์</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.name}</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.role}</th>
+                <th className="px-4 py-2 font-medium">{dict.admin.center}</th>
                 <th className="px-4 py-2 font-medium"></th>
               </tr>
             </thead>
             <tbody>
               {(users ?? []).map((u) => (
-                <tr key={u.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-2 text-slate-900">{u.full_name || '—'}</td>
-                  <td className="px-4 py-2 text-slate-600">{u.role}</td>
-                  <td className="px-4 py-2 text-slate-600">
+                <tr key={u.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
+                  <td className="px-4 py-2 text-slate-900 dark:text-slate-100">{u.full_name || '—'}</td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{u.role}</td>
+                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">
                     {(u.centers as unknown as { name?: string } | null)?.name ?? '—'}
                   </td>
                   <td className="px-4 py-2">
@@ -142,7 +146,7 @@ export default async function AdminCentersPage({
                       <select
                         name="role"
                         defaultValue={u.role}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                       >
                         <option value="staff">staff</option>
                         <option value="admin">admin</option>
@@ -150,9 +154,9 @@ export default async function AdminCentersPage({
                       <select
                         name="center_id"
                         defaultValue={u.center_id ?? ''}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                       >
-                        <option value="">— ไม่มีศูนย์ —</option>
+                        <option value="">{dict.admin.noCenter}</option>
                         {(centers ?? []).map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.name}
@@ -163,7 +167,7 @@ export default async function AdminCentersPage({
                         type="submit"
                         className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-deep"
                       >
-                        บันทึก
+                        {dict.common.save}
                       </button>
                     </form>
                   </td>

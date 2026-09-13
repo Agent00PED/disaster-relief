@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
-/* Default to light; the saved preference is rendered by the root layout. */
+/* เดิมไฟล์นี้ล็อกเป็นสว่างเสมอเพราะยังไม่มี dark mode ที่ออกแบบเอง ตอนนี้
+   เพิ่ม dark mode แบบ toggle เองแล้ว (ปุ่มใน nav, เก็บค่าไว้ใน localStorage)
+   ไม่ใช้ prefers-color-scheme ตรงๆ เพราะอยากให้ผู้ใช้กดเลือกเอง ไม่ใช่ตาม
+   เครื่อง — ประกาศ custom variant นี้ให้ Tailwind v4 ผูก `dark:` เข้ากับ
+   class `.dark` บน <html> แทน media query ปกติ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* --brand-logo: ครึ่ง "Walai" ของโลโก้ (brand-mark.tsx) ต้องสว่างขึ้นในโหมดมืด
+   ไม่งั้นกรมท่าจะจมหายไปกับพื้นหลังเข้ม */
 :root {
-  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
   --brand-logo: #1c3d5a;
-  --page-background: #f7f5f0;
-  --hero-glow: #ffffff;
-  --hero-accent: #eee8dc;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --brand-logo: #b9d8f2;
 }
 
 @theme inline {
@@ -25,89 +35,77 @@
   --color-brand-deep: #142a3d;
   --color-brand-accent: #d9534f;
   --color-brand-accent-deep: #b8433f;
-  --color-brand-cream: var(--page-background);
+  --color-brand-cream: #f5f1e8;
 }
 
 body {
-  color: var(--foreground);
   font-family: var(--font-sarabun), Arial, Helvetica, sans-serif;
 }
 
-/* Soft lighting on public pages; a quiet solid background for work pages. */
+/* สลับ theme ทันทีไม่กระพริบ (no flash-of-wrong-theme): สคริปต์ inline ใน
+   <head> (theme-script.tsx) จะเซ็ต class ก่อน paint แรกอยู่แล้ว ส่วนนี้
+   แค่กัน transition สีกระตุกตอนเปลี่ยนโหมดกลางอากาศ */
+* {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* พื้นหลังไล่สีโทนอุ่น + เงาภูเขา — ใช้เฉพาะหน้าสาธารณะที่คนเจอครั้งแรก
+   (Entry Hub, login, register, pledge, help-request) ตามธีม WalaiTrack
+   "ทีม" ออกแบบไว้ ไม่ใช้กับหน้าที่เจ้าหน้าที่ใช้งานซ้ำทั้งวัน (dashboard,
+   คลัง ฯลฯ) เพราะพื้นลายจะรบกวนสายตาเวลาต้องจ้องนานๆ — ตัดสินใจนี้ไว้ตอน
+   ทำ mockup เทียบให้ทีมดูก่อนแล้ว */
 .brand-hero-bg {
   position: relative;
-  flex: 1;
   background:
-    radial-gradient(ellipse 85% 650px at 50% 0%, var(--hero-glow), transparent 80%),
-    radial-gradient(ellipse 65% 550px at 100% 100%, var(--hero-accent), transparent 85%),
-    var(--page-background);
+    radial-gradient(1100px 420px at 50% -10%, #fbf7ec 0%, transparent 60%),
+    linear-gradient(180deg, #f8f2e4 0%, #f1e6cd 62%, #e7d6ac 100%);
+  overflow: hidden;
+}
+.brand-hero-bg::before,
+.brand-hero-bg::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(100px, 18vw, 220px);
+  pointer-events: none;
 }
 
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-@media screen {
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --background: #111c2b;
-    --foreground: #e2e8f0;
-    --brand-logo: #b9d8f2;
-    --page-background: #0d1623;
-    --hero-glow: #1a2c40;
-    --hero-accent: #142333;
-  }
-
-  [data-theme="dark"] input,
-  [data-theme="dark"] select,
-  [data-theme="dark"] textarea {
-    background-color: #162234;
-    color: #e2e8f0;
-  }
+/* Separate ridgelines keep the silhouette continuous at every screen size. */
+.brand-hero-bg::before {
+  background: #c9b88f;
+  opacity: 0.3;
+  clip-path: polygon(
+    0 48%, 7% 34%, 12% 40%, 21% 12%, 27% 30%, 32% 25%,
+    42% 53%, 49% 43%, 57% 60%, 67% 29%, 73% 37%, 82% 8%,
+    89% 27%, 94% 22%, 100% 40%, 100% 100%, 0 100%
+  );
 }
 
-/* Keep the existing shared palette consistent across forms, tables and status
-   badges. White text and solid action colors retain their original contrast.
-   Screen-only rules preserve the light palette on printed receipts. */
-@layer utilities {
-  @media screen {
-    [data-theme="dark"] .bg-white { background-color: #182638; }
-    [data-theme="dark"] .bg-slate-50 { background-color: #142132; }
-    [data-theme="dark"] .bg-slate-100 { background-color: #223247; }
-    [data-theme="dark"] .border-slate-100 { border-color: #293b50; }
-    [data-theme="dark"] .border-slate-200 { border-color: #34465c; }
-    [data-theme="dark"] .border-slate-300 { border-color: #52657b; }
-    [data-theme="dark"] .border-slate-400 { border-color: #75869a; }
-    [data-theme="dark"] .divide-slate-200 > :not(:last-child) { border-color: #34465c; }
-    [data-theme="dark"] .text-slate-900 { color: #f1f5f9; }
-    [data-theme="dark"] .text-slate-700 { color: #d5deea; }
-    [data-theme="dark"] .text-slate-600 { color: #bac7d8; }
-    [data-theme="dark"] .text-slate-500 { color: #a7b6ca; }
-    [data-theme="dark"] .text-slate-400 { color: #94a3b8; }
-    [data-theme="dark"] .text-brand { color: #b9d8f2; }
-    [data-theme="dark"] .bg-red-50 { background-color: #391e29; }
-    [data-theme="dark"] .bg-red-100 { background-color: #472331; }
-    [data-theme="dark"] .text-red-600 { color: #fca5a5; }
-    [data-theme="dark"] .text-red-700 { color: #fca5a5; }
-    [data-theme="dark"] .text-red-800 { color: #fecaca; }
-    [data-theme="dark"] .bg-emerald-50 { background-color: #102f2c; }
-    [data-theme="dark"] .bg-emerald-100 { background-color: #163c34; }
-    [data-theme="dark"] .text-emerald-600 { color: #6ee7b7; }
-    [data-theme="dark"] .text-emerald-700 { color: #6ee7b7; }
-    [data-theme="dark"] .text-emerald-900 { color: #a7f3d0; }
-    [data-theme="dark"] .bg-amber-50 { background-color: #352b19; }
-    [data-theme="dark"] .text-amber-600 { color: #fcd34d; }
-    [data-theme="dark"] .text-amber-700 { color: #fcd34d; }
-    [data-theme="dark"] .bg-blue-50 { background-color: #172e49; }
-    [data-theme="dark"] .text-blue-600 { color: #93c5fd; }
-    [data-theme="dark"] .text-blue-700 { color: #93c5fd; }
-    [data-theme="dark"] .bg-rose-50 { background-color: #361f30; }
-    [data-theme="dark"] .text-rose-500 { color: #fda4af; }
-    @media (hover: hover) {
-      [data-theme="dark"] .hover\:bg-slate-50:hover { background-color: #223247; }
-      [data-theme="dark"] .hover\:bg-slate-100:hover { background-color: #2c4058; }
-      [data-theme="dark"] .hover\:text-slate-900:hover { color: #f8fafc; }
-    }
-    [data-theme="dark"] .focus\:border-brand:focus { border-color: #93c5fd; }
-    [data-theme="dark"] .focus\:ring-brand:focus { --tw-ring-color: #93c5fd; }
-    [data-theme="dark"] .focus-visible\:outline-brand:focus-visible { outline-color: #93c5fd; }
-  }
+.brand-hero-bg::after {
+  background: #bca579;
+  opacity: 0.28;
+  clip-path: polygon(
+    0 77%, 9% 59%, 16% 67%, 25% 50%, 34% 72%, 43% 64%,
+    52% 80%, 61% 62%, 69% 69%, 78% 48%, 85% 59%, 92% 52%,
+    100% 70%, 100% 100%, 0 100%
+  );
+}
+
+/* dark mode ของพื้นหลังไล่สี — โทนกรมท่าเข้มแทนโทนอุ่น ให้เข้ากับ dark
+   mode ของทั้งเว็บ ยังคงเงาภูเขาไว้เพื่อไม่ให้ต้องแยก markup */
+.dark .brand-hero-bg {
+  background:
+    radial-gradient(1100px 420px at 50% -10%, #1e293b 0%, transparent 60%),
+    linear-gradient(180deg, #0f172a 0%, #0b1220 62%, #060a12 100%);
+}
+.dark .brand-hero-bg::before {
+  background: #263a52;
+  opacity: 0.45;
+}
+
+.dark .brand-hero-bg::after {
+  background: #1c2b3f;
+  opacity: 0.6;
 }

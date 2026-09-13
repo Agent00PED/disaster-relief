@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { AllocateForm } from './allocate-form'
 import { PageHeader } from '../page-header'
+import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 
 export default async function AllocationsPage({
   searchParams,
@@ -20,6 +22,8 @@ export default async function AllocationsPage({
   const { error } = await searchParams
   const supabase = await createClient()
   await requireStaffOrAdmin(supabase)
+  const locale = await getLocale()
+  const dict = getDictionary(locale)
 
   const [{ data: requests }, { data: donations }] = await Promise.all([
     supabase
@@ -45,25 +49,26 @@ export default async function AllocationsPage({
             <path d="M17 3l4 4-4 4M21 7H9M7 21l-4-4 4-4M3 17h12" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         }
-        title="จัดสรรของ"
-        subtitle="เลือกคำขอ + เลือกล็อตในคลัง แล้วยืนยันจัดสรร"
+        title={dict.allocations.title}
+        subtitle={dict.allocations.subtitle}
         action={
           <Link
             href="/allocations/history"
-            className="whitespace-nowrap text-sm font-medium text-slate-600 underline hover:text-slate-900"
+            className="whitespace-nowrap text-sm font-medium text-slate-600 underline hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
-            ดูประวัติการจัดสรร →
+            {dict.allocations.viewHistory}
           </Link>
         }
       />
 
       {error && (
-        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
           {error}
         </p>
       )}
 
       <AllocateForm
+        dict={dict}
         requests={(requests ?? []).map((r) => ({
           ...r,
           centers: r.centers as unknown as { name?: string } | null,

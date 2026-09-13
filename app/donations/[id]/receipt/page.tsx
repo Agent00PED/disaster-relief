@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { PrintButton } from './print-button'
+import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 
 export default async function ReceiptPage({
   params,
@@ -9,6 +11,8 @@ export default async function ReceiptPage({
 }) {
   const { id } = await params
   const supabase = await createClient()
+  const locale = await getLocale()
+  const dict = getDictionary(locale)
 
   const { data: donation } = await supabase
     .from('donations')
@@ -26,45 +30,45 @@ export default async function ReceiptPage({
 
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12 print:py-0">
-      <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none">
-        <h1 className="mb-1 text-xl font-semibold text-slate-900">ใบรับของบริจาค</h1>
-        <p className="mb-6 text-sm text-slate-500">{center?.name ?? '—'}</p>
+      <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none dark:border-slate-700 dark:bg-slate-900">
+        <h1 className="mb-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{dict.receipt.title}</h1>
+        <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">{center?.name ?? '—'}</p>
 
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-slate-500">ผู้บริจาค</dt>
-            <dd className="text-slate-900">{donor?.name ?? 'ไม่ประสงค์ออกนาม'}</dd>
+            <dt className="text-slate-500 dark:text-slate-400">{dict.table.donor}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">{donor?.name ?? dict.table.anonymousDonor}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">รายการ</dt>
-            <dd className="text-slate-900">{donation.item_name}</dd>
+            <dt className="text-slate-500 dark:text-slate-400">{dict.receipt.item}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">{donation.item_name}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">จำนวน</dt>
-            <dd className="text-slate-900">
+            <dt className="text-slate-500 dark:text-slate-400">{dict.form.quantity}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">
               {donation.quantity_received} {donation.unit}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">วันหมดอายุ</dt>
-            <dd className="text-slate-900">{donation.expiry_date ?? '—'}</dd>
+            <dt className="text-slate-500 dark:text-slate-400">{dict.table.expiryDate}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">{donation.expiry_date ?? '—'}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">วันที่รับ</dt>
-            <dd className="text-slate-900">
-              {new Date(donation.received_at).toLocaleDateString('th-TH')}
+            <dt className="text-slate-500 dark:text-slate-400">{dict.receipt.receivedDate}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">
+              {new Date(donation.received_at).toLocaleDateString(locale === 'en' ? 'en-US' : 'th-TH')}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-slate-500">เจ้าหน้าที่ผู้รับ</dt>
-            <dd className="text-slate-900">{receiver?.full_name || '—'}</dd>
+            <dt className="text-slate-500 dark:text-slate-400">{dict.receipt.receivedBy}</dt>
+            <dd className="text-slate-900 dark:text-slate-100">{receiver?.full_name || '—'}</dd>
           </div>
         </dl>
 
-        <p className="mt-8 text-center text-xs text-slate-400">ขอบคุณสำหรับความช่วยเหลือ</p>
+        <p className="mt-8 text-center text-xs text-slate-400">{dict.receipt.thanks}</p>
       </div>
 
-      <PrintButton />
+      <PrintButton label={dict.receipt.print} />
     </main>
   )
 }

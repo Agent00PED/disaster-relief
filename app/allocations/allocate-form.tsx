@@ -12,6 +12,7 @@
 
 import { useRef, useState } from 'react'
 import { allocate } from './actions'
+import type { Dictionary } from '@/lib/i18n/dictionaries'
 
 type Req = {
   id: string
@@ -30,19 +31,27 @@ type Don = {
   centers: { name?: string } | null
 }
 
-const CATEGORY_LABEL: Record<string, string> = {
-  food: 'อาหาร',
-  water: 'น้ำดื่ม',
-  medicine: 'ยา',
-  clothing: 'เสื้อผ้า',
-  hygiene: 'ของใช้ส่วนตัว',
-  other: 'อื่นๆ',
-}
-
-export function AllocateForm({ requests, donations }: { requests: Req[]; donations: Don[] }) {
+export function AllocateForm({
+  requests,
+  donations,
+  dict,
+}: {
+  requests: Req[]
+  donations: Don[]
+  dict: Dictionary
+}) {
   const formRef = useRef<HTMLFormElement>(null)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const confirmedRef = useRef(false)
+
+  const CATEGORY_LABEL: Record<string, string> = {
+    food: dict.form.categoryFood,
+    water: dict.form.categoryWater,
+    medicine: dict.form.categoryMedicine,
+    clothing: dict.form.categoryClothing,
+    hygiene: dict.form.categoryHygiene,
+    other: dict.form.categoryOther,
+  }
 
   const [requestId, setRequestId] = useState('')
   const [donationId, setDonationId] = useState('')
@@ -77,46 +86,46 @@ export function AllocateForm({ requests, donations }: { requests: Req[]; donatio
         ref={formRef}
         action={allocate}
         onSubmit={handleSubmit}
-        className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:grid-cols-3"
+        className="grid gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-3"
       >
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">คำขอ</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.allocations.selectRequest}</label>
           <select
             name="request_id"
             required
             value={requestId}
             onChange={(e) => setRequestId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="">— เลือกคำขอ —</option>
+            <option value="">{dict.allocations.selectRequestPlaceholder}</option>
             {requests.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.centers?.name} — {r.item_name} ({CATEGORY_LABEL[r.category] ?? r.category})
-                เหลือขอ {r.quantity_requested - r.quantity_fulfilled}
+                {dict.allocations.remainingWord} {r.quantity_requested - r.quantity_fulfilled}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">ล็อตของในคลัง</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.allocations.selectLot}</label>
           <select
             name="donation_id"
             required
             value={donationId}
             onChange={(e) => setDonationId(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="">— เลือกล็อต —</option>
+            <option value="">{dict.allocations.selectLotPlaceholder}</option>
             {donations.map((d) => (
               <option key={d.id} value={d.id}>
-                {d.centers?.name} — {d.item_name} คงเหลือ {d.quantity_remaining} {d.unit}
-                {d.expiry_date ? ` (หมดอายุ ${d.expiry_date})` : ''}
+                {d.centers?.name} — {d.item_name} {dict.allocations.remainingInLot} {d.quantity_remaining} {d.unit}
+                {d.expiry_date ? ` (${dict.allocations.expiresOn} ${d.expiry_date})` : ''}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">จำนวนที่จัดสรร</label>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.allocations.quantityToAllocate}</label>
           <input
             name="quantity"
             type="number"
@@ -124,57 +133,59 @@ export function AllocateForm({ requests, donations }: { requests: Req[]; donatio
             required
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
         <button
           type="submit"
           className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-3"
         >
-          ยืนยันจัดสรร
+          {dict.allocations.confirmAllocate}
         </button>
       </form>
 
       <dialog
         ref={dialogRef}
-        className="m-auto w-full max-w-md rounded-lg border border-slate-200 p-0 shadow-lg backdrop:bg-slate-900/40"
+        className="m-auto w-full max-w-md rounded-lg border border-slate-200 p-0 shadow-lg backdrop:bg-slate-900/40 dark:border-slate-700 dark:bg-slate-900"
       >
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-slate-900">ยืนยันการตัดจ่าย</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            ตรวจสอบให้แน่ใจก่อนยืนยัน การจัดสรรกระทบยอดคงเหลือทันที
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{dict.allocations.modalTitle}</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {dict.allocations.modalSubtitle}
           </p>
 
-          <dl className="mt-4 space-y-2 rounded-md bg-slate-50 p-4 text-sm">
+          <dl className="mt-4 space-y-2 rounded-md bg-slate-50 p-4 text-sm dark:bg-slate-800">
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">รายการ</dt>
-              <dd className="text-right font-medium text-slate-900">
+              <dt className="text-slate-500 dark:text-slate-400">{dict.allocations.item}</dt>
+              <dd className="text-right font-medium text-slate-900 dark:text-slate-100">
                 {selectedRequest?.item_name ?? '—'}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">จำนวนที่จัดสรร</dt>
-              <dd className="text-right font-medium text-slate-900">
+              <dt className="text-slate-500 dark:text-slate-400">{dict.allocations.quantityToAllocate}</dt>
+              <dd className="text-right font-medium text-slate-900 dark:text-slate-100">
                 {qty} {selectedDonation?.unit}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">จากล็อตของศูนย์</dt>
-              <dd className="text-right font-medium text-slate-900">
+              <dt className="text-slate-500 dark:text-slate-400">{dict.allocations.fromLotOfCenter}</dt>
+              <dd className="text-right font-medium text-slate-900 dark:text-slate-100">
                 {selectedDonation?.centers?.name ?? '—'}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">ไปยังศูนย์</dt>
-              <dd className="text-right font-medium text-slate-900">
+              <dt className="text-slate-500 dark:text-slate-400">{dict.allocations.toCenter}</dt>
+              <dd className="text-right font-medium text-slate-900 dark:text-slate-100">
                 {selectedRequest?.centers?.name ?? '—'}
               </dd>
             </div>
-            <div className="flex justify-between gap-4 border-t border-slate-200 pt-2">
-              <dt className="text-slate-500">คงเหลือในล็อตหลังจ่าย</dt>
+            <div className="flex justify-between gap-4 border-t border-slate-200 pt-2 dark:border-slate-700">
+              <dt className="text-slate-500 dark:text-slate-400">{dict.allocations.remainingAfter}</dt>
               <dd
                 className={`text-right font-medium ${
-                  remainingAfter !== null && remainingAfter < 0 ? 'text-red-600' : 'text-slate-900'
+                  remainingAfter !== null && remainingAfter < 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : 'text-slate-900 dark:text-slate-100'
                 }`}
               >
                 {remainingAfter ?? '—'} {selectedDonation?.unit}
@@ -183,8 +194,8 @@ export function AllocateForm({ requests, donations }: { requests: Req[]; donatio
           </dl>
 
           {nearExpiry && (
-            <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700">
-              ⚠ ล็อตนี้ใกล้หมดอายุภายใน 7 วัน
+            <p className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+              {dict.allocations.nearExpiryWarning}
             </p>
           )}
 
@@ -192,16 +203,16 @@ export function AllocateForm({ requests, donations }: { requests: Req[]; donatio
             <button
               type="button"
               onClick={() => dialogRef.current?.close()}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              ยกเลิก
+              {dict.common.cancel}
             </button>
             <button
               type="button"
               onClick={handleConfirm}
               className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
             >
-              ยืนยันจัดสรร
+              {dict.allocations.confirmAllocate}
             </button>
           </div>
         </div>

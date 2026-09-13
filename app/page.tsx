@@ -11,33 +11,15 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { BrandMark } from './brand-mark'
+import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary, type Dictionary } from '@/lib/i18n/dictionaries'
 
-function EntryHub() {
+function EntryHub({ dict }: { dict: Dictionary }) {
   const CHOICES = [
-    {
-      href: '/login',
-      icon: '🧑‍💼',
-      label: 'เจ้าหน้าที่ / ผู้ดูแลระบบ',
-      desc: 'สำหรับผู้ที่มีบัญชีอยู่แล้ว',
-    },
-    {
-      href: '/register',
-      icon: '🙋',
-      label: 'อาสาสมัคร',
-      desc: 'สมัครหรือเข้าสู่ระบบเพื่อช่วยงานที่ศูนย์',
-    },
-    {
-      href: '/pledge',
-      icon: '❤️',
-      label: 'อยากบริจาค',
-      desc: 'แจ้งความประสงค์บริจาคสิ่งของ ไม่ต้องมีบัญชี',
-    },
-    {
-      href: '/help-request',
-      icon: '🆘',
-      label: 'ขอความช่วยเหลือ',
-      desc: 'แจ้งความต้องการจากศูนย์พักพิง ไม่ต้องมีบัญชี',
-    },
+    { href: '/login', icon: '🧑‍💼', label: dict.entryHub.staffLabel, desc: dict.entryHub.staffDesc },
+    { href: '/register', icon: '🙋', label: dict.entryHub.volunteerLabel, desc: dict.entryHub.volunteerDesc },
+    { href: '/pledge', icon: '❤️', label: dict.entryHub.donateLabel, desc: dict.entryHub.donateDesc },
+    { href: '/help-request', icon: '🆘', label: dict.entryHub.helpLabel, desc: dict.entryHub.helpDesc },
   ]
 
   return (
@@ -47,10 +29,8 @@ function EntryHub() {
           <div className="mb-3 flex justify-center">
             <BrandMark size="lg" />
           </div>
-          <h1 className="text-xl font-semibold text-slate-900">
-            ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">เลือกว่าคุณต้องการเข้าใช้งานในฐานะอะไร</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{dict.entryHub.title}</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{dict.entryHub.subtitle}</p>
         </header>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -58,11 +38,11 @@ function EntryHub() {
             <Link
               key={c.href}
               href={c.href}
-              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand"
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-brand dark:border-slate-700 dark:bg-slate-900"
             >
               <div className="text-2xl">{c.icon}</div>
-              <h2 className="mt-2 font-medium text-slate-900">{c.label}</h2>
-              <p className="mt-1 text-sm text-slate-500">{c.desc}</p>
+              <h2 className="mt-2 font-medium text-slate-900 dark:text-slate-100">{c.label}</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{c.desc}</p>
             </Link>
           ))}
         </div>
@@ -71,21 +51,10 @@ function EntryHub() {
   )
 }
 
-// รายการเมนู = 6 ฟีเจอร์ตามตารางแบ่งงานใน docs/Week10_Topic8_Analysis.md
-// หน้าไหนยังไม่มีคนทำ ให้ตั้ง ready: false ไว้ก่อน จะได้ไม่กดแล้ว 404
-const MENU = [
-  { href: '/donations', label: 'รับของเข้าคลัง', desc: 'บันทึกของที่ผู้บริจาคนำมาส่ง', ready: true },
-  { href: '/inventory', label: 'คลังสินค้า', desc: 'ยอดคงเหลือและของใกล้หมดอายุ', ready: true },
-  { href: '/requests', label: 'คำขอจากศูนย์พักพิง', desc: 'แจ้งและติดตามความต้องการ', ready: true },
-  { href: '/allocations', label: 'จัดสรรและตัดจ่าย', desc: 'จับคู่คำขอกับล็อตในคลัง', ready: true },
-  { href: '/donors', label: 'ทะเบียนผู้บริจาค', desc: 'ข้อมูลผู้บริจาคและประวัติ', ready: true },
-  { href: '/admin/centers', label: 'จัดการศูนย์และผู้ใช้', desc: 'เฉพาะผู้ดูแลระบบ', ready: true },
-  { href: '/pledges', label: 'คำร้องขอบริจาค', desc: 'จากผู้ใช้ทั่วไป (ไม่ต้อง login)', ready: true },
-  { href: '/help-requests', label: 'คำขอความช่วยเหลือ', desc: 'จากผู้ใช้ทั่วไป (ไม่ต้อง login)', ready: true },
-]
-
 export default async function HomePage() {
   const supabase = await createClient()
+  const locale = await getLocale()
+  const dict = getDictionary(locale)
 
   // ตรวจสิทธิ์ซ้ำที่นี่อีกชั้น แม้ proxy.ts จะกันไว้แล้ว
   const {
@@ -93,7 +62,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return <EntryHub />
+    return <EntryHub dict={dict} />
   }
 
   // ดึงชื่อและบทบาทจากตาราง profiles มาแสดงหัวหน้าจอ
@@ -109,15 +78,26 @@ export default async function HomePage() {
     redirect('/volunteer')
   }
 
+  // รายการเมนู = 6 ฟีเจอร์ตามตารางแบ่งงานใน docs/Week10_Topic8_Analysis.md
+  // หน้าไหนยังไม่มีคนทำ ให้ตั้ง ready: false ไว้ก่อน จะได้ไม่กดแล้ว 404
+  const MENU = [
+    { href: '/donations', label: dict.home.donationsLabel, desc: dict.home.donationsDesc, ready: true },
+    { href: '/inventory', label: dict.home.inventoryLabel, desc: dict.home.inventoryDesc, ready: true },
+    { href: '/requests', label: dict.home.requestsLabel, desc: dict.home.requestsDesc, ready: true },
+    { href: '/allocations', label: dict.home.allocationsLabel, desc: dict.home.allocationsDesc, ready: true },
+    { href: '/donors', label: dict.home.donorsLabel, desc: dict.home.donorsDesc, ready: true },
+    { href: '/admin/centers', label: dict.home.adminLabel, desc: dict.home.adminDesc, ready: true },
+    { href: '/pledges', label: dict.home.pledgesLabel, desc: dict.home.pledgesDesc, ready: true },
+    { href: '/help-requests', label: dict.home.helpRequestsLabel, desc: dict.home.helpRequestsDesc, ready: true },
+  ]
+
   return (
     <main className="mx-auto w-full max-w-4xl px-6 py-12">
       <header className="mb-10">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          ระบบติดตามการบริจาคและกระจายสิ่งของ
-        </h1>
-        <p className="mt-2 text-sm text-slate-500">
-          {profile?.full_name || profile?.username || 'ผู้ใช้งาน'}
-          {profile?.role === 'admin' ? ' · ผู้ดูแลระบบ' : ' · เจ้าหน้าที่'}
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.home.title}</h1>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          {profile?.full_name || profile?.username || dict.home.defaultUser}
+          {profile?.role === 'admin' ? dict.home.roleAdmin : dict.home.roleStaff}
         </p>
       </header>
 
@@ -127,20 +107,20 @@ export default async function HomePage() {
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400"
+              className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-500"
             >
-              <h2 className="font-medium text-slate-900">{item.label}</h2>
-              <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
+              <h2 className="font-medium text-slate-900 dark:text-slate-100">{item.label}</h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
             </Link>
           ) : (
             // ยังไม่มีหน้านี้ จึงเรนเดอร์เป็น div เฉย ๆ ไม่ใช่ Link
             <div
               key={item.href}
-              className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5"
+              className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900"
             >
               <h2 className="font-medium text-slate-400">{item.label}</h2>
               <p className="mt-1 text-sm text-slate-400">{item.desc}</p>
-              <p className="mt-2 text-xs text-slate-400">ยังไม่เปิดใช้งาน</p>
+              <p className="mt-2 text-xs text-slate-400">{dict.home.notReady}</p>
             </div>
           ),
         )}

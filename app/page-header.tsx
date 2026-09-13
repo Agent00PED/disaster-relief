@@ -14,10 +14,10 @@ export function PageHeader({
   action?: React.ReactNode
 }) {
   const colorClass = {
-    rose: 'bg-rose-50 text-rose-500',
-    blue: 'bg-blue-50 text-blue-600',
-    amber: 'bg-amber-50 text-amber-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+    rose: 'bg-rose-50 text-rose-500 dark:bg-rose-500/10',
+    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10',
+    amber: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10',
+    emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10',
   }[color]
 
   return (
@@ -27,8 +27,8 @@ export function PageHeader({
           {icon}
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">{title}</h1>
-          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
         </div>
       </div>
       {action}
