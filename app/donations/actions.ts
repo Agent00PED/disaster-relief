@@ -1,52 +1,135 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+
 import { createClient } from '@/lib/supabase/server'
-import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
+import { requireStaffOrAdmin } from '@/lib/guard'
 
-export async function createDonation(formData: FormData) {
+type DonationInput = {
+  item_name: string
+  category: string
+  quantity: number
+  unit: string
+  expiry_date: string | null
+  note: string | null
+}
+
+type CreateDonationInput = {
+  donorName: string
+  donorPhone: string
+  receivedDate: string
+  items: DonationInput[]
+}
+
+export async function createDonation(
+  input: CreateDonationInput,
+) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('center_id')
-    .eq('id', user.id)
-    .single()
+  await requireStaffOrAdmin(supabase)
 
-  if (!profile?.center_id) {
-    redirect(
-      '/donations/new?error=' +
-        encodeURIComponent('บัญชีนี้ยังไม่ได้ผูกกับศูนย์ ให้ admin ตั้งค่าก่อน'),
-    )
+  if (!input.receivedDate) {
+    return {
+      error: 'กรุณาเลือกวันที่รับของ',
+    }
   }
 
-  const donorName = String(formData.get('donor_name') || '').trim()
-  const donorId = donorName ? await findOrCreateDonor(supabase, { name: donorName }) : null
+  if (!input.items || input.items.length === 0) {
+    return {
+      error: 'กรุณาเพิ่มรายการของบริจาค',
+    }
+  }
 
-  const quantity = Number(formData.get('quantity_received'))
+  for (const item of input.items) {
+    if (!item.item_name) {
+      return {
+        error: 'กรุณากรอกชื่อของบริจาค',
+      }
+    }
 
-  const { error } = await supabase.from('donations').insert({
-    center_id: profile.center_id,
+    if (!item.category) {
+      return {
+        error: 'กรุณาเลือกหมวดหมู่',
+      }
+    }
+
+    if (!item.quantity || item.quantity <= 0) {
+      return {
+        error: 'จำนวนของบริจาคต้องมากกว่า 0',
+      }
+    }
+
+    if (!item.unit) {
+      return {
+        error: 'กรุณาเลือกหน่วย',
+      }
+    }
+  }
+
+  let donorId: string | null = null
+
+  /*
+   * ถ้ามีชื่อผู้บริจาค
+   * ให้สร้างข้อมูลใน donors ก่อน
+   */
+  if (input.donorName.trim()) {
+    const { data: donor, error: donorError } =
+      await supabase
+        .from('donors')
+        .insert({
+          name: input.donorName.trim(),
+          phone: input.donorPhone.trim() || null,
+        })
+        .select('id')
+        .single()
+
+    if (donorError) {
+      console.error(donorError)
+
+      return {
+        error:
+          'ไม่สามารถบันทึกข้อมูลผู้บริจาคได้',
+      }
+    }
+
+    donorId = donor.id
+  }
+
+  /*
+   * เตรียมรายการของบริจาค
+   */
+  const donationRows = input.items.map((item) => ({
     donor_id: donorId,
-    item_name: String(formData.get('item_name')),
-    category: String(formData.get('category')),
-    unit: String(formData.get('unit') || 'ชิ้น'),
-    quantity_received: quantity,
-    quantity_remaining: quantity,
-    expiry_date: String(formData.get('expiry_date') || '') || null,
-    received_by: user.id,
-  })
+    item_name: item.item_name.trim(),
+    category: item.category,
+    unit: item.unit,
+    quantity_received: item.quantity,
+    quantity_remaining: item.quantity,
+    expiry_date: item.expiry_date,
+    received_date: input.receivedDate,
+    note: item.note,
+  }))
 
-  if (error) {
-    redirect('/donations/new?error=' + encodeURIComponent(error.message))
+  /*
+   * บันทึกลง donations
+   */
+  const { error: donationError } =
+    await supabase
+      .from('donations')
+      .insert(donationRows)
+
+  if (donationError) {
+    console.error(donationError)
+
+    return {
+      error:
+        'ไม่สามารถบันทึกรายการของบริจาคได้',
+    }
   }
 
   revalidatePath('/donations')
-  revalidatePath('/inventory')
-  redirect('/donations')
+
+  return {
+    success: true,
+  }
 }
