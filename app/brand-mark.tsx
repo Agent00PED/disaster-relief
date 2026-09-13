@@ -12,7 +12,7 @@ export function BrandMark({
 }) {
   const px = size === 'sm' ? 18 : size === 'lg' ? 30 : 24
   const textClass = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-2xl' : 'text-lg'
-  const walaiColor = onDark ? '#ffffff' : 'var(--color-brand)'
+  const walaiColor = onDark ? '#ffffff' : 'var(--brand-logo)'
 
   return (
     <span className="inline-flex items-center gap-2" style={{ fontFamily: 'var(--font-brand)' }}>

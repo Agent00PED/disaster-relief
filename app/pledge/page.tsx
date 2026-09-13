@@ -7,6 +7,7 @@
 
 import { submitPledge } from './actions'
 import { BrandMark } from '../brand-mark'
+import { BackHomeLink } from '../back-home-link'
 
 export default async function PledgePage({
   searchParams,
@@ -18,6 +19,7 @@ export default async function PledgePage({
   return (
     <main className="brand-hero-bg flex min-h-screen items-center justify-center px-4 py-12">
       <div className="relative z-10 w-full max-w-sm">
+        <BackHomeLink />
         <div className="mb-8 text-center">
           <div className="mb-3 flex justify-center">
             <BrandMark />
