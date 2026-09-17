@@ -16,9 +16,10 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 export default async function PledgePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ok?: string; error?: string }>
+  searchParams: Promise<{ ok?: string; error?: string; category?: string }>
 }) {
-  const { ok, error } = await searchParams
+  const { ok, error, category } = await searchParams
+  const initialCategory = ['food', 'water', 'medicine', 'clothing', 'hygiene', 'other'].includes(category ?? '') ? category : 'food'
   const locale = await getLocale()
   const dict = getDictionary(locale)
 
@@ -51,7 +52,7 @@ export default async function PledgePage({
             <div><label htmlFor="item-name">{dict.pledge.itemWanted}</label><input id="item-name" name="item_name" required placeholder={dict.pledge.itemPlaceholder} /></div>
             <div className={styles.row}>
               <div><label htmlFor="category">{dict.form.category}</label>
-                <select id="category" name="category" required>
+                <select id="category" name="category" required defaultValue={initialCategory}>
                   <option value="food">{dict.form.categoryFood}</option>
                   <option value="water">{dict.form.categoryWater}</option>
                   <option value="medicine">{dict.form.categoryMedicine}</option>
