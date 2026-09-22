@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WalaiTrack — ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ
 
-## Getting Started
+Mini Project รายวิชา **COE67-331 Web Application Development**
+สำนักวิชาวิศวกรรมศาสตร์และเทคโนโลยี มหาวิทยาลัยวลัยลักษณ์ · หัวข้อที่ 8
 
-First, run the development server:
+> เว็บนี้เป็น **ต้นแบบเพื่อการศึกษา** ไม่ใช่ช่องทางขอความช่วยเหลือทางการ
+
+---
+
+## ปัญหาที่ระบบนี้แก้
+
+ตอนเกิดภัยพิบัติ ของบริจาคเข้ามาจำนวนมากในเวลาสั้น ๆ แต่ศูนย์มักไม่รู้ว่า
+
+- ของอยู่ที่ไหน เหลือเท่าไร และใกล้หมดอายุหรือยัง
+- ศูนย์พักพิงไหนขออะไรไว้ และได้รับไปแล้วเท่าไร
+- ของที่จ่ายออกไปถึงมือผู้ประสบภัยจริงหรือไม่
+
+WalaiTrack ติดตามของบริจาคตั้งแต่รับเข้าคลัง จับคู่กับคำขอของศูนย์พักพิง
+ตัดจ่ายตามลำดับใกล้หมดอายุก่อน จนถึงการยืนยันรับของที่ปลายทาง
+โดยเก็บประวัติทุกขั้นไว้ตรวจย้อนหลังได้
+
+---
+
+## ผู้ใช้ระบบ
+
+| กลุ่ม | ต้องมีบัญชี | ทำอะไรได้ |
+|---|---|---|
+| ผู้ดูแลระบบ (admin) | ใช่ | จัดการศูนย์และผู้ใช้ · เห็นและจัดสรรข้ามทุกศูนย์ |
+| เจ้าหน้าที่ศูนย์ (staff) | ใช่ | รับของเข้าคลัง · สร้างคำขอ · จัดสรร · ตรวจคำร้องสาธารณะ (เฉพาะศูนย์ตัวเอง) |
+| อาสาสมัคร (volunteer) | ใช่ | ดูงานของศูนย์ตัวเอง · ยืนยันรับของ |
+| ประชาชนทั่วไป | **ไม่ต้อง** | แจ้งความประสงค์บริจาค · ขอความช่วยเหลือ · ดูสิ่งที่ศูนย์ต้องการ |
+
+---
+
+## ฟีเจอร์หลัก
+
+- **F1 บัญชีผู้ใช้และศูนย์** — เข้าสู่ระบบด้วยชื่อผู้ใช้ · สมัครอาสาสมัครเอง · ผู้ดูแลกำหนดบทบาทและศูนย์
+- **F2 รับของเข้าคลัง** — บันทึกของบริจาคหลายรายการต่อครั้ง · ออกใบรับของพิมพ์ได้
+- **F3 คลังสินค้า** — ยอดคงเหลือแยกตามศูนย์และหมวดหมู่ · แจ้งเตือนใกล้หมดอายุ · ส่งออก CSV
+- **F4 คำขอจากศูนย์พักพิง** — เรียงตามความเร่งด่วน · แถบความคืบหน้า · ยกเลิกแล้วคืนยอดอัตโนมัติ
+- **F5 จัดสรรและติดตาม** — เลือกล็อตแบบ FEFO (ใกล้หมดอายุจ่ายก่อน) · ใบส่งมอบ · ประวัติย้อนหลัง
+- **F6 ทะเบียนผู้บริจาค** — ค้นหาและกรอง · รองรับผู้ไม่ประสงค์ออกนาม
+- **ฟอร์มสาธารณะ** — แจ้งความประสงค์บริจาค และขอความช่วยเหลือ โดยไม่ต้องมีบัญชี
+- **ใช้ได้ทุกหน้า** — โหมดสว่าง/มืด · สลับภาษาไทย-อังกฤษ · รองรับมือถือ
+
+---
+
+## เทคโนโลยีที่ใช้
+
+| ส่วน | ใช้อะไร |
+|---|---|
+| หน้าเว็บ | Next.js (App Router) + TypeScript + Server Actions |
+| จัดสไตล์ | Tailwind CSS + CSS Modules |
+| ฐานข้อมูล | Supabase — PostgreSQL, Row Level Security, Postgres Function, Realtime, Storage |
+| เข้าสู่ระบบ | Supabase Auth |
+| Deploy | Vercel |
+
+ไม่ใช้ ORM — เรียก Supabase client ตรง เพื่อให้เห็น SQL และกฎของฐานข้อมูลชัดเจน
+
+---
+
+## ติดตั้งเพื่อรันบนเครื่องตัวเอง
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Agent00PED/disaster-relief.git
+cd disaster-relief
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+สร้างไฟล์ `.env.local` (ห้าม commit ไฟล์นี้)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ตั้งค่าฐานข้อมูลโดยรันไฟล์ใน `docs/sql/` ตามลำดับเลข
+รายละเอียดแต่ละไฟล์และขั้นตอนหลังรันอยู่ใน [`docs/sql/README.md`](docs/sql/README.md)
 
-## Learn More
+```bash
+npm run dev      # เปิด http://localhost:3000
+npm run build    # ต้องผ่านก่อนเปิด Pull Request เสมอ
+npm run lint
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## โครงสร้างโปรเจกต์
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/            หน้าเว็บทั้งหมด แยกโฟลเดอร์ตามฟีเจอร์
+lib/            โค้ดที่ใช้ร่วมกัน — Supabase client, i18n, หน่วยสินค้า, helper
+docs/sql/       ไฟล์ SQL สร้างและปรับฐานข้อมูล เรียงตามลำดับที่ต้องรัน
+docs/diagrams/  ER Diagram และ Use Case Diagram
+docs/           เอกสารวิเคราะห์ระบบและหลักฐานการทดสอบ
+```
 
-## Deploy on Vercel
+แนวทางการเขียนโค้ดและกฎของทีมอยู่ที่ [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## หมายเหตุ
+
+ระบบนี้พัฒนาเพื่อการเรียนการสอน ข้อมูลในระบบเป็นข้อมูลตัวอย่าง
+หากต้องการความช่วยเหลือจริงในสถานการณ์ภัยพิบัติ กรุณาติดต่อหน่วยงานที่รับผิดชอบโดยตรง
+(เบอร์ติดต่อแสดงอยู่ที่ส่วนท้ายของเว็บไซต์)
