@@ -41,6 +41,8 @@ export async function updateUser(formData: FormData) {
     .update({
       role: String(formData.get('role')),
       center_id: centerId || null,
+      // เบอร์ติดต่อเจ้าหน้าที่ — อาสาสมัครในศูนย์เดียวกันเห็นที่หน้า /volunteer
+      phone: String(formData.get('phone') || '').trim() || null,
     })
     .eq('id', String(formData.get('id')))
   if (error) {

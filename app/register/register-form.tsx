@@ -22,6 +22,7 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
   const [centers, setCenters] = useState<Center[]>([])
   const [fullName, setFullName] = useState('')
   const [username, setUsername] = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [centerId, setCenterId] = useState('')
@@ -49,6 +50,8 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
         data: {
           full_name: fullName,
           username: username.trim(),
+          // trigger handle_new_user เก็บลง profiles.phone (docs/sql/27_profile_phone.sql)
+          phone: phone.trim(),
           role: 'volunteer',
           center_id: centerId || null,
         },
@@ -85,6 +88,9 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
         <input id="register-name" autoComplete="name" required value={fullName} onChange={e => setFullName(e.target.value)} /></div>
       <div><label htmlFor="register-username">{dict.register.username}</label>
         <input id="register-username" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={username} onChange={e => setUsername(e.target.value)} /></div>
+      <div><label htmlFor="register-phone">{dict.register.phone}</label>
+        <input id="register-phone" type="tel" autoComplete="tel" inputMode="tel" required value={phone} onChange={e => setPhone(e.target.value)} />
+        <p className={styles.hint}>{dict.register.phoneHint}</p></div>
       <div><label htmlFor="register-email">{dict.form.email}</label>
         <input id="register-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
       <div><label htmlFor="register-password">{dict.register.password}</label>

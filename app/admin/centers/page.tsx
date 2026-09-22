@@ -40,7 +40,7 @@ export default async function AdminCentersPage({
     supabase.from('centers').select('*').order('name'),
     supabase
       .from('profiles')
-      .select('id, full_name, username, role, center_id, centers(name)')
+      .select('id, full_name, username, role, center_id, phone, centers(name)')
       .order('full_name'),
   ])
 
@@ -93,6 +93,14 @@ export default async function AdminCentersPage({
                           </option>
                         ))}
                       </select>
+                      <input
+                        name="phone"
+                        type="tel"
+                        defaultValue={u.phone ?? ''}
+                        placeholder={dict.admin.userPhone}
+                        aria-label={dict.admin.userPhone}
+                        className="w-32 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
                       <button
                         type="submit"
                         className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-deep"

@@ -46,6 +46,18 @@ export default async function VolunteerPage({
   }
 
   const centerId = profile.center_id
+
+  // เบอร์ติดต่อเจ้าหน้าที่ของศูนย์เดียวกัน (comment อาจารย์: เดิมมีแค่เบอร์ศูนย์)
+  // RLS profiles_select เปิดให้เห็นเฉพาะคนในศูนย์ตัวเองอยู่แล้ว จึงไม่ต้อง
+  // กรองซ้ำเรื่องสิทธิ์ แต่กรอง center_id ตรงนี้ด้วยเพื่อไม่ดึงแถวที่ไม่ใช้
+  const { data: staffRows } = centerId
+    ? await supabase
+        .from('profiles')
+        .select('id, full_name, username, phone, role')
+        .eq('center_id', centerId)
+        .in('role', ['staff', 'admin'])
+        .order('full_name')
+    : { data: [] }
   const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })
   const start = `${day}T00:00:00+07:00`
   const end = new Date(new Date(start).getTime() + 86400000).toISOString()
@@ -75,6 +87,7 @@ export default async function VolunteerPage({
     dict={dict} locale={locale} error={error} notice={noticeMessage(params, dict, locale)}
     name={profile.full_name || profile.username || dict.volunteer.defaultName}
     center={profile.centers as unknown as { name: string; type: string; address: string | null; contact_phone: string | null } | null}
+    staff={(staffRows ?? []).map(s => ({ id: s.id, name: s.full_name || s.username || '', phone: s.phone, role: s.role }))}
     requests={requests.data ? sortByUrgency([...requests.data]) : []}
     pending={pending.data ?? []} history={history.data ?? []}
     counts={[pending.error ? null : pending.count, urgent.error ? null : urgent.count, requests.error ? null : requests.count, delivered.error ? null : delivered.count]}
