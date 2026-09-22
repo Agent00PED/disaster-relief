@@ -55,12 +55,10 @@ function getFormValues(
     index++
   }
 
-  // ถ้ามีข้อมูลแบบ indexed ให้ใช้แบบ indexed
   if (indexedValues.length > 0) {
     return indexedValues
   }
 
-  // รองรับกรณี form ส่งชื่อ field ซ้ำกัน
   return formData
     .getAll(fieldName)
     .map((value) => String(value).trim())
@@ -88,6 +86,41 @@ function getItemValue(
     .map((value) => String(value).trim())
 
   return values[index] ?? ''
+}
+
+// =====================================================
+// Helper: ตรวจสอบข้อมูล item
+//
+// สำคัญ:
+// ถ้ามีรายการใดรายการหนึ่งไม่ครบ
+// จะไม่อนุญาตให้บันทึกรายการใดเลย
+// =====================================================
+
+function validateDonationItem(
+  item: {
+    itemName: string
+    category: string
+    unit: string
+    quantity: number
+  },
+): boolean {
+  const isValidCategory =
+    VALID_CATEGORIES.includes(
+      item.category as (typeof VALID_CATEGORIES)[number],
+    )
+
+  if (
+    !item.itemName ||
+    !isValidCategory ||
+    !item.unit ||
+    !Number.isFinite(item.quantity) ||
+    !Number.isInteger(item.quantity) ||
+    item.quantity < 1
+  ) {
+    return false
+  }
+
+  return true
 }
 
 // =====================================================
@@ -139,7 +172,6 @@ export async function createDonation(
 
   // ===================================================
   // วันที่รับบริจาค
-  // ผู้ใช้เลือกจากช่อง received_date
   // ===================================================
 
   const receivedDate = String(
@@ -199,42 +231,66 @@ export async function createDonation(
 
   const itemsToInsert: DonationInsert[] = []
 
-  // ตรวจว่ามีข้อมูลแบบ indexed หรือไม่
-  const indexedItemNames = getFormValues(
+  // ===================================================
+  // อ่านข้อมูลจาก FormData
+  // ===================================================
+
+  const itemNames = getFormValues(
     formData,
     'item_name',
   )
 
-  const indexedCategories = getFormValues(
+  const categories = getFormValues(
     formData,
     'category',
   )
 
-  const indexedUnits = getFormValues(
+  const units = getFormValues(
     formData,
     'unit',
   )
 
-  const indexedQuantities = getFormValues(
+  const quantities = getFormValues(
     formData,
     'quantity',
   )
 
-  const indexedExpiryDates = getFormValues(
+  const expiryDates = getFormValues(
     formData,
     'expiry_date',
   )
 
+  // ===================================================
+  // จำนวนรายการ
+  //
+  // ใช้จำนวนสูงสุดเพื่อให้สามารถตรวจพบ
+  // รายการที่ข้อมูลหายไปได้
+  // ===================================================
+
   const itemCount = Math.max(
-    indexedItemNames.length,
-    indexedCategories.length,
-    indexedUnits.length,
-    indexedQuantities.length,
-    indexedExpiryDates.length,
+    itemNames.length,
+    categories.length,
+    units.length,
+    quantities.length,
+    expiryDates.length,
   )
 
   // ===================================================
-  // วนสร้างรายการ
+  // ต้องมีอย่างน้อย 1 รายการ
+  // ===================================================
+
+  if (itemCount === 0) {
+    redirect(
+      '/donations/new?error=invalid_donation_data',
+    )
+  }
+
+  // ===================================================
+  // อ่านและตรวจสอบ "ทุก" รายการก่อนบันทึก
+  //
+  // สำคัญมาก:
+  // ห้ามใช้ continue เมื่อเจอรายการผิด
+  // เพราะจะทำให้รายการอื่นถูกบันทึกบางส่วน
   // ===================================================
 
   for (
@@ -288,12 +344,6 @@ export async function createDonation(
 
     // -------------------------------------------------
     // วันหมดอายุ
-    //
-    // input type="date" จะส่ง:
-    // YYYY-MM-DD
-    //
-    // ถ้าไม่ได้เลือก จะเป็นค่าว่าง
-    // และจะถูกเก็บเป็น null
     // -------------------------------------------------
 
     const expiryDateRaw =
@@ -309,29 +359,28 @@ export async function createDonation(
         : null
 
     // -------------------------------------------------
-    // ตรวจสอบ category
+    // ตรวจสอบข้อมูลรายการ
     // -------------------------------------------------
 
-    const isValidCategory =
-      VALID_CATEGORIES.includes(
-        category as (typeof VALID_CATEGORIES)[number],
-      )
+    const isValidItem =
+      validateDonationItem({
+        itemName,
+        category,
+        unit,
+        quantity,
+      })
 
-    // -------------------------------------------------
-    // ตรวจสอบข้อมูล
-    // -------------------------------------------------
+    // =================================================
+    // ถ้ารายการใดรายการหนึ่งผิด
+    // ให้หยุดทั้งหมดทันที
+    // =================================================
 
-    if (
-      !itemName ||
-      !isValidCategory ||
-      !unit ||
-      !Number.isFinite(quantity) ||
-      quantity <= 0
-    ) {
+    if (!isValidItem) {
       console.error(
-        'Invalid donation item:',
+        'Invalid donation item. No items will be saved:',
         {
           index,
+          itemNumber: index + 1,
           itemName,
           category,
           unit,
@@ -342,11 +391,13 @@ export async function createDonation(
         },
       )
 
-      continue
+      redirect(
+        `/donations/new?error=invalid_item&item=${index + 1}`,
+      )
     }
 
     // -------------------------------------------------
-    // เพิ่มรายการ
+    // เพิ่มรายการเข้า array
     // -------------------------------------------------
 
     itemsToInsert.push({
@@ -364,18 +415,26 @@ export async function createDonation(
 
       expiry_date: expiryDate,
 
-      // วันที่ที่ผู้ใช้เลือกจากฟอร์ม
       received_date: receivedDate,
     })
   }
 
   // ===================================================
-  // ไม่มีรายการที่ถูกต้อง
+  // ตรวจสอบอีกครั้งว่าจำนวนรายการครบ
   // ===================================================
 
   if (
-    itemsToInsert.length === 0
+    itemsToInsert.length !== itemCount
   ) {
+    console.error(
+      'Donation item count mismatch. No items will be saved.',
+      {
+        itemCount,
+        itemsToInsertLength:
+          itemsToInsert.length,
+      },
+    )
+
     redirect(
       '/donations/new?error=invalid_donation_data',
     )
@@ -392,11 +451,18 @@ export async function createDonation(
 
   // ===================================================
   // บันทึกลง donations
+  //
+  // จะมาถึงตรงนี้ได้ก็ต่อเมื่อ
+  // "ทุก" รายการผ่าน validation แล้ว
   // ===================================================
 
   const { error } = await supabase
     .from('donations')
     .insert(itemsToInsert)
+
+  // ===================================================
+  // ตรวจสอบ Error
+  // ===================================================
 
   if (error) {
     console.error(
@@ -552,9 +618,6 @@ export async function updateDonation(
 
   // ===================================================
   // วันหมดอายุ
-  //
-  // input type="date"
-  // จะได้ YYYY-MM-DD
   // ===================================================
 
   const expiryDateRaw = String(

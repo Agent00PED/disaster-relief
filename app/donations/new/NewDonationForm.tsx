@@ -180,12 +180,21 @@ export default function NewDonationForm({
   const [religion, setReligion] =
     useState('พุทธ')
 
-  const [selectedDonationType, setSelectedDonationType] =
-    useState('')
+  const [
+    selectedDonationType,
+    setSelectedDonationType,
+  ] = useState('')
 
   const [items, setItems] = useState<ItemRow[]>([
     createEmptyItem('1'),
   ])
+
+  // =========================
+  // VALIDATION ERROR
+  // =========================
+
+  const [validationError, setValidationError] =
+    useState('')
 
   // =========================
   // LOAD LOCATION DATA
@@ -282,6 +291,7 @@ export default function NewDonationForm({
   ) => {
     setProvinceId(value)
     setSubdistrict('')
+    setValidationError('')
   }
 
   // =========================
@@ -326,6 +336,8 @@ export default function NewDonationForm({
   // =========================
 
   const handleAddItem = () => {
+    setValidationError('')
+
     setItems((prev) => [
       ...prev,
       createEmptyItem(
@@ -337,6 +349,8 @@ export default function NewDonationForm({
   const handleRemoveItem = (
     id: string
   ) => {
+    setValidationError('')
+
     if (items.length > 1) {
       setItems((prev) =>
         prev.filter(
@@ -352,6 +366,8 @@ export default function NewDonationForm({
     field: keyof ItemRow,
     value: string
   ) => {
+    setValidationError('')
+
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
@@ -373,6 +389,8 @@ export default function NewDonationForm({
     category: string,
     typeId: string
   ) => {
+    setValidationError('')
+
     setItems((prev) =>
       prev.map((item) =>
         item.id === id
@@ -402,6 +420,319 @@ export default function NewDonationForm({
   }
 
   // =========================
+  // VALIDATE ITEMS
+  // =========================
+
+  const validateItems = () => {
+    if (!receivedDate) {
+      return tr(
+        'กรุณาเลือกวันที่รับบริจาค',
+        'Please select the received date.'
+      )
+    }
+
+    if (items.length === 0) {
+      return tr(
+        'กรุณาเพิ่มรายการสิ่งของอย่างน้อย 1 รายการ',
+        'Please add at least one donation item.'
+      )
+    }
+
+    for (
+      let index = 0;
+      index < items.length;
+      index++
+    ) {
+      const item = items[index]
+      const itemNumber = index + 1
+
+      // =========================
+      // CATEGORY
+      // =========================
+
+      if (
+        !item.donationType ||
+        !item.category
+      ) {
+        return tr(
+          `รายการที่ ${itemNumber} ยังไม่ได้เลือกประเภทสิ่งของ`,
+          `Item ${itemNumber}: please select a donation category.`
+        )
+      }
+
+      // =========================
+      // QUANTITY
+      // =========================
+
+      if (
+        !item.quantity ||
+        !/^\d+$/.test(
+          item.quantity
+        ) ||
+        Number(item.quantity) < 1
+      ) {
+        return tr(
+          `รายการที่ ${itemNumber} กรุณากรอกจำนวนให้ถูกต้อง`,
+          `Item ${itemNumber}: please enter a valid quantity.`
+        )
+      }
+
+      // =========================
+      // UNIT
+      // =========================
+
+      if (!item.unit) {
+        return tr(
+          `รายการที่ ${itemNumber} กรุณาเลือกหน่วย`,
+          `Item ${itemNumber}: please select a unit.`
+        )
+      }
+
+      // =========================
+      // MILK
+      // =========================
+
+      if (
+        item.donationType ===
+        'milk'
+      ) {
+        if (!item.itemType) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกประเภทนม`,
+            `Item ${itemNumber}: please select the milk type.`
+          )
+        }
+
+        if (
+          item.itemType ===
+            '_other_' &&
+          !item.otherItemType.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุประเภทนม`,
+            `Item ${itemNumber}: please specify the milk type.`
+          )
+        }
+
+        if (!item.brand) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกยี่ห้อนม`,
+            `Item ${itemNumber}: please select the milk brand.`
+          )
+        }
+
+        if (
+          item.brand ===
+            '_other_' &&
+          !item.otherBrand.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุยี่ห้อนม`,
+            `Item ${itemNumber}: please specify the milk brand.`
+          )
+        }
+
+        if (
+          !item.volume ||
+          Number(item.volume) <= 0
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณากรอกปริมาตรนม`,
+            `Item ${itemNumber}: please enter the milk volume.`
+          )
+        }
+      }
+
+      // =========================
+      // WATER
+      // =========================
+
+      if (
+        item.donationType ===
+        'water'
+      ) {
+        if (!item.brand) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกยี่ห้อน้ำ`,
+            `Item ${itemNumber}: please select the water brand.`
+          )
+        }
+
+        if (
+          item.brand ===
+            '_other_' &&
+          !item.otherBrand.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุยี่ห้อน้ำ`,
+            `Item ${itemNumber}: please specify the water brand.`
+          )
+        }
+
+        if (
+          !item.volume ||
+          Number(item.volume) <= 0
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณากรอกปริมาตรน้ำ`,
+            `Item ${itemNumber}: please enter the water volume.`
+          )
+        }
+      }
+
+      // =========================
+      // RICE
+      // =========================
+
+      if (
+        item.donationType ===
+        'rice'
+      ) {
+        if (!item.brand) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกยี่ห้อข้าวสาร`,
+            `Item ${itemNumber}: please select the rice brand.`
+          )
+        }
+
+        if (
+          item.brand ===
+            '_other_' &&
+          !item.otherBrand.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุยี่ห้อข้าวสาร`,
+            `Item ${itemNumber}: please specify the rice brand.`
+          )
+        }
+
+        if (
+          !item.volume ||
+          Number(item.volume) <= 0
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณากรอกน้ำหนักข้าวสาร`,
+            `Item ${itemNumber}: please enter the rice weight.`
+          )
+        }
+      }
+
+      // =========================
+      // DRY FOOD
+      // =========================
+
+      if (
+        item.donationType ===
+        'dry-food'
+      ) {
+        if (!item.itemType) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกประเภทอาหาร`,
+            `Item ${itemNumber}: please select the food type.`
+          )
+        }
+
+        if (
+          item.itemType ===
+            '_other_' &&
+          !item.otherItemType.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุประเภทอาหาร`,
+            `Item ${itemNumber}: please specify the food type.`
+          )
+        }
+      }
+
+      // =========================
+      // HYGIENE
+      // =========================
+
+      if (
+        item.donationType ===
+        'hygiene'
+      ) {
+        if (!item.itemType) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกประเภทของใช้`,
+            `Item ${itemNumber}: please select the supply type.`
+          )
+        }
+
+        if (
+          item.itemType ===
+            '_other_' &&
+          !item.otherItemType.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุประเภทของใช้`,
+            `Item ${itemNumber}: please specify the supply type.`
+          )
+        }
+      }
+
+      // =========================
+      // MEDICINE
+      // =========================
+
+      if (
+        item.donationType ===
+        'medicine'
+      ) {
+        if (!item.itemType) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาเลือกประเภทยา`,
+            `Item ${itemNumber}: please select the medicine type.`
+          )
+        }
+
+        if (
+          item.itemType ===
+            '_other_' &&
+          !item.otherItemType.trim()
+        ) {
+          return tr(
+            `รายการที่ ${itemNumber} กรุณาระบุประเภทยา`,
+            `Item ${itemNumber}: please specify the medicine type.`
+          )
+        }
+      }
+    }
+
+    return ''
+  }
+
+  // =========================
+  // FORM SUBMIT
+  // =========================
+
+  const handleSubmit = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    const message =
+      validateItems()
+
+    if (message) {
+      event.preventDefault()
+
+      setValidationError(
+        message
+      )
+
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth',
+        })
+      }, 0)
+
+      return
+    }
+
+    setValidationError('')
+  }
+
+  // =========================
   // RESET
   // =========================
 
@@ -414,6 +745,7 @@ export default function NewDonationForm({
     setReceivedDate('')
     setReligion('พุทธ')
     setSelectedDonationType('')
+    setValidationError('')
 
     setItems([
       createEmptyItem('1'),
@@ -685,22 +1017,46 @@ export default function NewDonationForm({
     .filter(Boolean)
     .join(' ')
 
-  const hasSelectedCategories =
-    items.every(
-      (item) =>
-        item.donationType !== ''
-    )
-
   return (
     <form
       action={
         createDonationAction
       }
+      onSubmit={handleSubmit}
       className="space-y-6"
     >
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
           {error}
+        </div>
+      )}
+
+      {/* =========================
+          VALIDATION ERROR
+      ========================= */}
+
+      {validationError && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+        >
+          <div className="font-semibold">
+            {tr(
+              'ไม่สามารถบันทึกข้อมูลได้',
+              'Unable to save donation'
+            )}
+          </div>
+
+          <div className="mt-1">
+            {validationError}
+          </div>
+
+          <div className="mt-2 text-xs">
+            {tr(
+              'กรุณากรอกข้อมูลให้ครบทุกช่องที่จำเป็นก่อนบันทึก',
+              'Please complete all required fields before saving.'
+            )}
+          </div>
         </div>
       )}
 
@@ -720,7 +1076,6 @@ export default function NewDonationForm({
 
         <div className="grid gap-5 md:grid-cols-2">
 
-          {/* FIRST NAME */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -749,7 +1104,6 @@ export default function NewDonationForm({
             />
           </div>
 
-          {/* LAST NAME */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -786,7 +1140,6 @@ export default function NewDonationForm({
             }
           />
 
-          {/* PHONE */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -814,7 +1167,6 @@ export default function NewDonationForm({
             />
           </div>
 
-          {/* SUBDISTRICT */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -828,11 +1180,12 @@ export default function NewDonationForm({
               value={
                 subdistrict
               }
-              onChange={(e) =>
+              onChange={(e) => {
                 setSubdistrict(
                   e.target.value
                 )
-              }
+                setValidationError('')
+              }}
               disabled={
                 loadingLocation ||
                 !provinceId
@@ -879,7 +1232,6 @@ export default function NewDonationForm({
             </select>
           </div>
 
-          {/* PROVINCE */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -962,13 +1314,15 @@ export default function NewDonationForm({
 
         <div className="grid gap-5 md:grid-cols-2">
 
-          {/* RECEIVED DATE */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
                 'วันที่รับบริจาค',
                 'Received Date'
-              )}
+              )}{' '}
+              <span className="text-red-500">
+                *
+              </span>
             </label>
 
             <input
@@ -978,11 +1332,12 @@ export default function NewDonationForm({
                 receivedDate
               }
               required
-              onChange={(e) =>
+              onChange={(e) => {
                 setReceivedDate(
                   e.target.value
                 )
-              }
+                setValidationError('')
+              }}
               className={
                 inputClassName
               }
@@ -995,7 +1350,6 @@ export default function NewDonationForm({
             </p>
           </div>
 
-          {/* RELIGION */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -1150,7 +1504,6 @@ export default function NewDonationForm({
           </div>
 
           <div className="space-y-5">
-
             {items.map(
               (item, index) => {
                 const itemType =
@@ -1168,7 +1521,6 @@ export default function NewDonationForm({
                     className="relative rounded-xl border border-slate-200 p-5 dark:border-slate-700"
                   >
 
-                    {/* DELETE */}
                     {items.length > 1 && (
                       <button
                         type="button"
@@ -1187,7 +1539,6 @@ export default function NewDonationForm({
                       </button>
                     )}
 
-                    {/* ITEM NUMBER */}
                     <div className="mb-4 text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {tr(
                         `รายการที่ ${
@@ -1199,13 +1550,15 @@ export default function NewDonationForm({
                       )}
                     </div>
 
-                    {/* CATEGORY PER ITEM */}
                     <div className="mb-5">
                       <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
                         {tr(
                           'ประเภทสิ่งของ',
                           'Donation Category'
-                        )}
+                        )}{' '}
+                        <span className="text-red-500">
+                          *
+                        </span>
                       </label>
 
                       <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
@@ -1253,7 +1606,6 @@ export default function NewDonationForm({
                       </div>
                     </div>
 
-                    {/* ITEM TYPE / FIELDS */}
                     {itemType && (
                       <>
                         <div className="mb-4 flex items-center gap-2 rounded-lg bg-slate-50 px-4 py-3 dark:bg-slate-800">
@@ -1281,21 +1633,24 @@ export default function NewDonationForm({
                                 {tr(
                                   'ประเภทนม',
                                   'Milk Type'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <select
                                 value={
                                   item.itemType
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'itemType',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 className={
@@ -1353,21 +1708,24 @@ export default function NewDonationForm({
                                 {tr(
                                   'ยี่ห้อ',
                                   'Brand'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <select
                                 value={
                                   item.brand
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'brand',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 className={
@@ -1427,21 +1785,24 @@ export default function NewDonationForm({
                                   {tr(
                                     'ยี่ห้อ',
                                     'Brand'
-                                  )}
+                                  )}{' '}
+                                  <span className="text-red-500">
+                                    *
+                                  </span>
                                 </label>
 
                                 <select
                                   value={
                                     item.brand
                                   }
+                                  required
                                   onChange={(
                                     e
                                   ) =>
                                     handleItemChange(
                                       item.id,
                                       'brand',
-                                      e.target
-                                        .value
+                                      e.target.value
                                     )
                                   }
                                   className={
@@ -1495,24 +1856,27 @@ export default function NewDonationForm({
                                   {tr(
                                     'น้ำหนัก (กก.)',
                                     'Weight (kg)'
-                                  )}
+                                  )}{' '}
+                                  <span className="text-red-500">
+                                    *
+                                  </span>
                                 </label>
 
                                 <input
                                   type="number"
-                                  min="0"
+                                  min="0.01"
                                   step="0.01"
                                   value={
                                     item.volume
                                   }
+                                  required
                                   onChange={(
                                     e
                                   ) =>
                                     handleItemChange(
                                       item.id,
                                       'volume',
-                                      e.target
-                                        .value
+                                      e.target.value
                                     )
                                   }
                                   placeholder="0"
@@ -1532,21 +1896,24 @@ export default function NewDonationForm({
                                 {tr(
                                   'ประเภทอาหาร',
                                   'Food Type'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <select
                                 value={
                                   item.itemType
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'itemType',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 className={
@@ -1609,21 +1976,24 @@ export default function NewDonationForm({
                                 {tr(
                                   'ประเภทของใช้',
                                   'Supply Type'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <select
                                 value={
                                   item.itemType
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'itemType',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 className={
@@ -1689,21 +2059,24 @@ export default function NewDonationForm({
                                 {tr(
                                   'ประเภทยา',
                                   'Medicine Type'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <select
                                 value={
                                   item.itemType
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'itemType',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 className={
@@ -1765,7 +2138,10 @@ export default function NewDonationForm({
                                 {tr(
                                   'ระบุประเภท',
                                   'Specify Type'
-                                )}
+                                )}{' '}
+                                <span className="text-red-500">
+                                  *
+                                </span>
                               </label>
 
                               <input
@@ -1773,14 +2149,14 @@ export default function NewDonationForm({
                                 value={
                                   item.otherItemType
                                 }
+                                required
                                 onChange={(
                                   e
                                 ) =>
                                   handleItemChange(
                                     item.id,
                                     'otherItemType',
-                                    e.target
-                                      .value
+                                    e.target.value
                                   )
                                 }
                                 placeholder={tr(
@@ -1808,21 +2184,24 @@ export default function NewDonationForm({
                                     {tr(
                                       'ยี่ห้อ',
                                       'Brand'
-                                    )}
+                                    )}{' '}
+                                    <span className="text-red-500">
+                                      *
+                                    </span>
                                   </label>
 
                                   <select
                                     value={
                                       item.brand
                                     }
+                                    required
                                     onChange={(
                                       e
                                     ) =>
                                       handleItemChange(
                                         item.id,
                                         'brand',
-                                        e.target
-                                          .value
+                                        e.target.value
                                       )
                                     }
                                     className={
@@ -1880,7 +2259,10 @@ export default function NewDonationForm({
                                     {tr(
                                       'ระบุยี่ห้อ',
                                       'Specify Brand'
-                                    )}
+                                    )}{' '}
+                                    <span className="text-red-500">
+                                      *
+                                    </span>
                                   </label>
 
                                   <input
@@ -1888,14 +2270,14 @@ export default function NewDonationForm({
                                     value={
                                       item.otherBrand
                                     }
+                                    required
                                     onChange={(
                                       e
                                     ) =>
                                       handleItemChange(
                                         item.id,
                                         'otherBrand',
-                                        e.target
-                                          .value
+                                        e.target.value
                                       )
                                     }
                                     placeholder={tr(
@@ -1915,24 +2297,27 @@ export default function NewDonationForm({
                                   {tr(
                                     'ปริมาตร (มล.)',
                                     'Volume (ml)'
-                                  )}
+                                  )}{' '}
+                                  <span className="text-red-500">
+                                    *
+                                  </span>
                                 </label>
 
                                 <input
                                   type="number"
-                                  min="0"
+                                  min="1"
                                   step="1"
                                   value={
                                     item.volume
                                   }
+                                  required
                                   onChange={(
                                     e
                                   ) =>
                                     handleItemChange(
                                       item.id,
                                       'volume',
-                                      e.target
-                                        .value
+                                      e.target.value
                                     )
                                   }
                                   placeholder="0"
@@ -1950,7 +2335,10 @@ export default function NewDonationForm({
                               {tr(
                                 'จำนวน',
                                 'Quantity'
-                              )}
+                              )}{' '}
+                              <span className="text-red-500">
+                                *
+                              </span>
                             </label>
 
                             <input
@@ -1961,16 +2349,16 @@ export default function NewDonationForm({
                               value={
                                 item.quantity
                               }
+                              required
                               onChange={(
                                 e
                               ) => {
                                 const value =
                                   e.target.value
 
-                                // รับเฉพาะจำนวนเต็ม
                                 if (
                                   value ===
-                                  '' ||
+                                    '' ||
                                   /^\d+$/.test(
                                     value
                                   )
@@ -1995,21 +2383,24 @@ export default function NewDonationForm({
                               {tr(
                                 'หน่วย',
                                 'Unit'
-                              )}
+                              )}{' '}
+                              <span className="text-red-500">
+                                *
+                              </span>
                             </label>
 
                             <select
                               value={
                                 item.unit
                               }
+                              required
                               onChange={(
                                 e
                               ) =>
                                 handleItemChange(
                                   item.id,
                                   'unit',
-                                  e.target
-                                    .value
+                                  e.target.value
                                 )
                               }
                               className={
@@ -2178,9 +2569,7 @@ export default function NewDonationForm({
         <button
           type="submit"
           disabled={
-            !createDonationAction ||
-            !selectedDonationType ||
-            !hasSelectedCategories
+            !createDonationAction
           }
           className="rounded-lg bg-[#0E2A47] px-6 py-3 text-xs font-medium text-white hover:bg-[#12395f] disabled:cursor-not-allowed disabled:opacity-50"
         >
