@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { normalizeUnit } from '@/lib/units'
 import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 import { resolveCenterId } from '@/lib/center-choice'
 import { getLocale } from '@/lib/i18n/locale'
@@ -46,7 +47,7 @@ export async function confirmPledge(formData: FormData) {
       donor_id: donorId,
       item_name: pledge.item_name,
       category: pledge.category,
-      unit: String(formData.get('unit') || '').trim() || 'ชิ้น',
+      unit: normalizeUnit(String(formData.get('unit') || '')) || 'ชิ้น',
       quantity_received: pledge.quantity,
       quantity_remaining: pledge.quantity,
       received_by: user.id,

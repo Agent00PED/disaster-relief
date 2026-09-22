@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
+import { UnitSelect } from '@/app/unit-select'
 
 export default async function NewDonationPage({
   searchParams,
@@ -61,9 +62,8 @@ export default async function NewDonationPage({
           </div>
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.donationNew.unit}</label>
-            <input
-              name="unit"
-              defaultValue="ชิ้น"
+            <UnitSelect
+              locale={locale}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
