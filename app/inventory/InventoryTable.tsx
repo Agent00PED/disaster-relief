@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
+import type { Locale } from '@/lib/i18n/locale'
 import { unitLabel } from '@/lib/units' 
 
 type StockRow = {
@@ -20,7 +21,7 @@ type Props = {
   centers: { id: string; name: string }[]
   categoryLabels: Record<string, string>
   dict: Dictionary
-  locale: 'th' | 'en'
+  locale: Locale
 }
 
 function daysUntil(dateStr: string) {
@@ -99,7 +100,6 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
       const cat = categoryLabels[row.category] ?? row.category
       
       const cleanUnit = row.unit.trim()
-      // แก้ไขให้รับแค่หน่วย กับ locale
       const displayUnit = unitLabel(cleanUnit, locale)
       
       const escapedItemName = row.item_name.replace(/"/g, '""')
@@ -156,7 +156,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
               onChange={(e) => setHideExpired(e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-800"
             />
-            {(dict.inventory as any).hideExpired ?? 'ซ่อนของหมดอายุ'}
+            {dict.inventory.hideExpired}
           </label>
 
           <input
@@ -209,7 +209,6 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
                 const isSoon = days !== null && days >= 0 && days <= 7
                 
                 const cleanUnit = row.unit.trim()
-                // แก้ไขให้รับแค่หน่วย กับ locale
                 const displayUnit = unitLabel(cleanUnit, locale)
 
                 const rowBgClass = isExpired 

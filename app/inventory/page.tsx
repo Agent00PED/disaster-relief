@@ -45,8 +45,8 @@ const DEFAULT_COLOR = { bg: 'bg-slate-400 dark:bg-slate-500', hex: '#94a3b8' }
 export default async function InventoryPage() {
   const supabase = await createClient()
   await requireStaffOrAdmin(supabase)
-  // ระบุ type ตรงนี้ให้รับค่า th หรือ en แน่นอน
-  const locale = (await getLocale()) as 'th' | 'en'
+  
+  const locale = await getLocale()
   const dict = await getDictionary(locale)
 
   const renderPlural = (count: number, word: string) => {
@@ -157,7 +157,6 @@ export default async function InventoryPage() {
     const otherUnitsArr: string[] = []
     Object.entries(unitGroups).forEach(([u, qty]) => {
       if (u !== primaryUnit) {
-        // ส่งเฉพาะหน่วยและ locale ตัวเลขเอามาต่อข้างหน้า
         otherUnitsArr.push(`${qty} ${unitLabel(u.trim(), locale)}`)
       }
     })
@@ -323,7 +322,6 @@ export default async function InventoryPage() {
                   <div key={`${row.category}-${row.item_name}`} className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-end justify-between gap-2 text-sm">
                       <div className="font-medium text-slate-800 dark:text-slate-200">
-                        {/* เรียกใช้โดยส่งหน่วยและ locale แยกตัวเลขไว้ด้านนอก */}
                         {row.item_name} <span className="ml-1 text-xs font-normal text-slate-500">({dict.inventory.target}: {row.shortage} {unitLabel(row.rawUnit, locale)})</span>
                       </div>
                       <div className="flex items-center gap-2">
