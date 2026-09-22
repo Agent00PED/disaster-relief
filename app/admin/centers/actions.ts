@@ -36,14 +36,29 @@ export async function addCenter(formData: FormData) {
 export async function updateUser(formData: FormData) {
   const supabase = await createClient()
   const centerId = String(formData.get('center_id') || '')
+  const firstName = String(formData.get('first_name') || '').trim()
+  const lastName = String(formData.get('last_name') || '').trim()
+
+  const payload: Record<string, unknown> = {
+    role: String(formData.get('role')),
+    center_id: centerId || null,
+    // เบอร์ติดต่อเจ้าหน้าที่ — อาสาสมัครในศูนย์เดียวกันเห็นที่หน้า /volunteer
+    phone: String(formData.get('phone') || '').trim() || null,
+    first_name: firstName || null,
+    last_name: lastName || null,
+  }
+
+  // full_name ยังเป็นคอลัมน์ที่ทั้งเว็บใช้แสดงชื่อ (แถบเมนู ใบเสร็จ ตารางนี้)
+  // จึงต้องอัปเดตตามให้ตรงกัน ไม่งั้นแก้ชื่อในตารางแล้วที่อื่นยังเป็นชื่อเดิม
+  // เขียนทับเฉพาะตอนที่กรอกมาอย่างน้อยหนึ่งช่อง — ถ้าเว้นว่างทั้งคู่ให้คง
+  // full_name เดิมไว้ ไม่ล้างชื่อของบัญชีที่ยังไม่ได้แยกชื่อ-นามสกุล
+  if (firstName || lastName) {
+    payload.full_name = [firstName, lastName].filter(Boolean).join(' ')
+  }
+
   const { error } = await supabase
     .from('profiles')
-    .update({
-      role: String(formData.get('role')),
-      center_id: centerId || null,
-      // เบอร์ติดต่อเจ้าหน้าที่ — อาสาสมัครในศูนย์เดียวกันเห็นที่หน้า /volunteer
-      phone: String(formData.get('phone') || '').trim() || null,
-    })
+    .update(payload)
     .eq('id', String(formData.get('id')))
   if (error) {
     redirect('/admin/centers?error=' + encodeURIComponent(error.message))

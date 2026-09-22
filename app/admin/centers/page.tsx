@@ -40,7 +40,7 @@ export default async function AdminCentersPage({
     supabase.from('centers').select('*').order('name'),
     supabase
       .from('profiles')
-      .select('id, full_name, username, role, center_id, phone, centers(name)')
+      .select('id, full_name, username, role, center_id, phone, first_name, last_name, centers(name)')
       .order('full_name'),
   ])
 
@@ -70,7 +70,7 @@ export default async function AdminCentersPage({
                     {(u.centers as unknown as { name?: string } | null)?.name ?? '—'}
                   </td>
                   <td className="px-4 py-2">
-                    <form action={updateUser} className="flex items-center gap-2">
+                    <form action={updateUser} className="flex flex-wrap items-center gap-2">
                       <input type="hidden" name="id" value={u.id} />
                       <select
                         name="role"
@@ -93,6 +93,20 @@ export default async function AdminCentersPage({
                           </option>
                         ))}
                       </select>
+                      <input
+                        name="first_name"
+                        defaultValue={u.first_name ?? ''}
+                        placeholder={dict.register.firstName}
+                        aria-label={dict.register.firstName}
+                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                      <input
+                        name="last_name"
+                        defaultValue={u.last_name ?? ''}
+                        placeholder={dict.register.lastName}
+                        aria-label={dict.register.lastName}
+                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
                       <input
                         name="phone"
                         type="tel"
