@@ -19,6 +19,7 @@
 | — | `12_public_help_requests.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): ขอความช่วยเหลือผ่านตาราง `request_pledges` — คู่กับ `10_public_pledges.sql` แต่กลับทิศทาง เพิ่มแบบ additive |
 | — | `17_f5_hardening.sql` | ปิดช่องโหว่สิทธิ์ F5 (รันหลัง `05` และ `13`): `allocate_items` ต้องเป็น staff/admin และจัดสรรข้ามศูนย์ได้เฉพาะ admin, `mark_delivered` เฉพาะ admin/ศูนย์ปลายทาง, ยกเลิกไม่เปิดคำขอที่ถูกยกเลิกกลับมา, `allocations_select` เห็นเฉพาะศูนย์ที่เกี่ยวข้อง — error เป็นรหัส `F5:<key>` ให้หน้าเว็บแปล TH/EN |
 | — | `18_f5_features.sql` | ฟีเจอร์เพิ่ม F5 (รันหลัง `17`): `allocate_items_multi` จัดสรรหลายล็อตใน transaction เดียว, คอลัมน์ + บังคับเหตุผลการยกเลิก (`cancel_allocation` รับ `p_reason`), computed column `allocated_by_name` / `cancelled_by_name` สำหรับหน้าประวัติ |
+| — | `16_manually_confirm_user.sql` | (ไม่บังคับ) ยืนยันอีเมลของบัญชีที่ค้างสถานะ "Waiting for verification" ด้วย SQL เพราะโปรเจกต์ยังไม่ได้ตั้งค่าส่งอีเมลจริง — แก้อีเมลในไฟล์ก่อนรัน |
 | — | `19_dedupe_test_data.sql` | (ไม่บังคับ) ลบข้อมูลทดสอบที่ซ้ำกันใน `requests` / `donations` / `donation_pledges` / `donors` เก็บแถวเก่าสุดไว้ ไม่แตะแถวที่มีการจัดสรรอ้างอิง — รันส่วน PREVIEW ดูก่อน |
 | — | `20_cleanup_test_records.sql` | (ไม่บังคับ) ลบข้อมูลทดสอบที่ชื่อขึ้นต้นด้วย `[TEST]` ทุกตาราง — หยุดและย้อนกลับทั้งหมดถ้ามีการจัดสรรที่ผูกของทดสอบกับของจริง |
 | — | `21_merge_anonymous_donors.sql` | (ไม่บังคับ) รวมผู้บริจาค "ไม่ประสงค์ออกนาม" หลายแถวให้เหลือแถวเดียว ย้ายของบริจาคไปผูกแถวที่เก็บไว้ — รันส่วน PREVIEW ดูก่อน |
