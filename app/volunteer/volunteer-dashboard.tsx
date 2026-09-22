@@ -4,6 +4,7 @@ import { ErrorDialog } from '../allocations/error-dialog'
 import { DeliverButton } from '../allocations/deliver-dialog'
 import { FlashNotice } from '../flash-notice'
 import { confirmReceipt } from './actions'
+import { IdPhotoCard } from './id-photo-card'
 
 type RequestRow = {
   id: string; item_name: string; category: string; quantity_requested: number
@@ -18,6 +19,8 @@ type Props = {
   dict: Dictionary; locale: Locale; name: string; error?: string
   center: { name: string; type: string; address: string | null; contact_phone: string | null } | null
   staff: { id: string; name: string; phone: string | null; role: string }[]
+  userId: string
+  idPhotoPath: string | null
   requests: RequestRow[]; pending: Delivery[]; history: Delivery[]
   counts: (number | null)[]; loadError: boolean; notice?: string | null
   failed: { requests: boolean; pending: boolean; history: boolean }
@@ -34,7 +37,7 @@ function Icon({ kind = 0 }: { kind?: number }) {
   return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind]} /></svg>
 }
 
-export function VolunteerDashboard({ dict, locale, name, center, staff, requests, pending, history, counts, error, failed, loadError, notice }: Props) {
+export function VolunteerDashboard({ dict, locale, name, center, staff, userId, idPhotoPath, requests, pending, history, counts, error, failed, loadError, notice }: Props) {
   const t = dict.volunteerDashboard
   const v = dict.volunteer
   const number = new Intl.NumberFormat(locale === 'th' ? 'th-TH' : 'en-US')
@@ -145,6 +148,16 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, requests
         </div>
       </section>
     </div>
+
+    <IdPhotoCard
+      dict={dict}
+      userId={userId}
+      initialPath={idPhotoPath}
+      panelClass={panel}
+      headingClass={heading}
+      mutedClass={muted}
+      buttonClass={button}
+    />
 
     <section className={panel}>
       <h2 className={heading}><Icon kind={2} />{v.openRequestsSection}</h2>
