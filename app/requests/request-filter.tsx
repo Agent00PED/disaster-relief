@@ -2,29 +2,15 @@
 
 import { Suspense } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-const CATEGORY_FILTERS = [
-  { label: "ทั้งหมด", value: "" },
-  { label: "🍞 อาหาร", value: "food" },
-  { label: "💧 น้ำ", value: "water" },
-  { label: "💊 ยา", value: "medicine" },
-  { label: "👕 เสื้อผ้า", value: "clothing" },
-  { label: "🧴 สุขอนามัย", value: "hygiene" },
-  { label: "📦 อื่น ๆ", value: "other" },
-];
-
-const URGENCY_FILTERS = [
-  { label: "ทุกระดับความเร่งด่วน", value: "" },
-  { label: "🔴 ด่วนมาก", value: "high" },
-  { label: "🟡 ปานกลาง", value: "medium" },
-  { label: "🟢 ปกติ", value: "low" },
-];
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface RequestFilterProps {
-  centers?: { id: string; name: string }[];
+  centers?: { id: string; name: string; name_en?: string | null }[];
+  dict: Dictionary;
+  lang?: string;
 }
 
-function RequestFilterContent({ centers = [] }: RequestFilterProps) {
+function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -57,6 +43,23 @@ function RequestFilterContent({ centers = [] }: RequestFilterProps) {
     replace(pathname);
   };
 
+  const categoryFilters = [
+    { label: dict.requests.allCategories, value: "" },
+    { label: `🍞 ${dict.form.categoryFood}`, value: "food" },
+    { label: `💧 ${dict.form.categoryWater}`, value: "water" },
+    { label: `💊 ${dict.form.categoryMedicine}`, value: "medicine" },
+    { label: `👕 ${dict.form.categoryClothing}`, value: "clothing" },
+    { label: `🧴 ${dict.form.categoryHygiene}`, value: "hygiene" },
+    { label: `📦 ${dict.form.categoryOther}`, value: "other" },
+  ];
+
+  const urgencyFilters = [
+    { label: dict.requests.allUrgencies, value: "" },
+    { label: `🔴 ${dict.requests.urgencyHigh}`, value: "high" },
+    { label: `🟡 ${dict.requests.urgencyMedium}`, value: "medium" },
+    { label: `🟢 ${dict.requests.urgencyLow}`, value: "low" },
+  ];
+
   return (
     <div className="mb-6 space-y-3">
       {/* แถบค้นหา + ตัวกรองศูนย์พักพิง + ตัวกรองความเร่งด่วน + ปุ่มล้างตัวกรอง */}
@@ -67,7 +70,7 @@ function RequestFilterContent({ centers = [] }: RequestFilterProps) {
             type="text"
             value={currentSearch}
             onChange={(e) => handleFilter("q", e.target.value)}
-            placeholder="ค้นหาชื่อสิ่งของ..."
+            placeholder={dict.requests.searchPlaceholder}
             className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
           />
         </div>
@@ -78,10 +81,10 @@ function RequestFilterContent({ centers = [] }: RequestFilterProps) {
           onChange={(e) => handleFilter("center_id", e.target.value)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
         >
-          <option value="">ทุกศูนย์พักพิง</option>
+          <option value="">{dict.requests.allCenters}</option>
           {centers.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.name}
+              {lang === "en" && c.name_en ? c.name_en : c.name}
             </option>
           ))}
         </select>
@@ -92,7 +95,7 @@ function RequestFilterContent({ centers = [] }: RequestFilterProps) {
           onChange={(e) => handleFilter("urgency", e.target.value)}
           className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
         >
-          {URGENCY_FILTERS.map((u) => (
+          {urgencyFilters.map((u) => (
             <option key={u.value} value={u.value}>
               {u.label}
             </option>
@@ -113,7 +116,7 @@ function RequestFilterContent({ centers = [] }: RequestFilterProps) {
 
       {/* ปุ่มเลือกหมวดหมู่ */}
       <div className="flex flex-wrap gap-2">
-        {CATEGORY_FILTERS.map((filter) => {
+        {categoryFilters.map((filter) => {
           const isActive = currentCategory === filter.value;
 
           return (

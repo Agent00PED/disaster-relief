@@ -1,3 +1,8 @@
+/*
+ * หน้าจัดการคำร้องขอความช่วยเหลือสำหรับเจ้าหน้าที่ (Staff/Admin)
+ * - Staff จะเห็นเฉพาะคำร้องของศูนย์ตัวเอง (บังคับด้วย RLS)
+ * - Admin จะเห็นคำร้องของทุกศูนย์
+ */
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmHelpRequest, dismissHelpRequest } from './actions'

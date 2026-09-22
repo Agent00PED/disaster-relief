@@ -52,14 +52,14 @@ export default async function RequestsPage({
   // 1. ดึงข้อมูลรายชื่อศูนย์พักพิงทั้งหมด
   const { data: centersData } = await supabase
     .from('centers')
-    .select('id, name')
+    .select('id, name, name_en')
     .order('name', { ascending: true })
 
   // 2. ดึงข้อมูลรายการคำขอ
   const { data: requestRows } = await supabase
     .from('requests')
     .select(
-      'id, item_name, category, unit, quantity_requested, quantity_fulfilled, urgency, status, cancel_reason, created_at, center_id, centers(name)',
+      'id, item_name, item_name_en, category, unit, quantity_requested, quantity_fulfilled, urgency, status, cancel_reason, created_at, center_id, centers(name, name_en)',
     )
     .order('created_at', { ascending: false })
 
@@ -89,10 +89,18 @@ export default async function RequestsPage({
   const selectedCenter = params.center_id ?? ''
 
   const filteredRequests = (requests ?? []).filter((r) => {
-    const centerName = ((r.centers as unknown as { name?: string } | null)?.name ?? '').toLowerCase()
+    const center = r.centers as unknown as { name?: string; name_en?: string | null } | null
+    const centerName = (center?.name ?? '').toLowerCase()
+    const centerNameEnglish = (center?.name_en ?? '').toLowerCase()
     const itemName = (r.item_name ?? '').toLowerCase()
+    const itemNameEnglish = (r.item_name_en ?? '').toLowerCase()
 
-    const matchesSearch = !searchQuery || itemName.includes(searchQuery) || centerName.includes(searchQuery)
+    const matchesSearch =
+      !searchQuery ||
+      itemName.includes(searchQuery) ||
+      itemNameEnglish.includes(searchQuery) ||
+      centerName.includes(searchQuery) ||
+      centerNameEnglish.includes(searchQuery)
     const matchesCategory = !selectedCategory || r.category === selectedCategory
     const matchesUrgency = !selectedUrgency || r.urgency === selectedUrgency
     const matchesCenter = !selectedCenter || r.center_id === selectedCenter
@@ -101,8 +109,15 @@ export default async function RequestsPage({
   })
 
   const rows = filteredRequests.map((r) => ({
-    r,
-    center: (r.centers as unknown as { name?: string } | null)?.name ?? '—',
+    r: {
+      ...r,
+      item_name:
+        locale === 'en' && r.item_name_en ? r.item_name_en : r.item_name,
+    },
+    center: (() => {
+      const center = r.centers as unknown as { name?: string; name_en?: string | null } | null
+      return locale === 'en' && center?.name_en ? center.name_en : center?.name ?? '—'
+    })(),
     unit: r.unit ? unitLabel(r.unit, locale) : '',
     open: r.status === 'pending' || r.status === 'partial',
     percent: r.quantity_requested > 0 ? Math.min(100, Math.round((r.quantity_fulfilled / r.quantity_requested) * 100)) : 0,
@@ -126,21 +141,21 @@ export default async function RequestsPage({
       {/* สถิติภาพรวม */}
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className={`${panel} p-4`}>
-          <p className="text-xs text-slate-500 dark:text-slate-400">คำขอทั้งหมด</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.totalRequests}</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{totalCount}</p>
         </div>
         <div className={`${panel} p-4`}>
-          <p className="text-xs text-slate-500 dark:text-slate-400">รอการจัดสรร</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.pendingAllocation}</p>
           <p className="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">{pendingCount}</p>
         </div>
         <div className={`${panel} p-4`}>
-          <p className="text-xs text-slate-500 dark:text-slate-400">เคสด่วนมาก (เปิดอยู่)</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.urgentCases}</p>
           <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">{highUrgencyCount}</p>
         </div>
       </div>
 
       {/* ตัวกรอง */}
-      <RequestFilter centers={centersData ?? []} />
+      <RequestFilter centers={centersData ?? []} dict={dict} lang={locale} />
 
       {params.error && (
         <ErrorDialog
@@ -160,6 +175,7 @@ export default async function RequestsPage({
       ) : (
         <RequestList
           rows={rows}
+          locale={locale}
           dict={dict}
           categoryLabel={CATEGORY_LABEL}
           urgencyLabel={URGENCY_LABEL}

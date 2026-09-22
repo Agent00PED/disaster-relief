@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import type { Locale } from "@/lib/i18n/locale";
 import { CancelRequestButton, type CancelRequestButtonLabels } from "./cancel-request-dialog";
 
 interface RowData {
@@ -23,14 +24,15 @@ interface RowData {
 }
 
 // ระบุโครงสร้างของ dict ให้ชัดเจนเพื่อหลีกเลี่ยงการใช้ any และ Type Assertion (as)
-interface DictType {
-  requests?: Record<string, string>;
-  common?: Record<string, string>;
+export interface DictType {
+  requests: Record<string, string>;
+  common: Record<string, string>;
   [key: string]: unknown;
 }
 
 interface RequestListProps {
   rows: RowData[];
+  locale: Locale;
   dict: DictType;
   categoryLabel: Record<string, string>;
   urgencyLabel: Record<string, string>;
@@ -41,25 +43,32 @@ interface RequestListProps {
 
 const panel = "rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900";
 
-function formatRelativeTime(dateString: string): string {
+function formatRelativeTime(
+  dateString: string,
+  locale: Locale,
+  labels: Record<string, string> = {},
+): string {
   if (!dateString) return "";
 
   const now = new Date();
   const created = new Date(dateString);
   const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
 
-  if (diffInSeconds < 60) return "สร้างเมื่อสักครู่";
+  const formatLabel = (key: string, value?: number) =>
+    (labels[key] ?? "").replace("{n}", String(value ?? ""));
+
+  if (diffInSeconds < 60) return formatLabel("createdJustNow");
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `สร้างเมื่อ ${diffInMinutes} นาทีที่แล้ว`;
+  if (diffInMinutes < 60) return formatLabel("createdMinutesAgo", diffInMinutes);
 
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `สร้างเมื่อ ${diffInHours} ชม. ที่แล้ว`;
+  if (diffInHours < 24) return formatLabel("createdHoursAgo", diffInHours);
 
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 7) return `สร้างเมื่อ ${diffInDays} วันที่แล้ว`;
+  if (diffInDays < 7) return formatLabel("createdDaysAgo", diffInDays);
 
-  return created.toLocaleDateString("th-TH", {
+  return created.toLocaleDateString(locale === "th" ? "th-TH" : "en-US", {
     day: "numeric",
     month: "short",
   });
@@ -67,6 +76,7 @@ function formatRelativeTime(dateString: string): string {
 
 export function RequestList({
   rows,
+  locale,
   dict,
   categoryLabel,
   urgencyLabel,
@@ -75,10 +85,11 @@ export function RequestList({
   cancelLabels,
 }: RequestListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const openRows = rows.filter((row) => row.open);
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(rows.map((row) => row.r.id));
+      setSelectedIds(rows.filter((row) => row.open).map((row) => row.r.id));
     } else {
       setSelectedIds([]);
     }
@@ -90,14 +101,6 @@ export function RequestList({
     } else {
       setSelectedIds([...selectedIds, id]);
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const handleBatchAllocate = () => {
-    alert(`กำลังดำเนินการจัดสรรรายการที่เลือกจำนวน ${selectedIds.length} รายการ`);
   };
 
   const progress = (row: RowData) => (
@@ -152,32 +155,6 @@ export function RequestList({
 
   return (
     <div className="space-y-4">
-      {selectedIds.length > 0 && (
-        <div className="sticky top-4 z-10 flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3 text-white shadow-xl dark:bg-slate-800">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              เลือกอยู่ <span className="font-bold text-amber-400">{selectedIds.length}</span> รายการ
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="rounded-lg bg-slate-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-600 transition"
-            >
-              📄 พิมพ์ใบเบิกสิ่งของ
-            </button>
-            <button
-              type="button"
-              onClick={handleBatchAllocate}
-              className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-500 transition"
-            >
-              ⚡ จัดสรรพร้อมกัน
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* จอเล็ก: การ์ด */}
       <ul className="space-y-3 md:hidden">
         {rows.map((row) => {
@@ -193,6 +170,7 @@ export function RequestList({
                 <input
                   type="checkbox"
                   checked={isSelected}
+                  disabled={!row.open}
                   onChange={() => handleSelectOne(row.r.id)}
                   className="mt-1 rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
                 />
@@ -204,7 +182,7 @@ export function RequestList({
                         {row.center} · {categoryLabel[row.r.category] ?? row.r.category}
                       </p>
                       <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
-                        {formatRelativeTime(row.r.created_at)}
+                        {formatRelativeTime(row.r.created_at, locale, dict.requests)}
                       </p>
                     </div>
                     {urgencyPill(row)}
@@ -231,7 +209,7 @@ export function RequestList({
               <th className="w-10 px-4 py-2.5">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === rows.length && rows.length > 0}
+                  checked={selectedIds.length === openRows.length && openRows.length > 0}
                   onChange={handleSelectAll}
                   className="rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
                 />
@@ -262,6 +240,7 @@ export function RequestList({
                     <input
                       type="checkbox"
                       checked={isSelected}
+                      disabled={!row.open}
                       onChange={() => handleSelectOne(row.r.id)}
                       className="rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
                     />
@@ -273,7 +252,7 @@ export function RequestList({
                       {categoryLabel[row.r.category] ?? row.r.category}
                     </span>
                     <span className="mt-0.5 block text-[11px] text-slate-400 dark:text-slate-500">
-                      {formatRelativeTime(row.r.created_at)}
+                      {formatRelativeTime(row.r.created_at, locale, dict.requests)}
                     </span>
                   </td>
                   <td className="px-4 py-3">{progress(row)}</td>

@@ -1,3 +1,9 @@
+/*
+ * หน้าฟอร์มยื่นคำร้องขอความช่วยเหลือ (Public)
+ * - ผู้ขอไม่ต้อง Login (คู่กับ /pledge)
+ * - ผู้ขอเลือกศูนย์พักพิงเอง แล้ว Staff ของศูนย์นั้นจะไปตรวจต่อที่ /help-requests
+ * - อ้างอิง docs/sql/12_public_help_requests.sql
+ */
 import shared from '../login/login.module.css'
 import styles from '../pledge/pledge.module.css'
 import { createClient } from '@/lib/supabase/server'
