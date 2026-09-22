@@ -48,12 +48,38 @@
 .supplyCard .icon svg { width: 23px; height: 23px; }
 .supplyCard h3 { font-size: 14px; font-weight: 600; }
 .supplyCard p { margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--entry-muted); }
+/* การ์ดเป็นลิงก์แล้ว (กดไปหน้าบริจาคพร้อมเลือกหมวดให้) จึงต้องมี hover
+   บอกผู้ใช้ว่ากดได้ และ margin-top:auto ที่ปุ่มเพื่อให้การ์ดสูงเท่ากัน */
+.supplyCard { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.supplyCard:hover { transform: translateY(-3px); border-color: var(--edge); box-shadow: 0 10px 22px #1c3d5a14; }
+/* ต้องเจาะจงกว่า `.supplyCard p` ที่ตั้ง color เป็น --entry-muted ไว้ ไม่งั้นตัวเลขจะจืด */
+.supplyCard p.needsShortage { margin-top: 4px; font-size: 15px; font-weight: 700; color: var(--tone); }
+/* ตัวเล็กมาก จึงใช้สีเข้มกว่า --entry-muted เพื่อให้คอนทราสต์ผ่าน AA (>=4.5) */
+.needsMeta { display: grid; gap: 3px; margin-top: 2px; font-size: 12px; line-height: 1.6; color: #526d87; }
+.needsPledged { color: #2f7d5f; }
+.supplyCard h3 { color: var(--entry-ink); }
+.supplyAction { margin-top: auto; padding-top: 4px; font-size: 12px; font-weight: 600; color: var(--tone); }
+.needsEmpty { padding: 18px 4px; text-align: center; font-size: 13px; line-height: 1.7; color: var(--entry-muted); }
+/* ป้าย "อัปเดตสด" ขึ้นเฉพาะตอน subscribe realtime สำเร็จจริงเท่านั้น */
+.liveBadge, .staticBadge { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.liveBadge { color: #1d7a52; background: #d8efe5; }
+.staticBadge { color: var(--entry-muted); background: #eceff3; }
+.liveDot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: needsPulse 1.8s ease-in-out infinite; }
+@keyframes needsPulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .liveDot { animation: none; } .supplyCard { transition: none; } .supplyCard:hover { transform: none; } }
 :global(.dark) .hero { --entry-ink: #d3e5f5; --entry-muted: #b0c2d3; background: #101c2b; }
 :global(.dark) .artwork { opacity: .14; mix-blend-mode: luminosity; }
 :global(.dark) .card, :global(.dark) .supplies { background: #17293bf5; }
 :global(.dark) .supplies, :global(.dark) .supplyCard { border-color: #354759; }
 :global(.dark) .staffLink:hover { background: #20364b; }
 :global(.dark) .suppliesHeader > a { color: #9fd3ff; }
+:global(.dark) .liveBadge { color: #8fe0b8; background: #1d4438; }
+:global(.dark) .staticBadge { color: var(--entry-muted); background: #22364a; }
+/* โหมดมืด --tone เป็นสีเข้ม คอนทราสต์บนพื้น #17293b ไม่ผ่าน ใช้ --edge ที่สว่างกว่าแทน */
+:global(.dark) .supplyCard p.needsShortage, :global(.dark) .supplyAction { color: var(--edge); }
+:global(.dark) .needsMeta { color: var(--entry-muted); }
+:global(.dark) .needsPledged { color: #8fe0b8; }
+:global(.dark) .supplyCard:hover { background: #1e3449; }
 :global(.dark) .icon { background: color-mix(in srgb, var(--tone) 25%, #17293b); color: var(--edge); }
 @media (max-width: 1400px) { .motto { display: none; } }
 @media (max-width: 1000px) { .content { max-width: 800px; } .card { padding: 18px 12px 12px; } .action { padding-inline: 10px; font-size: 13px; } .card h2 { font-size: 19px; } }

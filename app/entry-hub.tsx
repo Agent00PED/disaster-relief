@@ -3,6 +3,7 @@ import type { Dictionary } from '@/lib/i18n/dictionaries'
 import { BrandMark } from './brand-mark'
 import styles from './entry-hub.module.css'
 import controls from './public-controls.module.css'
+import { EntryNeeds, type NeedRow } from './entry-needs'
 
 type IconName = 'staff' | 'home' | 'heart' | 'help' | 'shield' | 'people' | 'box'
 
@@ -20,17 +21,12 @@ function EntryIcon({ name }: { name: IconName }) {
   )
 }
 
-export function EntryHub({ dict }: { dict: Dictionary }) {
+export function EntryHub({ dict, needs }: { dict: Dictionary; needs: NeedRow[] }) {
   const copy = dict.entryHub
   const choices = [
     { href: '/register', icon: 'people', tone: 'green', label: copy.volunteerLabel, desc: copy.volunteerDesc, action: copy.volunteerAction },
     { href: '/help-request', icon: 'heart', tone: 'red', label: copy.helpLabel, desc: copy.helpDesc, action: copy.helpAction },
     { href: '/pledge', icon: 'box', tone: 'blue', label: copy.donateLabel, desc: copy.donateDesc, action: copy.donateAction },
-  ] as const
-  const supplies = [
-    { category: 'water', label: dict.form.categoryWater, desc: copy.waterSuggestion, tone: 'blue' },
-    { category: 'hygiene', label: dict.form.categoryHygiene, desc: copy.hygieneSuggestion, tone: 'red' },
-    { category: 'food', label: dict.form.categoryFood, desc: copy.foodSuggestion, tone: 'green' },
   ] as const
   return <main className={styles.hero}>
     <div className={styles.artwork} aria-hidden="true" />
@@ -59,18 +55,7 @@ export function EntryHub({ dict }: { dict: Dictionary }) {
           <path d="M3 22C41 8 119 1 177 3C126 5 49 13 3 22Z" fill="currentColor" />
         </svg>
       </p>
-      <section className={styles.supplies} aria-labelledby="supplies-title">
-        <header className={styles.suppliesHeader}>
-          <span className={styles.smallIcon}><EntryIcon name="box" /></span>
-          <div><h2 id="supplies-title">{copy.suppliesTitle}</h2><p>{copy.suppliesSubtitle}</p></div>
-          <Link href="/pledge">{copy.donateAction} <span aria-hidden="true">&rarr;</span></Link>
-        </header>
-        <div className={styles.supplyGrid}>
-          {supplies.map(item => <article className={styles.supplyCard} key={item.category} data-tone={item.tone}>
-            <div className={styles.supplyHeading}><span className={styles.icon}><EntryIcon name="box" /></span><div><h3>{item.label}</h3><p>{item.desc}</p></div></div>
-          </article>)}
-        </div>
-      </section>
+      <EntryNeeds dict={dict} initialNeeds={needs} />
     </div>
   </main>
 }
