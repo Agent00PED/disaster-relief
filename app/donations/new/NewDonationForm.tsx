@@ -117,7 +117,6 @@ const createEmptyItem = (
 })
 
 export default function NewDonationForm({
-  dict,
   locale,
   error,
   createDonationAction,
