@@ -16,6 +16,7 @@ type DonationInsert = {
   quantity_received: number
   quantity_remaining: number
   expiry_date: string | null
+  received_date: string
 }
 
 const VALID_CATEGORIES = [
@@ -28,19 +29,86 @@ const VALID_CATEGORIES = [
 ] as const
 
 // =====================================================
+// Helper: อ่านค่าจาก FormData
+// รองรับทั้ง
+// item_name_0 / item_name_1 / ...
+// และ
+// item_name / item_name / ...
+// =====================================================
+
+function getFormValues(
+  formData: FormData,
+  fieldName: string,
+): string[] {
+  const indexedValues: string[] = []
+
+  let index = 0
+
+  while (
+    formData.has(`${fieldName}_${index}`)
+  ) {
+    const value = String(
+      formData.get(`${fieldName}_${index}`) || '',
+    ).trim()
+
+    indexedValues.push(value)
+    index++
+  }
+
+  // ถ้ามีข้อมูลแบบ indexed ให้ใช้แบบ indexed
+  if (indexedValues.length > 0) {
+    return indexedValues
+  }
+
+  // รองรับกรณี form ส่งชื่อ field ซ้ำกัน
+  return formData
+    .getAll(fieldName)
+    .map((value) => String(value).trim())
+}
+
+// =====================================================
+// Helper: อ่านค่า item ตาม index
+// =====================================================
+
+function getItemValue(
+  formData: FormData,
+  fieldName: string,
+  index: number,
+): string {
+  const indexedField = `${fieldName}_${index}`
+
+  if (formData.has(indexedField)) {
+    return String(
+      formData.get(indexedField) || '',
+    ).trim()
+  }
+
+  const values = formData
+    .getAll(fieldName)
+    .map((value) => String(value).trim())
+
+  return values[index] ?? ''
+}
+
+// =====================================================
 // สร้างรายการบริจาค
 // =====================================================
-export async function createDonation(formData: FormData) {
+
+export async function createDonation(
+  formData: FormData,
+) {
   const supabase = await createClient()
 
-  // =====================================================
+  // ===================================================
   // ตรวจสอบสิทธิ์
-  // =====================================================
+  // ===================================================
+
   await requireStaffOrAdmin(supabase)
 
-  // =====================================================
+  // ===================================================
   // ตรวจสอบผู้ใช้ที่ล็อกอิน
-  // =====================================================
+  // ===================================================
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -49,9 +117,10 @@ export async function createDonation(formData: FormData) {
     redirect('/login')
   }
 
-  // =====================================================
+  // ===================================================
   // ดึง center_id จาก profile
-  // =====================================================
+  // ===================================================
+
   const { data: profile, error: profileError } =
     await supabase
       .from('profiles')
@@ -59,13 +128,38 @@ export async function createDonation(formData: FormData) {
       .eq('id', user.id)
       .single()
 
-  if (profileError || !profile?.center_id) {
-    redirect('/donations/new?error=no_center_assigned')
+  if (
+    profileError ||
+    !profile?.center_id
+  ) {
+    redirect(
+      '/donations/new?error=no_center_assigned',
+    )
   }
 
-  // =====================================================
+  // ===================================================
+  // วันที่รับบริจาค
+  // ผู้ใช้เลือกจากช่อง received_date
+  // ===================================================
+
+  const receivedDate = String(
+    formData.get('received_date') || '',
+  ).trim()
+
+  // ===================================================
+  // ตรวจสอบวันที่รับบริจาค
+  // ===================================================
+
+  if (!receivedDate) {
+    redirect(
+      '/donations/new?error=received_date_required',
+    )
+  }
+
+  // ===================================================
   // ข้อมูลผู้บริจาค
-  // =====================================================
+  // ===================================================
+
   const donorName = String(
     formData.get('donor_name') || '',
   ).trim()
@@ -76,129 +170,230 @@ export async function createDonation(formData: FormData) {
       '',
   ).trim()
 
-  const donorId = donorName
-    ? await findOrCreateDonor(supabase, {
-        name: donorName,
-        phone: donorPhone,
-      })
-    : null
+  let donorId: string | null = null
 
-  // =====================================================
-  // เตรียมรายการบริจาค
-  // =====================================================
+  if (donorName) {
+    try {
+      donorId = await findOrCreateDonor(
+        supabase,
+        {
+          name: donorName,
+          phone: donorPhone,
+        },
+      )
+    } catch (error) {
+      console.error(
+        'Error creating/finding donor:',
+        error,
+      )
+
+      redirect(
+        '/donations/new?error=donor_creation_failed',
+      )
+    }
+  }
+
+  // ===================================================
+  // เตรียมข้อมูลรายการบริจาค
+  // ===================================================
+
   const itemsToInsert: DonationInsert[] = []
 
-  let index = 0
+  // ตรวจว่ามีข้อมูลแบบ indexed หรือไม่
+  const indexedItemNames = getFormValues(
+    formData,
+    'item_name',
+  )
 
-  /*
-    NewDonationForm ส่งข้อมูลมาในรูปแบบ:
+  const indexedCategories = getFormValues(
+    formData,
+    'category',
+  )
 
-    item_name_0
-    category_0
-    unit_0
-    quantity_0
-    expiry_date_0
+  const indexedUnits = getFormValues(
+    formData,
+    'unit',
+  )
 
-    item_name_1
-    category_1
-    unit_1
-    quantity_1
-    expiry_date_1
+  const indexedQuantities = getFormValues(
+    formData,
+    'quantity',
+  )
 
-    ดังนั้นไม่ต้องใช้ donation_type_x
-  */
+  const indexedExpiryDates = getFormValues(
+    formData,
+    'expiry_date',
+  )
 
-  while (
-    formData.has(`item_name_${index}`) ||
-    formData.has(`category_${index}`)
+  const itemCount = Math.max(
+    indexedItemNames.length,
+    indexedCategories.length,
+    indexedUnits.length,
+    indexedQuantities.length,
+    indexedExpiryDates.length,
+  )
+
+  // ===================================================
+  // วนสร้างรายการ
+  // ===================================================
+
+  for (
+    let index = 0;
+    index < itemCount;
+    index++
   ) {
-    // ===================================================
+    // -------------------------------------------------
     // ชื่อรายการ
-    // ===================================================
-    const itemName = String(
-      formData.get(`item_name_${index}`) || '',
-    ).trim()
+    // -------------------------------------------------
 
-    // ===================================================
-    // หมวดหมู่
-    // ===================================================
-    const category = String(
-      formData.get(`category_${index}`) || '',
-    ).trim()
-
-    // ===================================================
-    // หน่วย
-    // ===================================================
-    const unit = String(
-      formData.get(`unit_${index}`) || '',
-    ).trim()
-
-    // ===================================================
-    // จำนวน
-    // ===================================================
-    const quantity = Number(
-      formData.get(`quantity_${index}`) || 0,
+    const itemName = getItemValue(
+      formData,
+      'item_name',
+      index,
     )
 
-    // ===================================================
-    // วันหมดอายุ
-    // ===================================================
-    const expiryDate =
-      String(
-        formData.get(`expiry_date_${index}`) || '',
-      ).trim() || null
+    // -------------------------------------------------
+    // หมวดหมู่
+    // -------------------------------------------------
 
-    // ===================================================
+    const category = getItemValue(
+      formData,
+      'category',
+      index,
+    )
+
+    // -------------------------------------------------
+    // หน่วย
+    // -------------------------------------------------
+
+    const unit = getItemValue(
+      formData,
+      'unit',
+      index,
+    )
+
+    // -------------------------------------------------
+    // จำนวน
+    // -------------------------------------------------
+
+    const quantityRaw = getItemValue(
+      formData,
+      'quantity',
+      index,
+    )
+
+    const quantity = Number(
+      quantityRaw,
+    )
+
+    // -------------------------------------------------
+    // วันหมดอายุ
+    //
+    // input type="date" จะส่ง:
+    // YYYY-MM-DD
+    //
+    // ถ้าไม่ได้เลือก จะเป็นค่าว่าง
+    // และจะถูกเก็บเป็น null
+    // -------------------------------------------------
+
+    const expiryDateRaw =
+      getItemValue(
+        formData,
+        'expiry_date',
+        index,
+      )
+
+    const expiryDate =
+      expiryDateRaw !== ''
+        ? expiryDateRaw
+        : null
+
+    // -------------------------------------------------
     // ตรวจสอบ category
-    // ===================================================
+    // -------------------------------------------------
+
     const isValidCategory =
       VALID_CATEGORIES.includes(
         category as (typeof VALID_CATEGORIES)[number],
       )
 
-    // ===================================================
+    // -------------------------------------------------
     // ตรวจสอบข้อมูล
-    // ===================================================
+    // -------------------------------------------------
+
     if (
-      itemName &&
-      isValidCategory &&
-      unit &&
-      Number.isFinite(quantity) &&
-      quantity > 0
+      !itemName ||
+      !isValidCategory ||
+      !unit ||
+      !Number.isFinite(quantity) ||
+      quantity <= 0
     ) {
-      itemsToInsert.push({
-        center_id: profile.center_id,
-        received_by: user.id,
+      console.error(
+        'Invalid donation item:',
+        {
+          index,
+          itemName,
+          category,
+          unit,
+          quantityRaw,
+          quantity,
+          expiryDate,
+          receivedDate,
+        },
+      )
 
-        donor_id: donorId,
-
-        item_name: itemName,
-        category: category,
-
-        unit: unit,
-
-        quantity_received: quantity,
-        quantity_remaining: quantity,
-
-        expiry_date: expiryDate,
-      })
+      continue
     }
 
-    index++
+    // -------------------------------------------------
+    // เพิ่มรายการ
+    // -------------------------------------------------
+
+    itemsToInsert.push({
+      center_id: profile.center_id,
+      received_by: user.id,
+
+      donor_id: donorId,
+
+      item_name: itemName,
+      category,
+      unit,
+
+      quantity_received: quantity,
+      quantity_remaining: quantity,
+
+      expiry_date: expiryDate,
+
+      // วันที่ที่ผู้ใช้เลือกจากฟอร์ม
+      received_date: receivedDate,
+    })
   }
 
-  // =====================================================
-  // ไม่มีข้อมูลที่ถูกต้อง
-  // =====================================================
-  if (itemsToInsert.length === 0) {
+  // ===================================================
+  // ไม่มีรายการที่ถูกต้อง
+  // ===================================================
+
+  if (
+    itemsToInsert.length === 0
+  ) {
     redirect(
       '/donations/new?error=invalid_donation_data',
     )
   }
 
-  // =====================================================
+  // ===================================================
+  // Debug ก่อนบันทึก
+  // ===================================================
+
+  console.log(
+    'Donation items to insert:',
+    itemsToInsert,
+  )
+
+  // ===================================================
   // บันทึกลง donations
-  // =====================================================
+  // ===================================================
+
   const { error } = await supabase
     .from('donations')
     .insert(itemsToInsert)
@@ -206,22 +401,28 @@ export async function createDonation(formData: FormData) {
   if (error) {
     console.error(
       'Error creating donation:',
-      error.message,
+      error,
     )
 
     redirect(
       '/donations/new?error=' +
         encodeURIComponent(
-          'ไม่สามารถบันทึกรายการบริจาคได้ กรุณาตรวจสอบข้อมูลอีกครั้ง',
+          `ไม่สามารถบันทึกรายการบริจาคได้: ${error.message}`,
         ),
     )
   }
 
-  // =====================================================
-  // อัปเดตหน้า
-  // =====================================================
+  // ===================================================
+  // อัปเดต Cache
+  // ===================================================
+
   revalidatePath('/donations')
   revalidatePath('/inventory')
+  revalidatePath('/dashboard')
+
+  // ===================================================
+  // กลับไปหน้ารายการบริจาค
+  // ===================================================
 
   redirect('/donations')
 }
@@ -229,10 +430,17 @@ export async function createDonation(formData: FormData) {
 // =====================================================
 // ลบรายการบริจาค
 // =====================================================
-export async function deleteDonation(formData: FormData) {
+
+export async function deleteDonation(
+  formData: FormData,
+) {
   const supabase = await createClient()
 
   await requireStaffOrAdmin(supabase)
+
+  // ===================================================
+  // ID
+  // ===================================================
 
   const id = String(
     formData.get('id') || '',
@@ -242,8 +450,13 @@ export async function deleteDonation(formData: FormData) {
     console.error(
       'Error deleting donation: donation id is missing',
     )
+
     return
   }
+
+  // ===================================================
+  // ลบข้อมูล
+  // ===================================================
 
   const { error } = await supabase
     .from('donations')
@@ -253,14 +466,23 @@ export async function deleteDonation(formData: FormData) {
   if (error) {
     console.error(
       'Error deleting donation:',
-      error.message,
+      error,
     )
 
     return
   }
 
+  // ===================================================
+  // อัปเดต Cache
+  // ===================================================
+
   revalidatePath('/donations')
   revalidatePath('/inventory')
+  revalidatePath('/dashboard')
+
+  // ===================================================
+  // กลับหน้ารายการ
+  // ===================================================
 
   redirect('/donations')
 }
@@ -268,54 +490,111 @@ export async function deleteDonation(formData: FormData) {
 // =====================================================
 // แก้ไขรายการบริจาค
 // =====================================================
-export async function updateDonation(formData: FormData) {
+
+export async function updateDonation(
+  formData: FormData,
+) {
   const supabase = await createClient()
 
   await requireStaffOrAdmin(supabase)
+
+  // ===================================================
+  // ID
+  // ===================================================
 
   const id = String(
     formData.get('id') || '',
   ).trim()
 
+  // ===================================================
+  // ชื่อรายการ
+  // ===================================================
+
   const itemName = String(
     formData.get('item_name') || '',
   ).trim()
+
+  // ===================================================
+  // หมวดหมู่
+  // ===================================================
 
   const category = String(
     formData.get('category') || '',
   ).trim()
 
+  // ===================================================
+  // หน่วย
+  // ===================================================
+
   const unit = String(
     formData.get('unit') || '',
   ).trim()
 
+  // ===================================================
+  // จำนวนที่รับเข้า
+  // ===================================================
+
   const quantityReceived = Number(
-    formData.get('quantity_received'),
+    formData.get(
+      'quantity_received',
+    ),
   )
+
+  // ===================================================
+  // จำนวนคงเหลือ
+  // ===================================================
 
   const quantityRemaining = Number(
-    formData.get('quantity_remaining'),
+    formData.get(
+      'quantity_remaining',
+    ),
   )
+
+  // ===================================================
+  // วันหมดอายุ
+  //
+  // input type="date"
+  // จะได้ YYYY-MM-DD
+  // ===================================================
+
+  const expiryDateRaw = String(
+    formData.get('expiry_date') ||
+      '',
+  ).trim()
 
   const expiryDate =
-    String(
-      formData.get('expiry_date') || '',
-    ).trim() || null
+    expiryDateRaw !== ''
+      ? expiryDateRaw
+      : null
 
-  const isValidCategory = VALID_CATEGORIES.includes(
-    category as (typeof VALID_CATEGORIES)[number],
-  )
+  // ===================================================
+  // ตรวจสอบ category
+  // ===================================================
+
+  const isValidCategory =
+    VALID_CATEGORIES.includes(
+      category as (typeof VALID_CATEGORIES)[number],
+    )
+
+  // ===================================================
+  // ตรวจสอบข้อมูล
+  // ===================================================
 
   if (
     !id ||
     !itemName ||
     !isValidCategory ||
     !unit ||
-    !Number.isInteger(quantityReceived) ||
+    !Number.isInteger(
+      quantityReceived,
+    ) ||
     quantityReceived < 1 ||
-    !Number.isInteger(quantityRemaining) ||
+    !Number.isInteger(
+      quantityRemaining,
+    ) ||
     quantityRemaining < 0 ||
-    quantityRemaining > quantityReceived
+    quantityRemaining >
+      quantityReceived
   ) {
     redirect(
       `/donations/${encodeURIComponent(
@@ -324,22 +603,32 @@ export async function updateDonation(formData: FormData) {
     )
   }
 
+  // ===================================================
+  // อัปเดตข้อมูล
+  // ===================================================
+
   const { error } = await supabase
     .from('donations')
     .update({
       item_name: itemName,
       category,
       unit,
-      quantity_received: quantityReceived,
-      quantity_remaining: quantityRemaining,
+      quantity_received:
+        quantityReceived,
+      quantity_remaining:
+        quantityRemaining,
       expiry_date: expiryDate,
     })
     .eq('id', id)
 
+  // ===================================================
+  // ตรวจสอบ Error
+  // ===================================================
+
   if (error) {
     console.error(
       'Error updating donation:',
-      error.message,
+      error,
     )
 
     redirect(
@@ -349,9 +638,20 @@ export async function updateDonation(formData: FormData) {
     )
   }
 
+  // ===================================================
+  // อัปเดต Cache
+  // ===================================================
+
   revalidatePath('/donations')
   revalidatePath('/inventory')
-  revalidatePath(`/donations/${id}/receipt`)
+  revalidatePath('/dashboard')
+  revalidatePath(
+    `/donations/${id}/receipt`,
+  )
+
+  // ===================================================
+  // กลับหน้ารายการ
+  // ===================================================
 
   redirect('/donations')
 }

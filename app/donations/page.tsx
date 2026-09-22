@@ -15,56 +15,67 @@ const CATEGORIES_CONFIG = [
     label: 'น้ำ',
     icon: '💧',
     matchKeys: ['water', 'น้ำ'],
-    color: 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
+    color:
+      'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800',
   },
   {
     id: 'milk',
     label: 'นม',
     icon: '🍼',
     matchKeys: ['milk', 'นม'],
-    color: 'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800',
+    color:
+      'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-950 dark:text-pink-300 dark:border-pink-800',
   },
   {
     id: 'rice',
     label: 'ข้าวสาร',
     icon: '🌾',
     matchKeys: ['rice', 'ข้าวสาร'],
-    color: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
+    color:
+      'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800',
   },
   {
     id: 'food',
     label: 'อาหารแห้ง',
     icon: '📦',
     matchKeys: ['food', 'dry_food', 'อาหารแห้ง'],
-    color: 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800',
+    color:
+      'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-950 dark:text-orange-300 dark:border-orange-800',
   },
   {
     id: 'supplies',
     label: 'ของใช้',
     icon: '👕',
     matchKeys: ['clothing', 'hygiene', 'supplies', 'ของใช้'],
-    color: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
+    color:
+      'bg-emerald-100 text-emerald-800 border-emerald-950 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800',
   },
   {
     id: 'medicine',
     label: 'ยา',
     icon: '💊',
     matchKeys: ['medicine', 'ยา'],
-    color: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800',
+    color:
+      'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800',
   },
   {
     id: 'other',
     label: 'อื่นๆ / ไม่ระบุประเภท',
     icon: '🏷️',
     matchKeys: [],
-    color: 'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+    color:
+      'bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
   },
 ]
 
 // ฟังก์ชันระบุ ID ของหมวดหมู่
 function getCategoryId(categoryKey?: string): string {
   const key = categoryKey?.toLowerCase().trim() || ''
-  const found = CATEGORIES_CONFIG.find((cat) => cat.matchKeys.includes(key))
+
+  const found = CATEGORIES_CONFIG.find((cat) =>
+    cat.matchKeys.includes(key)
+  )
+
   return found ? found.id : 'other'
 }
 
@@ -76,10 +87,15 @@ export default async function DonationsPage() {
   const locale = await getLocale()
   const dict = getDictionary(locale)
 
+  // =====================================================
+  // ดึงข้อมูลบริจาค
+  // ใช้ received_date แทน received_at
+  // =====================================================
+
   const { data: donations, error } = await supabase
     .from('donations')
     .select(
-      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_at, donors(name)'
+      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_date, donors(name)'
     )
     .order('expiry_date', {
       ascending: true,
@@ -92,13 +108,16 @@ export default async function DonationsPage() {
 
   // จัดกลุ่มข้อมูลตามประเภทสิ่งของ
   type DonationItem = NonNullable<typeof donations>[number]
+
   const groupedDonations: Record<string, DonationItem[]> = {}
 
   donations?.forEach((item) => {
     const catId = getCategoryId(item.category)
+
     if (!groupedDonations[catId]) {
       groupedDonations[catId] = []
     }
+
     groupedDonations[catId].push(item)
   })
 
@@ -176,6 +195,7 @@ export default async function DonationsPage() {
               <option value="">
                 {dict.form.category} ({dict.common.all})
               </option>
+
               <option value="water">💧 น้ำ</option>
               <option value="milk">🍼 นม</option>
               <option value="rice">🌾 ข้าวสาร</option>
@@ -195,7 +215,9 @@ export default async function DonationsPage() {
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
 
-            <span className="text-slate-400 dark:text-slate-500">-</span>
+            <span className="text-slate-400 dark:text-slate-500">
+              -
+            </span>
 
             <input
               type="text"
@@ -257,80 +279,145 @@ export default async function DonationsPage() {
               <section key={cat.id} className="space-y-3">
                 {/* หัวข้อหมวดหมู่ + ไอคอน */}
                 <div className="flex items-center gap-2">
-                  <span className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-bold shadow-sm ${cat.color}`}>
-                    <span className="text-base">{cat.icon}</span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-bold shadow-sm ${cat.color}`}
+                  >
+                    <span className="text-base">
+                      {cat.icon}
+                    </span>
+
                     <span>{cat.label}</span>
                   </span>
+
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     ({items.length} รายการ)
                   </span>
                 </div>
 
-                {/* ตารางของหมวดหมู่นี้ */}
+                {/* ตารางของหมวดหมู่ */}
                 <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                   <table className="w-full min-w-[1050px] text-left text-xs text-slate-600 dark:text-slate-300">
                     <thead className="border-b border-slate-200 bg-slate-50 font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
                       <tr>
-                        <th className="p-3">{dict.table.index}</th>
-                        <th className="p-3">{dict.table.receivedDate}</th>
-                        <th className="p-3">{dict.table.donor}</th>
+                        <th className="p-3">
+                          {dict.table.index}
+                        </th>
 
-                        {/* แตก 3 คอลัมน์ ชื่อ/ยี่ห้อ/ขนาด */}
-                        <th className="p-3">{dict.table.itemName}</th>
-                        <th className="p-3">ยี่ห้อ / รายละเอียด</th>
-                        <th className="p-3">ขนาด / ปริมาณ</th>
+                        <th className="p-3">
+                          {dict.table.receivedDate}
+                        </th>
 
-                        <th className="p-3">{dict.table.receivedQty}</th>
-                        <th className="p-3">{dict.donationNew.unit}</th>
-                        <th className="p-3">{dict.table.expiryDate}</th>
-                        <th className="p-3">{dict.table.status}</th>
-                        <th className="p-3 text-center">{dict.table.actions}</th>
+                        <th className="p-3">
+                          {dict.table.donor}
+                        </th>
+
+                        <th className="p-3">
+                          {dict.table.itemName}
+                        </th>
+
+                        <th className="p-3">
+                          ยี่ห้อ / รายละเอียด
+                        </th>
+
+                        <th className="p-3">
+                          ขนาด / ปริมาณ
+                        </th>
+
+                        <th className="p-3">
+                          {dict.table.receivedQty}
+                        </th>
+
+                        <th className="p-3">
+                          {dict.donationNew.unit}
+                        </th>
+
+                        <th className="p-3">
+                          {dict.table.expiryDate}
+                        </th>
+
+                        <th className="p-3">
+                          {dict.table.status}
+                        </th>
+
+                        <th className="p-3 text-center">
+                          {dict.table.actions}
+                        </th>
                       </tr>
                     </thead>
 
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {items.map((item, index) => {
-                        const donor = item.donors as unknown as
-                          | { name?: string }
-                          | null
+                        const donor =
+                          item.donors as unknown as
+                            | { name?: string }
+                            | null
 
                         // ตัดคำจาก item_name โดยใช้ ' - '
-                        const parts = (item.item_name || '').split(' - ')
-                        const itemName = parts[0]?.trim() || '—'
-                        const brand = parts[1]?.trim() || '—'
-                        const size = parts[2]?.trim() || '—'
+                        const parts = (
+                          item.item_name || ''
+                        ).split(' - ')
+
+                        const itemName =
+                          parts[0]?.trim() || '—'
+
+                        const brand =
+                          parts[1]?.trim() || '—'
+
+                        const size =
+                          parts[2]?.trim() || '—'
 
                         return (
                           <tr
                             key={item.id}
                             className="hover:bg-slate-50 dark:hover:bg-slate-800/40"
                           >
-                            <td className="p-3">{index + 1}</td>
-
                             <td className="p-3">
-                              {item.received_at
-                                ? new Date(item.received_at).toLocaleDateString(
+                              {index + 1}
+                            </td>
+
+                            {/* =================================================
+                                วันที่รับบริจาค
+                                ใช้ received_date ที่ผู้ใช้เลือก
+                            ================================================= */}
+                            <td className="p-3">
+                              {item.received_date
+                                ? new Date(
+                                    `${item.received_date}T00:00:00`
+                                  ).toLocaleDateString(
                                     locale
                                   )
                                 : '—'}
                             </td>
 
                             <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
-                              {donor?.name ?? dict.table.anonymousDonor}
+                              {donor?.name ??
+                                dict.table
+                                  .anonymousDonor}
                             </td>
 
-                            {/* แสดง 3 คอลัมน์ */}
                             <td className="p-3 font-medium text-slate-900 dark:text-slate-100">
                               {itemName}
                             </td>
-                            <td className="p-3">{brand}</td>
-                            <td className="p-3">{size}</td>
 
-                            <td className="p-3">{item.quantity_received}</td>
+                            <td className="p-3">
+                              {brand}
+                            </td>
 
-                            <td className="p-3">{item.unit}</td>
+                            <td className="p-3">
+                              {size}
+                            </td>
 
-                            <td className="p-3">{item.expiry_date ?? '—'}</td>
+                            <td className="p-3">
+                              {item.quantity_received}
+                            </td>
+
+                            <td className="p-3">
+                              {item.unit}
+                            </td>
+
+                            <td className="p-3">
+                              {item.expiry_date ?? '—'}
+                            </td>
 
                             <td className="p-3">
                               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
@@ -340,6 +427,7 @@ export default async function DonationsPage() {
 
                             <td className="p-3">
                               <div className="flex items-center justify-center gap-2">
+                                {/* ใบรับของ → หน้าใบรับของ */}
                                 <Link
                                   href={`/donations/${item.id}/receipt`}
                                   className="text-sky-600 underline hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
@@ -347,6 +435,7 @@ export default async function DonationsPage() {
                                   {dict.table.receiptLink}
                                 </Link>
 
+                                {/* แก้ไข */}
                                 <Link
                                   href={`/donations/${item.id}/edit`}
                                   className="text-slate-600 underline hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
@@ -354,7 +443,12 @@ export default async function DonationsPage() {
                                   {dict.common.edit}
                                 </Link>
 
-                                <form action={deleteDonation}>
+                                {/* ลบ */}
+                                <form
+                                  action={
+                                    deleteDonation
+                                  }
+                                >
                                   <input
                                     type="hidden"
                                     name="id"
