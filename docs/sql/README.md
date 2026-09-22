@@ -28,6 +28,7 @@
 | 26 | `26_standard_units.sql` | (ไม่บังคับ) ปรับหน่วยของสิ่งของที่บันทึกไว้แล้วให้เป็นคำมาตรฐานชุดเดียวกัน เช่น `แพ็ก`/`pack` → `แพ็ค`, `กก.` → `กิโลกรัม` แก้ปัญหาจัดสรรไม่ผ่านเพราะ `F5:unit_mismatch` — รันส่วน PREVIEW ดูก่อน |
 | 27 | `27_profile_phone.sql` | เบอร์ติดต่อของผู้ใช้ (`profiles.phone`) — หน้าอาสาสมัครแสดงเบอร์เจ้าหน้าที่ของศูนย์ตัวเอง, ฟอร์มสมัครเก็บเบอร์ผ่าน trigger, admin แก้ได้ที่ `/admin/centers` · ไม่ต้องเพิ่ม RLS เพราะ `profiles_select` เปิดให้คนศูนย์เดียวกันอ่านอยู่แล้ว |
 | 28 | `28_volunteer_profile.sql` | ข้อมูลอาสาสมัครเพิ่มเติม — `first_name`/`last_name`/`birth_year`/`id_photo_path` ใน `profiles`, trigger เก็บให้ตอนสมัคร, Storage bucket `volunteer-ids` (private 5MB เฉพาะรูป) + policy ผูก path กับ `auth.uid()` · รันหลัง `27` |
+| 29 | `29_missing_columns.sql` | เขียนย้อนหลังให้คอลัมน์ที่ถูกเพิ่มลง Supabase ตรง ๆ โดยไม่มีไฟล์ migration — `centers.name_en`, `requests.item_name_en`, `donations.received_date` · ไม่เปลี่ยนข้อมูลเดิม มีไว้ให้ฐานข้อมูลที่สร้างใหม่โครงสร้างตรงกับของจริง |
 
 หลังรันครบ 1–6 แล้ว:
 
