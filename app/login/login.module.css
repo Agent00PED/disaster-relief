@@ -34,6 +34,11 @@
 .form input, .form select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #cedbe5; border-radius: 8px; background: #fff9; color: var(--ink); font-size: 14px; outline: none; }
 .form input::placeholder { color: #75899c; }
 .form input:focus, .form select:focus { border-color: #487a9c; box-shadow: 0 0 0 3px #487a9c20; }
+/* คำอธิบายใต้ช่องกรอก เช่น เหตุผลที่ขอเบอร์โทรตอนสมัคร */
+.hint { margin-top: 6px; font-size: 12px; line-height: 1.6; color: var(--muted); }
+/* ชื่อกับนามสกุลอยู่บรรทัดเดียวกันบนจอกว้าง จอแคบเรียงลงมา */
+.nameRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 420px) { .nameRow { grid-template-columns: 1fr; } }
 .passwordField { position: relative; }
 .passwordField input { padding-right: 48px; }
 .reveal { position: absolute; inset: 0 0 0 auto; width: 44px; display: grid; place-items: center; color: var(--muted); border-radius: 8px; cursor: pointer; }
