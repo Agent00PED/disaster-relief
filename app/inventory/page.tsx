@@ -51,7 +51,7 @@ export default async function InventoryPage() {
     if (locale === 'th') return word;
     if (count <= 1) return word;
     if (word === 'box') return 'boxes'; 
-    if (word.endsWith('s')) return word; // <--- เพิ่มตัวดัก ป้องกัน s ซ้อน (itemss)
+    if (word.endsWith('s')) return word; 
     return `${word}s`;
   }
 
@@ -152,7 +152,6 @@ export default async function InventoryPage() {
     
     const primaryInStock = unitGroups[primaryUnit] || 0
 
-    // ประกาศ Map ตรงนี้เพื่อความชัวร์ 100% ว่าจะอ่านค่าได้บน Server
     const unitThToEnMap: Record<string, string> = {
       'ชุด': 'set', 'ขวด': 'bottle', 'กระป๋อง': 'can', 
       'ถุง': 'bag', 'แพ็ค': 'pack', 'ชิ้น': 'piece', 
@@ -163,10 +162,10 @@ export default async function InventoryPage() {
     Object.entries(unitGroups).forEach(([u, qty]) => {
       if (u !== primaryUnit) {
         const translatedU = locale === 'th' ? u : (unitThToEnMap[u] ?? u)
-        otherUnitsArr.push(`+${qty} ${renderPlural(qty, translatedU)}`)
+        otherUnitsArr.push(`${qty} ${renderPlural(qty, translatedU)}`)
       }
     })
-    const otherUnitsStr = otherUnitsArr.length > 0 ? ` (${otherUnitsArr.join(', ')})` : ''
+    const otherUnitsStr = otherUnitsArr.length > 0 ? `, ${otherUnitsArr.join(', ')}` : ''
 
     const translatedPrimaryUnit = locale === 'th' ? primaryUnit : (unitThToEnMap[primaryUnit] ?? primaryUnit)
     
@@ -336,7 +335,8 @@ export default async function InventoryPage() {
                         {row.isReady ? (
                           <>
                             <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
-                              ✅ {dict.inventory.readyToAllocate} ({row.inStock} {renderPlural(row.inStock, row.unit)}) <span className="text-emerald-600/70">{row.otherUnitsStr}</span>
+                              ✅ {dict.inventory.readyToAllocate} ({row.inStock} {renderPlural(row.inStock, row.unit)}
+                              <span className="text-emerald-600/80 dark:text-emerald-400/80">{row.otherUnitsStr}</span>)
                             </span>
                             <Link href="/allocations" className="inline-flex items-center justify-center rounded-md bg-brand px-3 py-1 text-xs font-medium text-white shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1 dark:focus:ring-offset-slate-900 transition-colors">
                               {dict.inventory.allocateBtn}
@@ -344,7 +344,10 @@ export default async function InventoryPage() {
                           </>
                         ) : (
                           <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-600/10 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20">
-                            ❌ {dict.inventory.missingMore} {row.missing} {renderPlural(row.missing, row.unit)} <span className="ml-1 font-normal text-red-500/70">({dict.inventory.alreadyHave} {row.inStock}){row.otherUnitsStr}</span>
+                            ❌ {dict.inventory.missingMore} {row.missing} {renderPlural(row.missing, row.unit)}{' '}
+                            <span className="ml-1 font-normal text-red-600/80 dark:text-red-400/80">
+                              ({dict.inventory.alreadyHave} {row.inStock} {renderPlural(row.inStock, row.unit)}{row.otherUnitsStr})
+                            </span>
                           </span>
                         )}
                       </div>
@@ -354,7 +357,8 @@ export default async function InventoryPage() {
                       <div className="flex h-full w-full transition-all">
                         {stockPct > 0 && (
                           <div 
-                            className={`h-full ${row.isReady ? 'bg-emerald-500' : 'bg-indigo-500'} hover:brightness-110`} 
+                            // เปลี่ยนสีหลอดตรงนี้ครับ
+                            className={`h-full ${row.isReady ? 'bg-emerald-500' : 'bg-amber-500'} hover:brightness-110`} 
                             style={{ width: `${stockPct}%` }}
                             title={`${dict.inventory.alreadyHave}: ${Math.min(row.inStock, row.shortage)} ${renderPlural(Math.min(row.inStock, row.shortage), row.unit)}`}
                           />
