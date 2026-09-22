@@ -2,12 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
-
-export const UNIT_TH_TO_EN_MAP: Record<string, string> = {
-  'ชุด': 'set', 'ขวด': 'bottle', 'กระป๋อง': 'can', 
-  'ถุง': 'bag', 'แพ็ค': 'pack', 'ชิ้น': 'piece', 
-  'กล่อง': 'box', 'ลัง': 'crate', 'ผืน': 'piece', 'ห่อ': 'packet'
-}
+import { unitLabel } from '@/lib/units' 
 
 type StockRow = {
   center_id: string
@@ -25,7 +20,7 @@ type Props = {
   centers: { id: string; name: string }[]
   categoryLabels: Record<string, string>
   dict: Dictionary
-  locale: string 
+  locale: 'th' | 'en'
 }
 
 function daysUntil(dateStr: string) {
@@ -46,14 +41,6 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
   const centerName = new Map(centers.map((c) => [c.id, c.name]))
-
-  const renderPlural = (count: number, word: string) => {
-    if (locale === 'th') return word;
-    if (count <= 1) return word;
-    if (word === 'box') return 'boxes'; 
-    if (word.endsWith('s')) return word;
-    return `${word}s`;
-  }
 
   const filteredRows = useMemo(() => {
     return stockRows.filter((row) => {
@@ -112,8 +99,8 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
       const cat = categoryLabels[row.category] ?? row.category
       
       const cleanUnit = row.unit.trim()
-      const rawUnit = locale === 'th' ? cleanUnit : (UNIT_TH_TO_EN_MAP[cleanUnit] ?? cleanUnit)
-      const displayUnit = renderPlural(row.total_remaining, rawUnit)
+      // แก้ไขให้รับแค่หน่วย กับ locale
+      const displayUnit = unitLabel(cleanUnit, locale)
       
       const escapedItemName = row.item_name.replace(/"/g, '""')
 
@@ -169,7 +156,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
               onChange={(e) => setHideExpired(e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-800"
             />
-            {locale === 'th' ? 'ซ่อนของหมดอายุ' : 'Hide expired'}
+            {(dict.inventory as any).hideExpired ?? 'ซ่อนของหมดอายุ'}
           </label>
 
           <input
@@ -187,8 +174,8 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
           <p className="text-sm text-slate-400">{dict.inventory.notFound}</p>
         </div>
       ) : (
-        <div className="max-h-[60vh] overflow-y-auto overflow-x-hidden rounded-xl border border-slate-200/80 bg-white shadow-md ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/5">
-          <table className="w-full text-left text-sm relative">
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-md ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/5">
+          <table className="w-full min-w-[640px] text-left text-sm relative">
             <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               <tr>
                 {isAdmin && <th className="px-5 py-3 font-semibold whitespace-nowrap">{dict.requests.center}</th>}
@@ -222,8 +209,8 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
                 const isSoon = days !== null && days >= 0 && days <= 7
                 
                 const cleanUnit = row.unit.trim()
-                const rawUnit = locale === 'th' ? cleanUnit : (UNIT_TH_TO_EN_MAP[cleanUnit] ?? cleanUnit)
-                const displayUnit = renderPlural(row.total_remaining, rawUnit)
+                // แก้ไขให้รับแค่หน่วย กับ locale
+                const displayUnit = unitLabel(cleanUnit, locale)
 
                 const rowBgClass = isExpired 
                   ? 'bg-red-50/80 hover:bg-red-100/80 dark:bg-red-950/20 dark:hover:bg-red-900/30' 

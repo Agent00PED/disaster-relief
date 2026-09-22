@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { unitLabel } from '@/lib/units' 
 import InventoryTable from './InventoryTable'
 
 type StockRow = {
@@ -44,7 +45,8 @@ const DEFAULT_COLOR = { bg: 'bg-slate-400 dark:bg-slate-500', hex: '#94a3b8' }
 export default async function InventoryPage() {
   const supabase = await createClient()
   await requireStaffOrAdmin(supabase)
-  const locale = await getLocale()
+  // ระบุ type ตรงนี้ให้รับค่า th หรือ en แน่นอน
+  const locale = (await getLocale()) as 'th' | 'en'
   const dict = await getDictionary(locale)
 
   const renderPlural = (count: number, word: string) => {
@@ -152,27 +154,19 @@ export default async function InventoryPage() {
     
     const primaryInStock = unitGroups[primaryUnit] || 0
 
-    const unitThToEnMap: Record<string, string> = {
-      'ชุด': 'set', 'ขวด': 'bottle', 'กระป๋อง': 'can', 
-      'ถุง': 'bag', 'แพ็ค': 'pack', 'ชิ้น': 'piece', 
-      'กล่อง': 'box', 'ลัง': 'crate', 'ผืน': 'piece', 'ห่อ': 'packet'
-    }
-
     const otherUnitsArr: string[] = []
     Object.entries(unitGroups).forEach(([u, qty]) => {
       if (u !== primaryUnit) {
-        const translatedU = locale === 'th' ? u : (unitThToEnMap[u] ?? u)
-        otherUnitsArr.push(`${qty} ${renderPlural(qty, translatedU)}`)
+        // ส่งเฉพาะหน่วยและ locale ตัวเลขเอามาต่อข้างหน้า
+        otherUnitsArr.push(`${qty} ${unitLabel(u.trim(), locale)}`)
       }
     })
     const otherUnitsStr = otherUnitsArr.length > 0 ? `, ${otherUnitsArr.join(', ')}` : ''
 
-    const translatedPrimaryUnit = locale === 'th' ? primaryUnit : (unitThToEnMap[primaryUnit] ?? primaryUnit)
-    
     const missing = Math.max(0, row.shortage - primaryInStock)
     const isReady = missing === 0
 
-    return { ...row, inStock: primaryInStock, unit: translatedPrimaryUnit, missing, isReady, otherUnitsStr }
+    return { ...row, inStock: primaryInStock, rawUnit: primaryUnit.trim(), missing, isReady, otherUnitsStr }
   })
 
   return (
@@ -329,13 +323,14 @@ export default async function InventoryPage() {
                   <div key={`${row.category}-${row.item_name}`} className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-end justify-between gap-2 text-sm">
                       <div className="font-medium text-slate-800 dark:text-slate-200">
-                        {row.item_name} <span className="ml-1 text-xs font-normal text-slate-500">({dict.inventory.target}: {row.shortage} {renderPlural(row.shortage, row.unit)})</span>
+                        {/* เรียกใช้โดยส่งหน่วยและ locale แยกตัวเลขไว้ด้านนอก */}
+                        {row.item_name} <span className="ml-1 text-xs font-normal text-slate-500">({dict.inventory.target}: {row.shortage} {unitLabel(row.rawUnit, locale)})</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {row.isReady ? (
                           <>
                             <span className="inline-flex items-center rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">
-                              ✅ {dict.inventory.readyToAllocate} ({row.inStock} {renderPlural(row.inStock, row.unit)}
+                              ✅ {dict.inventory.readyToAllocate} ({row.inStock} {unitLabel(row.rawUnit, locale)}
                               <span className="text-emerald-600/80 dark:text-emerald-400/80">{row.otherUnitsStr}</span>)
                             </span>
                             <Link href="/allocations" className="inline-flex items-center justify-center rounded-md bg-brand px-3 py-1 text-xs font-medium text-white shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-1 dark:focus:ring-offset-slate-900 transition-colors">
@@ -344,9 +339,9 @@ export default async function InventoryPage() {
                           </>
                         ) : (
                           <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 ring-1 ring-inset ring-red-600/10 dark:bg-red-500/10 dark:text-red-400 dark:ring-red-500/20">
-                            ❌ {dict.inventory.missingMore} {row.missing} {renderPlural(row.missing, row.unit)}{' '}
+                            ❌ {dict.inventory.missingMore} {row.missing} {unitLabel(row.rawUnit, locale)}{' '}
                             <span className="ml-1 font-normal text-red-600/80 dark:text-red-400/80">
-                              ({dict.inventory.alreadyHave} {row.inStock} {renderPlural(row.inStock, row.unit)}{row.otherUnitsStr})
+                              ({dict.inventory.alreadyHave} {row.inStock} {unitLabel(row.rawUnit, locale)}{row.otherUnitsStr})
                             </span>
                           </span>
                         )}
@@ -357,17 +352,16 @@ export default async function InventoryPage() {
                       <div className="flex h-full w-full transition-all">
                         {stockPct > 0 && (
                           <div 
-                            // เปลี่ยนสีหลอดตรงนี้ครับ
                             className={`h-full ${row.isReady ? 'bg-emerald-500' : 'bg-amber-500'} hover:brightness-110`} 
                             style={{ width: `${stockPct}%` }}
-                            title={`${dict.inventory.alreadyHave}: ${Math.min(row.inStock, row.shortage)} ${renderPlural(Math.min(row.inStock, row.shortage), row.unit)}`}
+                            title={`${dict.inventory.alreadyHave}: ${Math.min(row.inStock, row.shortage)} ${unitLabel(row.rawUnit, locale)}`}
                           />
                         )}
                         {missingPct > 0 && (
                           <div 
                             className="h-full bg-red-500 hover:brightness-110" 
                             style={{ width: `${missingPct}%` }}
-                            title={`${dict.inventory.missingMore}: ${row.missing} ${renderPlural(row.missing, row.unit)}`}
+                            title={`${dict.inventory.missingMore}: ${row.missing} ${unitLabel(row.rawUnit, locale)}`}
                           />
                         )}
                       </div>

@@ -382,6 +382,7 @@ const th = {
     expiredBadge: '(หมดอายุ)',
     expiringSoonBadge: '(ใกล้หมดอายุ)',
     defaultUnit: 'หน่วย',
+    hideExpired: 'ซ่อนของหมดอายุ',
   },
   allocations: {
     title: 'จัดสรรของ',
@@ -990,6 +991,7 @@ const en: typeof th = {
     expiredBadge: '(Expired)',
     expiringSoonBadge: '(Near expiry)',
     defaultUnit: 'unit',
+    hideExpired: 'Hide expired',
   },
   allocations: {
     title: 'Allocate items',
