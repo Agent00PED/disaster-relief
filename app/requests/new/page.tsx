@@ -1,5 +1,6 @@
 import { createRequest } from '../actions'
 import { getLocale } from '@/lib/i18n/locale'
+import { UnitSelect } from '@/app/unit-select'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { createClient } from '@/lib/supabase/server'
 import { getCenterPicker } from '@/lib/center-choice'
@@ -71,19 +72,15 @@ export default async function NewRequestPage({
           <label htmlFor="request-unit" className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             {dict.requests.unit}
           </label>
-          <input
+          {/* คำขอไม่บังคับหน่วย — เว้นว่างไว้ระบบจะจัดสรรจากล็อตหน่วยไหนก็ได้ */}
+          <UnitSelect
             id="request-unit"
-            name="unit"
-            list="request-unit-options"
-            maxLength={30}
-            placeholder={dict.requests.unitPlaceholder}
+            locale={locale}
+            defaultValue=""
+            allowEmpty
+            emptyLabel={dict.requests.unitAny}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
-          <datalist id="request-unit-options">
-            {['ชิ้น', 'ถุง', 'ขวด', 'กล่อง', 'แพ็ค', 'ลัง', 'ชุด', 'ห่อ', 'ผืน', 'กระป๋อง'].map((u) => (
-              <option key={u} value={u} />
-            ))}
-          </datalist>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{dict.requests.unitHint}</p>
         </div>
         <div>
