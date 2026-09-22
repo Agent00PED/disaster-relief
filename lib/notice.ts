@@ -30,6 +30,8 @@ export function noticeMessage(params: NoticeParams, dict: Dictionary, locale: st
       return Number(params.n) > 0
         ? fill(dict.requests.noticeRequestCancelledReturned, { n: params.n ?? '' })
         : dict.requests.noticeRequestCancelled
+    case 'request_updated':
+      return dict.requests.noticeRequestUpdated
     default:
       return null
   }
