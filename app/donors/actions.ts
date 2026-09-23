@@ -11,10 +11,13 @@ export async function createDonor(formData: FormData) {
 
   const name = String(formData.get("name") || "").trim();
   const phone = String(formData.get("phone") || "").trim() || null;
-  // แก้จาก "type" เป็น "donor_type" ให้ตรงกับฟอร์ม
   const donorType = formData.get("donor_type") === "organization" ? "organization" : "individual";
   const email = String(formData.get("email") || "").trim() || null;
-  const address = String(formData.get("address") || "").trim() || null;
+  
+  // ดึงค่า subdistrict และ province_name มารวมกันเป็น address ตามที่ตกลงกับชมพู่
+  const subdistrict = String(formData.get("subdistrict") || "").trim();
+  const provinceName = String(formData.get("province_name") || "").trim();
+  const address = [subdistrict, provinceName].filter(Boolean).join(" ") || null;
   
   const rawAnonymous = formData.get("is_anonymous");
   const is_anonymous = rawAnonymous === "on" || rawAnonymous === "true";
@@ -44,12 +47,14 @@ export async function updateDonor(formData: FormData) {
   const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "").trim();
   const phone = String(formData.get("phone") || "").trim() || null;
-  // ดึงค่า donor_type และ email กลับมาอัปเดต เพื่อไม่ให้ข้อมูลหาย
   const donorType = formData.get("donor_type") === "organization" ? "organization" : "individual";
   const email = String(formData.get("email") || "").trim() || null;
-  const address = String(formData.get("address") || "").trim() || null;
   
-  // จัดการเช็คบ็อกซ์ (รองรับทั้ง "on" และ "true")
+  // ดึงค่า subdistrict และ province_name มารวมกันเป็น address สำหรับอัปเดต
+  const subdistrict = String(formData.get("subdistrict") || "").trim();
+  const provinceName = String(formData.get("province_name") || "").trim();
+  const address = [subdistrict, provinceName].filter(Boolean).join(" ") || null;
+  
   const isAnonymous = formData.get("is_anonymous") === "on" || formData.get("is_anonymous") === "true";
   const isActive = formData.get("is_active") === "on" || formData.get("is_active") === "true";
 
@@ -58,12 +63,12 @@ export async function updateDonor(formData: FormData) {
     .update({
       name,
       phone,
-      donor_type: donorType, // ส่งค่าประเภทกลับไปอัปเดต
-      email,                 // ส่งค่าอีเมลกลับไปอัปเดต
+      donor_type: donorType,
+      email,
       address,
       is_anonymous: isAnonymous,
       is_active: isActive,
-      updated_at: new Date().toISOString(),
+      // เอา updated_at ออกเรียบร้อยแล้ว ป้องกัน Error เรื่องคอลัมน์ไม่พบ
     })
     .eq("id", id);
 

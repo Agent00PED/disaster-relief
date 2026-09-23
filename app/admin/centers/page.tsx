@@ -7,7 +7,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
-import { addCenter, updateUser } from './actions'
+import { updateUser } from './actions'
+import { CentersDashboard } from './centers-dashboard'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
@@ -35,91 +36,16 @@ export default async function AdminCentersPage({
     )
   }
 
-  const [{ data: centers }, { data: users }] = await Promise.all([
+  const [{ data: centers, error: centersError }, { data: users, error: usersError }] = await Promise.all([
     supabase.from('centers').select('*').order('name'),
     supabase
       .from('profiles')
-      .select('id, full_name, username, role, center_id, centers(name)')
+      .select('id, full_name, username, role, center_id, phone, first_name, last_name, centers(name)')
       .order('full_name'),
   ])
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-6 py-12">
-      <header className="mb-8">
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.admin.title}</h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{dict.admin.subtitle}</p>
-      </header>
-
-      {error && (
-        <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
-          {error}
-        </p>
-      )}
-
-      <section className="mb-10">
-        <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{dict.admin.centersInSystem}</h2>
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-              <tr>
-                <th className="px-4 py-2 font-medium">{dict.admin.centerName}</th>
-                <th className="px-4 py-2 font-medium">{dict.admin.type}</th>
-                <th className="px-4 py-2 font-medium">{dict.admin.address}</th>
-                <th className="px-4 py-2 font-medium">{dict.admin.contactPhone}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(centers ?? []).map((c) => (
-                <tr key={c.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                  <td className="px-4 py-2 text-slate-900 dark:text-slate-100">{c.name}</td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">
-                    {c.type === 'warehouse' ? dict.admin.centerTypeWarehouse : dict.admin.centerTypeShelter}
-                  </td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{c.address ?? '—'}</td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{c.contact_phone ?? '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <form
-          action={addCenter}
-          className="mt-4 grid gap-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:grid-cols-2"
-        >
-          <input
-            name="name"
-            required
-            placeholder={dict.admin.centerName}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          />
-          <select
-            name="type"
-            required
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          >
-            <option value="warehouse">{dict.admin.centerTypeWarehouse}</option>
-            <option value="shelter">{dict.admin.centerTypeShelter}</option>
-          </select>
-          <input
-            name="address"
-            placeholder={dict.admin.address}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          />
-          <input
-            name="contact_phone"
-            placeholder={dict.admin.contactPhone}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          />
-          <button
-            type="submit"
-            className="rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep sm:col-span-2"
-          >
-            {dict.admin.addCenter}
-          </button>
-        </form>
-      </section>
-
+    <CentersDashboard centers={centers ?? []} users={users ?? []} dict={dict} error={error} loadError={!!centersError || !!usersError}>
       <section>
         <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{dict.admin.usersInSystem}</h2>
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
@@ -144,7 +70,7 @@ export default async function AdminCentersPage({
                     {(u.centers as unknown as { name?: string } | null)?.name ?? '—'}
                   </td>
                   <td className="px-4 py-2">
-                    <form action={updateUser} className="flex items-center gap-2">
+                    <form action={updateUser} className="flex flex-wrap items-center gap-2">
                       <input type="hidden" name="id" value={u.id} />
                       <select
                         name="role"
@@ -167,6 +93,28 @@ export default async function AdminCentersPage({
                           </option>
                         ))}
                       </select>
+                      <input
+                        name="first_name"
+                        defaultValue={u.first_name ?? ''}
+                        placeholder={dict.register.firstName}
+                        aria-label={dict.register.firstName}
+                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                      <input
+                        name="last_name"
+                        defaultValue={u.last_name ?? ''}
+                        placeholder={dict.register.lastName}
+                        aria-label={dict.register.lastName}
+                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
+                      <input
+                        name="phone"
+                        type="tel"
+                        defaultValue={u.phone ?? ''}
+                        placeholder={dict.admin.userPhone}
+                        aria-label={dict.admin.userPhone}
+                        className="w-32 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                      />
                       <button
                         type="submit"
                         className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-deep"
@@ -181,6 +129,6 @@ export default async function AdminCentersPage({
           </table>
         </div>
       </section>
-    </main>
+    </CentersDashboard>
   )
 }

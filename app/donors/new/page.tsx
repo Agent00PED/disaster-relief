@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createDonor } from '../actions'
-import { PROVINCES } from '@/app/lib/provinces'
+import { PROVINCES } from '@/lib/provinces'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
@@ -11,7 +11,7 @@ export default async function NewDonorPage() {
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-        {dict.donors.addNew}
+        {dict.donors?.addNew ?? 'Add donor'}
       </h1>
 
       <form
@@ -20,32 +20,32 @@ export default async function NewDonorPage() {
       >
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {locale === 'en' ? 'Name' : 'ชื่อ'} <span className="text-red-500">*</span>
+            {dict.donors?.name ?? 'Name'} <span className="text-red-500">*</span>
           </label>
           <input
             name="name"
             required
-            placeholder={dict.donors.searchPlaceholder}
+            placeholder={dict.donors?.searchPlaceholder ?? 'Search by name...'}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {locale === 'en' ? 'Donor Type' : 'ประเภทผู้บริจาค'}
+            {dict.donors?.donorType ?? 'Donor Type'}
           </label>
           <select
             name="donor_type"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="individual">{locale === 'en' ? 'Individual' : 'บุคคลธรรมดา'}</option>
-            <option value="organization">{locale === 'en' ? 'Organization' : 'องค์กร / นิติบุคคล'}</option>
+            <option value="individual">{dict.donors?.typeIndividual ?? 'Individual'}</option>
+            <option value="organization">{dict.donors?.typeOrganization ?? 'Organization'}</option>
           </select>
         </div>
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {locale === 'en' ? 'Email' : 'อีเมล'}
+            {dict.form?.email ?? 'Email'}
           </label>
           <input
             name="email"
@@ -57,7 +57,7 @@ export default async function NewDonorPage() {
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {locale === 'en' ? 'Phone Number' : 'เบอร์โทร'}
+            {dict.form?.phone ?? 'Phone number'}
           </label>
           <input
             name="phone"
@@ -67,15 +67,28 @@ export default async function NewDonorPage() {
           />
         </div>
 
+        {/* ช่องกรอกตำบล (subdistrict) ที่ดึงค่าจาก Dictionary */}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {locale === 'en' ? 'Province' : 'จังหวัด'}
+            {dict.donors?.subdistrict ?? 'Subdistrict'}
+          </label>
+          <input
+            name="subdistrict"
+            placeholder={dict.donors?.subdistrictPlaceholder ?? 'Enter subdistrict'}
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          />
+        </div>
+
+        {/* ช่องเลือกจังหวัด (province_name) */}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {dict.donors?.provinceArea ?? 'Province / Area'}
           </label>
           <select
-            name="address"
+            name="province_name"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="">{locale === 'en' ? '-- Select Province --' : '-- เลือกจังหวัด --'}</option>
+            <option value="">{dict.donors?.selectProvince ?? '-- Select Province --'}</option>
             {PROVINCES.map((prov: string) => (
               <option key={prov} value={prov}>{prov}</option>
             ))}
@@ -89,7 +102,7 @@ export default async function NewDonorPage() {
               type="checkbox"
               className="rounded border-slate-300"
             />
-            {dict.donors.anonymousCheckbox}
+            {dict.donors?.anonymousCheckbox ?? 'Anonymous'}
           </label>
         </div>
 
@@ -98,13 +111,13 @@ export default async function NewDonorPage() {
             type="submit"
             className="flex-1 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
           >
-            {dict.common.save}
+            {dict.common?.save ?? 'Save'}
           </button>
           <Link
             href="/donors"
             className="flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            {dict.common.cancel}
+            {dict.common?.cancel ?? 'Cancel'}
           </Link>
         </div>
       </form>
