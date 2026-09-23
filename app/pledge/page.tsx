@@ -57,9 +57,24 @@ export default async function PledgePage({
   searchParams: Promise<{
     ok?: string
     error?: string
+    category?: string
   }>
 }) {
-  const { ok, error } = await searchParams
+  const { ok, error, category } = await searchParams
+
+  // การ์ด "สิ่งที่ศูนย์กำลังขอรับ" บนหน้าแรกลิงก์มาที่ /pledge?category=...
+  // ถ้าไม่รับค่านี้ ผู้ใช้จะต้องมาเลือกหมวดเองอีกรอบ เสียจุดประสงค์ของการ์ด
+  // ค่าที่ไม่อยู่ในรายการให้ตกเป็นค่าว่าง กัน query string ที่แต่งมาเอง
+  const initialCategory = [
+    'food',
+    'water',
+    'medicine',
+    'clothing',
+    'hygiene',
+    'other',
+  ].includes(category ?? '')
+    ? (category as string)
+    : ''
 
   const locale = await getLocale()
 
@@ -583,7 +598,7 @@ export default async function PledgePage({
                       <select
                         name="category"
                         required
-                        defaultValue=""
+                        defaultValue={initialCategory}
                         className="w-full cursor-pointer border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none dark:bg-slate-800 dark:text-slate-100"
                       >
 

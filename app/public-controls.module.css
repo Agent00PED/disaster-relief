@@ -1,0 +1,18 @@
+.surface {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  border: 1px solid #c6d5df;
+  border-radius: 12px;
+  background: #ffffffcc;
+  color: #1c3d5a;
+  box-shadow: 0 2px 5px #1c3d5a08;
+  backdrop-filter: blur(12px);
+}
+.toggles { position: fixed; right: 24px; top: 16px; z-index: 20; gap: 2px; padding: 4px; }
+.toggles button { border-radius: 8px; color: inherit; }
+.toggles form { border-right: 1px solid #c6d5df; padding-right: 3px; margin-right: 1px; }
+:global(.dark) .surface { background: #17293be6; border-color: #465e73; color: #d3e5f5; }
+:global(.dark) .toggles form { border-color: #465e73; }
+@media (max-width: 640px) { .toggles { right: 16px; } }

@@ -3,94 +3,108 @@
   --entry-muted: #607a91;
   position: relative;
   isolation: isolate;
-  display: grid;
-  align-items: center;
   min-height: 100svh;
   overflow: hidden;
-  padding: 80px 24px 64px;
+  padding: 100px 24px 36px;
   color: var(--entry-ink);
   background: #fcf7ed;
 }
-
-.artwork {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  background: url('/images/entry-relief.webp') center bottom / cover no-repeat;
-}
-
-.content { width: 100%; max-width: 780px; margin-inline: auto; }
-.header { text-align: center; }
-.brand { margin-bottom: 20px; }
-.brand > span { gap: 14px; }
-.brand > span > svg { width: 46px; height: 46px; }
-.brand > span > span { font-size: clamp(28px, 2.7vw, 36px); }
-.header h1 { font-size: clamp(20px, 1.8vw, 25px); font-weight: 700; line-height: 1.6; text-wrap: balance; }
-.header > p { max-width: 680px; margin: 8px auto 0; font-size: 16px; line-height: 1.8; color: var(--entry-muted); text-wrap: balance; }
-.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; margin-top: 36px; }
-.card {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  min-height: 116px;
-  padding: 20px;
-  border: 1px solid #ffffff;
-  border-radius: 14px;
-  background: rgb(255 255 255 / 95%);
-  box-shadow: 0 4px 8px #59462608, 0 10px 26px #59462608;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
-}
-.card:hover { transform: translateY(-4px); border-color: #afc5d5; box-shadow: 0 12px 30px #1c3d5a16; }
-.card:focus-visible { outline: 3px solid var(--entry-ink); outline-offset: 5px; }
-.icon { display: grid; place-items: center; width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%; }
-.icon svg { width: 36px; height: 36px; }
-.blue { color: #1d4d6e; background: linear-gradient(145deg, #deefff, #cee6fc); }
-.green { color: #339d77; background: linear-gradient(145deg, #def4e8, #c7e9d7); }
-.red { color: #dc454e; background: linear-gradient(145deg, #ffe8e8, #ffd8dc); }
-.cardText { flex: 1; min-width: 0; }
-.card h2 { font-size: 17px; font-weight: 600; line-height: 1.5; }
-.card p { margin-top: 6px; font-size: 14px; line-height: 1.7; color: var(--entry-muted); }
-.arrow { width: 18px; height: 18px; flex-shrink: 0; color: var(--entry-muted); }
-/* คำขวัญแบบลายมือ: จอกว้างวางเอียงฝั่งซ้ายเหนือภาพประกอบ พร้อมเส้นโค้งสีแดง · จอแคบย้ายมาอยู่กลางใต้การ์ด */
-.motto { position: absolute; top: 34%; left: max(24px, calc(50% - 740px)); width: 190px; text-align: center; font-size: 23px; line-height: 1.6; font-weight: 600; transform: rotate(-10deg); text-wrap: balance; }
-.motto::after { content: ''; display: block; width: 140px; height: 14px; border-top: 4px solid #d97b72; border-radius: 50%; margin: 9px auto 0; transform: rotate(-6deg); }
-.motto > span { position: absolute; top: 2px; right: -18px; color: #d96a68; font-size: 36px; }
-@media (max-width: 1350px) { .motto { position: static; width: auto; margin: 24px auto 0; font-size: 18px; transform: none; } .motto > span { position: static; margin-left: 10px; font-size: 28px; vertical-align: middle; } .motto::after { display: none; } }
-.values { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 640px; margin: 28px auto 0; padding: 18px 14px; border: 1px solid #fff9; border-radius: 60px; background: #fffcf5e6; box-shadow: 0 3px 8px #8e6c2412, 0 8px 25px #8e6c2408; }
-.values li { display: flex; align-items: center; justify-content: center; gap: 14px; padding-inline: 16px; }
-.values li + li { border-left: 1px solid #1c3d5a29; }
-.valueIcon { flex-shrink: 0; width: 30px; height: 30px; }
-.valueIcon svg { width: 100%; height: 100%; }
-.valueIcon path[fill] { fill: none; stroke: currentColor; stroke-width: 2; }
-.values p { font-size: 13px; line-height: 1.6; color: var(--entry-muted); }
-.values p span { display: block; }
-
-:global(.dark) .hero { --entry-ink: #d3e5f5; --entry-muted: #a7bbcd; background: #101c2b; }
+.artwork { position: absolute; z-index: -1; inset: 0; pointer-events: none; background: url('/images/entry-relief.webp') center bottom / cover no-repeat; }
+.topbar { position: absolute; top: 16px; left: max(24px, calc((100% - 1260px) / 2)); right: 124px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.staffLink { gap: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; }
+.staffLink svg { width: 18px; height: 18px; flex-shrink: 0; }
+.staffLink:hover { background: #fff; }
+.content { width: 100%; max-width: 920px; margin-inline: auto; }
+.header { text-align: center; margin-bottom: 28px; }
+.header h1 { max-width: 740px; margin-inline: auto; font-size: clamp(24px, 2.6vw, 36px); font-weight: 700; line-height: 1.35; text-wrap: balance; }
+.header > p { margin: 14px auto 0; font-size: 16px; line-height: 1.7; color: var(--entry-muted); text-wrap: balance; }
+.choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.card, .supplyCard { --tone: #3774a6; --tint: #dceeff; --edge: #91c4ea; }
+[data-tone='green'].card, [data-tone='green'].supplyCard { --tone: #287c65; --tint: #d8efe5; --edge: #8acdb7; }
+[data-tone='red'].card, [data-tone='red'].supplyCard { --tone: #cf3e49; --tint: #ffe2e5; --edge: #f3a0a5; }
+.card { display: flex; flex-direction: column; align-items: center; padding: 22px 18px 16px; border-radius: 17px; border-bottom: 7px solid var(--edge); background: #fffffff5; box-shadow: 0 6px 20px #5946260c; text-align: center; transition: transform .2s ease, box-shadow .2s ease; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px #1c3d5a20; }
+.hero a:focus-visible { outline: 3px solid var(--entry-ink); outline-offset: 4px; }
+.icon { display: grid; place-items: center; flex-shrink: 0; width: 76px; height: 76px; border-radius: 50%; background: var(--tint); color: var(--tone); }
+.icon svg { width: 40px; height: 40px; }
+.card h2 { font-size: 21px; font-weight: 700; line-height: 1.5; margin-top: 12px; }
+.card > p { max-width: 230px; margin: 8px 0 18px; font-size: 15px; line-height: 1.55; color: var(--entry-muted); text-wrap: balance; }
+.action { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 46px; margin-top: auto; padding: 10px 14px; border-radius: 12px; background: var(--tone); color: white; font-size: 14px; font-weight: 600; }
+.action > span { font-size: 23px; line-height: 1; }
+.motto { position: absolute; top: 24%; left: max(24px, calc(50% - 700px)); width: 190px; font-size: 22px; font-weight: 600; line-height: 1.7; transform: rotate(-10deg); text-align: center; text-wrap: balance; }
+.mottoHeart { position: absolute; top: 8px; right: -29px; width: 27px; height: 27px; color: #df756d; transform: rotate(-7deg); }
+.mottoUnderline { display: block; width: 170px; height: 24px; margin: 2px auto 0; color: #df756d; transform: rotate(-2deg); }
+.supplies { max-width: 850px; margin: 26px auto 0; padding: 18px; border: 1px solid #fff; border-radius: 22px; background: #fffffff2; box-shadow: 0 5px 20px #5946260d; }
+.suppliesHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.smallIcon { flex-shrink: 0; width: 30px; height: 30px; }
+.smallIcon svg { width: 100%; height: 100%; }
+.suppliesHeader h2 { font-size: 17px; font-weight: 700; line-height: 1.5; }
+.suppliesHeader p { font-size: 12px; line-height: 1.6; color: var(--entry-muted); }
+.suppliesHeader > a { margin-left: auto; flex-shrink: 0; font-size: 13px; color: #286b9c; }
+.supplyGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.supplyCard { display: flex; flex-direction: column; gap: 14px; padding: 12px; border: 1px solid #e4eaf0; border-radius: 13px; }
+.supplyHeading { display: flex; align-items: center; gap: 10px; }
+.supplyCard .icon { width: 40px; height: 40px; }
+.supplyCard .icon svg { width: 23px; height: 23px; }
+.supplyCard h3 { font-size: 14px; font-weight: 600; }
+.supplyCard p { margin-top: 4px; font-size: 12px; line-height: 1.6; color: var(--entry-muted); }
+/* การ์ดเป็นลิงก์แล้ว (กดไปหน้าบริจาคพร้อมเลือกหมวดให้) จึงต้องมี hover
+   บอกผู้ใช้ว่ากดได้ และ margin-top:auto ที่ปุ่มเพื่อให้การ์ดสูงเท่ากัน */
+.supplyCard { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.supplyCard:hover { transform: translateY(-3px); border-color: var(--edge); box-shadow: 0 10px 22px #1c3d5a14; }
+/* ต้องเจาะจงกว่า `.supplyCard p` ที่ตั้ง color เป็น --entry-muted ไว้ ไม่งั้นตัวเลขจะจืด */
+.supplyCard p.needsShortage { margin-top: 4px; font-size: 15px; font-weight: 700; color: var(--tone); }
+/* ตัวเล็กมาก จึงใช้สีเข้มกว่า --entry-muted เพื่อให้คอนทราสต์ผ่าน AA (>=4.5) */
+.needsMeta { display: grid; gap: 3px; margin-top: 2px; font-size: 12px; line-height: 1.6; color: #526d87; }
+.needsPledged { color: #2f7d5f; }
+.supplyCard h3 { color: var(--entry-ink); }
+.supplyAction { margin-top: auto; padding-top: 4px; font-size: 12px; font-weight: 600; color: var(--tone); }
+.needsEmpty { padding: 18px 4px; text-align: center; font-size: 13px; line-height: 1.7; color: var(--entry-muted); }
+/* ป้าย "อัปเดตสด" ขึ้นเฉพาะตอน subscribe realtime สำเร็จจริงเท่านั้น */
+.liveBadge, .staticBadge { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.liveBadge { color: #1d7a52; background: #d8efe5; }
+.staticBadge { color: var(--entry-muted); background: #eceff3; }
+.liveDot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: needsPulse 1.8s ease-in-out infinite; }
+@keyframes needsPulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .liveDot { animation: none; } .supplyCard { transition: none; } .supplyCard:hover { transform: none; } }
+:global(.dark) .hero { --entry-ink: #d3e5f5; --entry-muted: #b0c2d3; background: #101c2b; }
 :global(.dark) .artwork { opacity: .14; mix-blend-mode: luminosity; }
-:global(.dark) .card { background: #17293bed; border-color: #354759; box-shadow: 0 6px 24px #0002; }
-:global(.dark) .card:hover { background: #20364b; border-color: #819db4; }
-:global(.dark) .blue { color: #a6d3f4; background: #29465f; }
-:global(.dark) .green { color: #90ddbc; background: #234b43; }
-:global(.dark) .red { color: #ff969c; background: #57343f; }
-:global(.dark) .values { background: #17293bea; border-color: #354759; }
-:global(.dark) .values li + li { border-color: #a7bbcd40; }
-
-@media (max-width: 1000px) { .artwork { background-size: auto 100%; opacity: .5; } .content { max-width: 740px; } .card { gap: 14px; padding: 18px; } .icon { width: 56px; height: 56px; } .icon svg { width: 32px; height: 32px; } }
+:global(.dark) .card, :global(.dark) .supplies { background: #17293bf5; }
+:global(.dark) .supplies, :global(.dark) .supplyCard { border-color: #354759; }
+:global(.dark) .staffLink:hover { background: #20364b; }
+:global(.dark) .suppliesHeader > a { color: #9fd3ff; }
+:global(.dark) .liveBadge { color: #8fe0b8; background: #1d4438; }
+:global(.dark) .staticBadge { color: var(--entry-muted); background: #22364a; }
+/* โหมดมืด --tone เป็นสีเข้ม คอนทราสต์บนพื้น #17293b ไม่ผ่าน ใช้ --edge ที่สว่างกว่าแทน */
+:global(.dark) .supplyCard p.needsShortage, :global(.dark) .supplyAction { color: var(--edge); }
+:global(.dark) .needsMeta { color: var(--entry-muted); }
+:global(.dark) .needsPledged { color: #8fe0b8; }
+:global(.dark) .supplyCard:hover { background: #1e3449; }
+:global(.dark) .icon { background: color-mix(in srgb, var(--tone) 25%, #17293b); color: var(--edge); }
+@media (width <= 1400px) {
+  .motto { position: static; width: auto; margin: 24px auto 0; font-size: 18px; transform: none; }
+  .mottoHeart { display: inline-block; position: static; margin-left: 10px; vertical-align: middle; }
+  .mottoUnderline { display: none; }
+}
+@media (max-width: 1000px) { .content { max-width: 800px; } .card { padding: 18px 12px 12px; } .action { padding-inline: 10px; font-size: 13px; } .card h2 { font-size: 19px; } }
 @media (max-width: 640px) {
-  .hero { padding: 80px 20px 40px; }
-  .artwork { background-size: auto 620px; opacity: .3; mask-image: linear-gradient(to bottom, transparent calc(100% - 560px), #000 100%); }
-  .brand { margin-bottom: 20px; }
-  .brand > span { gap: 12px; }
-  .brand > span > svg { width: 36px; height: 36px; }
+  .hero { padding: 134px 20px 32px; }
+  .topbar { left: 20px; right: 20px; align-items: start; flex-direction: column; gap: 14px; }
+  .topbar > span > span { font-size: 22px; }
+  .staffLink { min-height: 36px; font-size: 12px; }
+  .header h1 { font-size: 24px; }
   .header > p { font-size: 14px; }
-  .choices { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
-  .card { min-height: 100px; padding: 16px; }
-  .card h2 { font-size: 16px; }
-  .card p { font-size: 14px; margin-top: 4px; }
-  .values { border-radius: 20px; padding: 16px 8px; }
-  .values li { flex-direction: column; gap: 10px; padding-inline: 8px; text-align: center; }
-  .values p { font-size: 13px; }
-  .valueIcon { width: 26px; height: 26px; }
+  .choices, .supplyGrid { grid-template-columns: 1fr; gap: 14px; }
+  .card { padding: 18px; }
+  .card h2 { font-size: 19px; }
+  .card > p { max-width: none; font-size: 14px; }
+  .icon { width: 60px; height: 60px; }
+  .icon svg { width: 32px; height: 32px; }
+  .action { font-size: 14px; }
+  .supplies { padding: 16px; }
+  .suppliesHeader { flex-wrap: wrap; }
+  .suppliesHeader > div { flex: 1; }
+  .suppliesHeader > a { margin-left: 42px; }
+  .artwork { background-size: auto 620px; opacity: .35; mask-image: linear-gradient(to bottom, transparent calc(100% - 560px), #000 100%); }
 }
 @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
