@@ -3,6 +3,7 @@
 // มาจากฟอร์มสาธารณะ /pledge
 // =====================================================================
 
+import Link from 'next/link'
 import {
   CalendarDays,
   FileText,
@@ -12,6 +13,7 @@ import {
   Trash2,
   Package,
   ChevronDown,
+  Plus,
 } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/server'
@@ -21,8 +23,9 @@ import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
-import { UnitSelect } from '@/app/unit-select'
 import PrintButton from './PrintButton'
+
+export const dynamic = 'force-dynamic'
 
 export default async function PledgesPage({
   searchParams,
@@ -116,12 +119,42 @@ export default async function PledgesPage({
     query = query.eq('status', status)
   }
 
+  const normalizeDateFilter = (value: string) => {
+    if (!value) return ''
+
+    const trimmed = value.trim()
+    const match = trimmed.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/)
+
+    if (!match) return value
+
+    const [, day, month, year] = match
+    return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+
+  const formatDateInputValue = (value: string) => {
+    if (!value) return ''
+
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch
+      return `${day}/${month}/${year}`
+    }
+
+    return value
+  }
+
   if (from) {
-    query = query.gte('created_at', `${from}T00:00:00`)
+    const normalizedFrom = normalizeDateFilter(from)
+    if (normalizedFrom) {
+      query = query.gte('created_at', `${normalizedFrom}T00:00:00`)
+    }
   }
 
   if (to) {
-    query = query.lte('created_at', `${to}T23:59:59`)
+    const normalizedTo = normalizeDateFilter(to)
+    if (normalizedTo) {
+      query = query.lte('created_at', `${normalizedTo}T23:59:59`)
+    }
   }
 
   const { data: pledges } = await query
@@ -133,7 +166,7 @@ export default async function PledgesPage({
   const centers = await getCenterPicker(supabase, 'warehouse')
 
   // ============================================================
-  // FORMAT DATE & TIME
+  // FORMAT DATE & TIME (ภาษาไทย/อังกฤษ)
   // ============================================================
 
   function formatDateTime(value: string | null | undefined) {
@@ -188,9 +221,9 @@ export default async function PledgesPage({
     <main className="min-h-screen bg-[#f7f3ea] text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <section className="mx-auto w-full max-w-[1180px] px-5 py-8 md:px-7">
         {/* ========================================================
-            TITLE
+            TITLE & ADD BUTTON
         ======================================================== */}
-        <header className="mb-5 flex items-center justify-between gap-4 print:mb-4">
+        <header className="mb-5 flex flex-wrap items-center justify-between gap-4 print:mb-4">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#fff0ee] text-[#e65f5a] shadow-sm print:hidden dark:bg-red-500/10 dark:text-red-400">
               <FileText className="h-6 w-6" />
@@ -198,8 +231,7 @@ export default async function PledgesPage({
 
             <div>
               <h1 className="text-[25px] font-bold leading-tight text-[#1d2935] dark:text-slate-100 print:text-black">
-                {dict.pledgeQueue?.title ||
-                  'รายการแจ้งความประสงค์บริจาค'}
+                {dict.pledgeQueue?.title || 'รายการแจ้งความประสงค์บริจาค'}
               </h1>
 
               <p className="mt-1 text-[12px] text-slate-500 dark:text-slate-400 print:text-slate-600">
@@ -208,6 +240,15 @@ export default async function PledgesPage({
               </p>
             </div>
           </div>
+
+          {/* ปุ่มกดเปิดหน้าแจ้งความประสงค์บริจาค (/pledge) */}
+          <Link
+            href="/pledge"
+            className="flex items-center gap-1.5 rounded-lg bg-[#e65f5a] px-4 py-2.5 text-[12px] font-medium text-white shadow-sm transition hover:bg-[#d64e49] print:hidden dark:bg-red-600 dark:hover:bg-red-500"
+          >
+            <Plus className="h-4 w-4" />
+            <span>{locale === 'en' ? 'New Request' : 'แจ้งความประสงค์บริจาค'}</span>
+          </Link>
         </header>
 
         {/* ========================================================
@@ -255,9 +296,7 @@ export default async function PledgesPage({
             {/* Status */}
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                {locale === 'en'
-                  ? 'Request status'
-                  : 'สถานะคำร้อง'}
+                {locale === 'en' ? 'Request status' : 'สถานะคำร้อง'}
               </label>
 
               <div className="relative">
@@ -270,21 +309,13 @@ export default async function PledgesPage({
                     {locale === 'en' ? 'All' : 'ทั้งหมด'}
                   </option>
 
-                  <option value="pending">
-                    {STATUS_LABEL.pending}
-                  </option>
+                  <option value="pending">{STATUS_LABEL.pending}</option>
 
-                  <option value="contacted">
-                    {STATUS_LABEL.contacted}
-                  </option>
+                  <option value="contacted">{STATUS_LABEL.contacted}</option>
 
-                  <option value="confirmed">
-                    {STATUS_LABEL.confirmed}
-                  </option>
+                  <option value="confirmed">{STATUS_LABEL.confirmed}</option>
 
-                  <option value="dismissed">
-                    {STATUS_LABEL.dismissed}
-                  </option>
+                  <option value="dismissed">{STATUS_LABEL.dismissed}</option>
                 </select>
 
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -300,10 +331,12 @@ export default async function PledgesPage({
               <div className="relative flex items-center">
                 <input
                   name="from"
-                  type="date"
-                  lang={locale === 'en' ? 'en-US' : 'th-TH'}
-                  defaultValue={from}
-                  className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="dd/mm/yyyy"
+                  defaultValue={formatDateInputValue(from)}
+                  pattern="\d{1,2}/\d{1,2}/\d{4}"
+                  className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
 
                 <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#31556c] dark:text-blue-400" />
@@ -319,10 +352,12 @@ export default async function PledgesPage({
               <div className="relative flex items-center">
                 <input
                   name="to"
-                  type="date"
-                  lang={locale === 'en' ? 'en-US' : 'th-TH'}
-                  defaultValue={to}
-                  className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="dd/mm/yyyy"
+                  defaultValue={formatDateInputValue(to)}
+                  pattern="\d{1,2}/\d{1,2}/\d{4}"
+                  className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
 
                 <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#31556c] dark:text-blue-400" />
@@ -361,12 +396,9 @@ export default async function PledgesPage({
                 : `ทั้งหมด ${pledges?.length ?? 0} คำร้อง`}
             </div>
 
+            {/* PRINT BUTTON */}
             <PrintButton
-              label={
-                locale === 'en'
-                  ? 'Print report'
-                  : 'พิมพ์รายงาน'
-              }
+              label={locale === 'en' ? 'Print report' : 'พิมพ์รายงาน'}
             />
           </div>
 
@@ -376,11 +408,11 @@ export default async function PledgesPage({
               <Package className="mx-auto h-10 w-10 text-slate-300 dark:text-slate-600" />
 
               <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">
-                {dict.pledgeQueue?.noPledges ||
-                  'ไม่พบรายการคำร้องขอบริจาค'}
+                {dict.pledgeQueue?.noPledges || 'ไม่พบรายการคำร้องขอบริจาค'}
               </p>
             </div>
           ) : (
+            /* TABLE */
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1050px] text-left">
                 <thead className="border-b border-slate-200 bg-[#faf9f6] dark:border-slate-700 dark:bg-slate-800">
@@ -390,21 +422,15 @@ export default async function PledgesPage({
                     </th>
 
                     <th className="px-3 py-3">
-                      {locale === 'en'
-                        ? 'Received date'
-                        : 'วันที่รับของ'}
+                      {locale === 'en' ? 'Received date' : 'วันที่รับของ'}
                     </th>
 
                     <th className="px-3 py-3">
-                      {locale === 'en'
-                        ? 'Requester'
-                        : 'ชื่อผู้ขอ'}
+                      {locale === 'en' ? 'Requester' : 'ชื่อผู้ขอ'}
                     </th>
 
                     <th className="px-3 py-3">
-                      {locale === 'en'
-                        ? 'Requested item'
-                        : 'รายการขอ'}
+                      {locale === 'en' ? 'Requested item' : 'รายการขอ'}
                     </th>
 
                     <th className="px-3 py-3">
@@ -416,16 +442,11 @@ export default async function PledgesPage({
                     </th>
 
                     <th className="px-3 py-3">
-                      {locale === 'en'
-                        ? 'Required date'
-                        : 'วันที่ต้องการ'}
+                      {locale === 'en' ? 'Required date' : 'วันที่ต้องการ'}
                     </th>
 
                     <th className="px-3 py-3">
-                      {dict.common?.status ||
-                        (locale === 'en'
-                          ? 'Status'
-                          : 'สถานะ')}
+                      {dict.common?.status || (locale === 'en' ? 'Status' : 'สถานะ')}
                     </th>
 
                     <th className="px-3 py-3 print:hidden">
@@ -457,9 +478,7 @@ export default async function PledgesPage({
                         </div>
 
                         <div className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">
-                          {p.donor_phone ??
-                            p.donor_email ??
-                            '—'}
+                          {p.donor_phone ?? p.donor_email ?? '—'}
                         </div>
                       </td>
 
@@ -467,8 +486,7 @@ export default async function PledgesPage({
                       <td className="px-3 py-3">
                         <div className="flex items-center gap-2">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-white text-[20px] dark:border-slate-700 dark:bg-slate-800">
-                            {CATEGORY_ICON[p.category] ??
-                              '📦'}
+                            {CATEGORY_ICON[p.category] ?? '📦'}
                           </span>
 
                           <div>
@@ -477,8 +495,7 @@ export default async function PledgesPage({
                             </div>
 
                             <div className="text-[9px] text-slate-400 dark:text-slate-500">
-                              {CATEGORY_LABEL[p.category] ??
-                                p.category}
+                              {CATEGORY_LABEL[p.category] ?? p.category}
                             </div>
                           </div>
                         </div>
@@ -489,11 +506,9 @@ export default async function PledgesPage({
                         {p.quantity}
                       </td>
 
-                      {/* หน่วย
-                          /pledge ไม่ให้ประชาชนเลือกหน่วย
-                          ดังนั้นคำร้องใหม่จะยังไม่มี unit */}
+                      {/* หน่วย */}
                       <td className="px-3 py-3 text-[11px] text-slate-600 dark:text-slate-300">
-                        {p.unit ?? '—'}
+                        {p.unit ?? (locale === 'en' ? 'box' : 'กล่อง')}
                       </td>
 
                       {/* วันที่ต้องการ */}
@@ -508,8 +523,7 @@ export default async function PledgesPage({
                             p.status,
                           )}`}
                         >
-                          {STATUS_LABEL[p.status] ??
-                            p.status}
+                          {STATUS_LABEL[p.status] ?? p.status}
                         </span>
                       </td>
 
@@ -528,55 +542,23 @@ export default async function PledgesPage({
                                 value={p.id}
                               />
 
-                              {/* เลือกศูนย์ */}
                               {centers && (
                                 <CenterSelect
                                   centers={centers}
-                                  label={
-                                    dict.common?.center ||
-                                    'ศูนย์'
-                                  }
+                                  label={dict.common?.center || 'ศูนย์'}
                                   placeholder={
-                                    dict.common
-                                      ?.selectCenter ||
-                                    'เลือกศูนย์'
+                                    dict.common?.selectCenter || 'เลือกศูนย์'
                                   }
                                   compact
                                 />
                               )}
-
-                              {/* เลือกหน่วย
-                                  ไม่ default เป็น "ชิ้น"
-                                  และบังคับให้เจ้าหน้าที่เลือก */}
-                              <UnitSelect
-                                id={`unit-${p.id}`}
-                                name="unit"
-                                defaultValue=""
-                                locale={locale}
-                                required
-                                allowEmpty
-                                emptyLabel={
-                                  locale === 'en'
-                                    ? 'Select unit'
-                                    : 'เลือกหน่วย'
-                                }
-                                aria-label={
-                                  dict.donationNew?.unit ||
-                                  (locale === 'en'
-                                    ? 'Unit'
-                                    : 'หน่วย')
-                                }
-                                className="h-[32px] w-[92px] rounded-md border border-slate-300 bg-white px-2 text-[10px] text-slate-700 outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                              />
 
                               <button
                                 type="submit"
                                 className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                               >
                                 <Pencil className="h-3 w-3" />
-                                {locale === 'en'
-                                  ? 'Confirm'
-                                  : 'ยืนยัน'}
+                                {locale === 'en' ? 'Confirm' : 'ยืนยัน'}
                               </button>
                             </form>
 
@@ -590,20 +572,16 @@ export default async function PledgesPage({
 
                               <button
                                 type="submit"
-                                className="flex items-center gap-1 rounded-md border border-red-100 bg-white px-2.5 py-1.5 text-[10px] font-medium text-red-600 shadow-sm transition hover:bg-red-50 dark:border-red-500/20 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                                className="flex items-center gap-1 rounded-md border border-red-100 bg-[#ffffff] px-2.5 py-1.5 text-[10px] font-medium text-red-600 shadow-sm transition hover:bg-red-50 dark:border-red-500/20 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
                               >
                                 <Trash2 className="h-3 w-3" />
-                                {locale === 'en'
-                                  ? 'Reject'
-                                  : 'ปฏิเสธ'}
+                                {locale === 'en' ? 'Reject' : 'ปฏิเสธ'}
                               </button>
                             </form>
                           </div>
                         ) : (
                           <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                            {locale === 'en'
-                              ? 'Completed'
-                              : 'ดำเนินการแล้ว'}
+                            {locale === 'en' ? 'Completed' : 'ดำเนินการแล้ว'}
                           </span>
                         )}
                       </td>

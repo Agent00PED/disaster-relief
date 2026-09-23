@@ -33,7 +33,7 @@ export default async function EditDonationPage({
   const { data: donation, error } = await supabase
     .from('donations')
     .select(
-      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date'
+      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date',
     )
     .eq('id', id)
     .single()

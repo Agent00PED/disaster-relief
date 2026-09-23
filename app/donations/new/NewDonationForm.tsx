@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 
 interface Province {
@@ -45,6 +46,7 @@ interface NewDonationFormProps {
   createDonationAction?: (
     formData: FormData
   ) => void | Promise<void>
+  centerSelect?: React.ReactNode
 }
 
 const donationTypes = [
@@ -120,6 +122,7 @@ export default function NewDonationForm({
   locale,
   error,
   createDonationAction,
+  centerSelect,
 }: NewDonationFormProps) {
   const currentLocale: 'th' | 'en' =
     locale ??
@@ -1057,6 +1060,23 @@ export default function NewDonationForm({
             )}
           </div>
         </div>
+      )}
+
+      {/* =========================
+          DESTINATION CENTER
+      ========================= */}
+      {centerSelect && (
+        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="mb-4">
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+              {tr(
+                'ศูนย์ปลายทาง / คลังสินค้า',
+                'Destination Center / Warehouse'
+              )}
+            </h2>
+          </div>
+          {centerSelect}
+        </section>
       )}
 
       {/* =========================
@@ -2506,6 +2526,14 @@ export default function NewDonationForm({
 
                         <input
                           type="hidden"
+                          name="quantity_received"
+                          value={
+                            item.quantity
+                          }
+                        />
+
+                        <input
+                          type="hidden"
                           name="expiry_date"
                           value={
                             item.expiryDate
@@ -2552,6 +2580,16 @@ export default function NewDonationForm({
       ========================= */}
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <Link
+          href="/donations"
+          className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-5 py-3 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          {tr(
+            '← กลับไปหน้ารายการ',
+            '← Back to List'
+          )}
+        </Link>
+
         <button
           type="button"
           onClick={
