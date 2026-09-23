@@ -36,7 +36,7 @@ export default async function VolunteerPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, username, role, center_id, id_photo_path, centers(name, type, address, contact_phone)')
+    .select('full_name, username, role, center_id, centers(name, type, address, contact_phone)')
     .eq('id', user.id)
     .single()
 
@@ -88,8 +88,6 @@ export default async function VolunteerPage({
     name={profile.full_name || profile.username || dict.volunteer.defaultName}
     center={profile.centers as unknown as { name: string; type: string; address: string | null; contact_phone: string | null } | null}
     staff={(staffRows ?? []).map(s => ({ id: s.id, name: s.full_name || s.username || '', phone: s.phone, role: s.role }))}
-    userId={user.id}
-    idPhotoPath={profile.id_photo_path ?? null}
     requests={requests.data ? sortByUrgency([...requests.data]) : []}
     pending={pending.data ?? []} history={history.data ?? []}
     counts={[pending.error ? null : pending.count, urgent.error ? null : urgent.count, requests.error ? null : requests.count, delivered.error ? null : delivered.count]}
