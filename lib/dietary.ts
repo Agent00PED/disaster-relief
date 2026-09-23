@@ -62,3 +62,17 @@ export function dietaryLabel(value: string | null | undefined, locale: string) {
 export function dietaryHint(value: DietaryType, locale: string) {
   return locale === 'en' ? HINT_EN[value] : HINT_TH[value]
 }
+
+/**
+ * คำขอที่ระบุข้อกำหนดรับได้เฉพาะของที่ตรงกัน คำขอ general รับได้ทุกแบบ
+ * ต้องให้ผลตรงกับกฎใน allocate_items (docs/sql/33_dietary_type.sql) เสมอ
+ * ถ้าแก้ที่หนึ่งให้แก้อีกที่ด้วย ไม่งั้นหน้าเว็บจะบอกว่าจ่ายได้ทั้งที่ฐานข้อมูลจะปฏิเสธ
+ */
+export function dietaryMatches(
+  requestValue: string | null | undefined,
+  donationValue: string | null | undefined,
+) {
+  const required = normalizeDietary(requestValue)
+  if (required === DEFAULT_DIETARY) return true
+  return normalizeDietary(donationValue) === required
+}
