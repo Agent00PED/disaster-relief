@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
+import { UNITS } from '@/lib/units'
 
 interface Province {
   id: number
@@ -2433,41 +2434,14 @@ export default function NewDonationForm({
                                 )}
                               </option>
 
-                              {[
-                                'ชิ้น',
-                                'กล่อง',
-                                'ขวด',
-                                'แพ็ค',
-                                'ลัง',
-                                'ถัง',
-                                'ถุง',
-                                'กระสอบ',
-                                'กิโลกรัม',
-                                'ห่อ',
-                                'กระป๋อง',
-                                'ชุด',
-                                'แผง',
-                                'กระปุก',
-                                'หลอด',
-                                'ซอง',
-                              ].map(
-                                (
-                                  option
-                                ) => (
-                                  <option
-                                    key={
-                                      option
-                                    }
-                                    value={
-                                      option
-                                    }
-                                  >
-                                    {optionLabel(
-                                      option
-                                    )}
-                                  </option>
-                                )
-                              )}
+                              {UNITS.map((option) => (
+                                <option
+                                  key={option}
+                                  value={option}
+                                >
+                                  {optionLabel(option)}
+                                </option>
+                              ))}
                             </select>
                           </div>
 

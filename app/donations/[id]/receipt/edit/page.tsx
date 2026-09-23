@@ -8,6 +8,9 @@ type EditDonationPageProps = {
   params: Promise<{
     id: string
   }>
+  searchParams: Promise<{
+    error?: string
+  }>
 }
 
 export const dynamic = 'force-dynamic'
@@ -23,8 +26,10 @@ const categories = [
 
 export default async function EditDonationPage({
   params,
+  searchParams,
 }: EditDonationPageProps) {
   const { id } = await params
+  const { error: errorMessage } = await searchParams
 
   const supabase = await createClient()
 
@@ -61,6 +66,16 @@ export default async function EditDonationPage({
           แก้ไขข้อมูลรายการบริจาค
         </p>
       </div>
+
+      {/* Error */}
+      {errorMessage && (
+        <div
+          role="alert"
+          className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+        >
+          ไม่สามารถบันทึกการแก้ไขได้: {errorMessage}
+        </div>
+      )}
 
       {/* Form */}
       <form
@@ -120,67 +135,53 @@ export default async function EditDonationPage({
             </select>
           </div>
 
-          {/* จำนวน + หน่วย */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-            <div>
-              <label
-                htmlFor="quantity_received"
-                className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                จำนวนที่รับ
-              </label>
+          {/* จำนวนที่รับ - แสดงอย่างเดียว */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              จำนวนที่รับ
+            </label>
 
-              <input
-                id="quantity_received"
-                name="quantity_received"
-                type="number"
-                min="1"
-                required
-                defaultValue={donation.quantity_received}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
+            <div className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+              {donation.quantity_received} {donation.unit}
             </div>
 
-            <div>
-              <label
-                htmlFor="unit"
-                className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                หน่วย
-              </label>
-
-              <input
-                id="unit"
-                name="unit"
-                type="text"
-                required
-                defaultValue={donation.unit}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-              />
-            </div>
+            <p className="mt-1 text-xs text-slate-400">
+              จำนวนที่รับไม่สามารถแก้ไขจากหน้านี้ได้
+            </p>
           </div>
 
-          {/* จำนวนคงเหลือ */}
+          {/* หน่วย */}
           <div>
             <label
-              htmlFor="quantity_remaining"
+              htmlFor="unit"
               className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              จำนวนคงเหลือ
+              หน่วย
             </label>
 
             <input
-              id="quantity_remaining"
-              name="quantity_remaining"
-              type="number"
-              min="0"
+              id="unit"
+              name="unit"
+              type="text"
               required
-              defaultValue={donation.quantity_remaining}
+              defaultValue={donation.unit}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
+          </div>
+
+          {/* จำนวนคงเหลือ - แสดงอย่างเดียว */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              จำนวนคงเหลือ
+            </label>
+
+            <div className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
+              {donation.quantity_remaining} {donation.unit}
+            </div>
 
             <p className="mt-1 text-xs text-slate-400">
-              หากมีการเบิกจ่ายไปแล้ว ควรใส่จำนวนคงเหลือจริง
+              จำนวนคงเหลือไม่สามารถแก้ไขจากหน้านี้ได้
+              กรุณาแก้ไขผ่านหน้าจัดสรรหากต้องการเปลี่ยนยอด
             </p>
           </div>
 
