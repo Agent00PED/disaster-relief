@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import { PageHeader } from '@/app/page-header'
+import { PROVINCES } from '@/app/lib/provinces' // แก้ไข path ให้ถูกต้องตรงตามโครงสร้างกลาง
 
 type Donor = {
   id: string
@@ -22,31 +23,15 @@ type Props = {
 
 const PAGE_SIZE = 10
 
-// รายชื่อ 77 จังหวัดทั่วประเทศไทย
-const allProvincesList = [
-  "กรุงเทพมหานคร", "กระบี่", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", 
-  "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", 
-  "ชัยภูมิ", "ชุมพร", "ตรัง", "ตราด", "ตาก", 
-  "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", 
-  "นครสวรรค์", "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", 
-  "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์", "ปราจีนบุรี", "ปัตตานี", 
-  "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", 
-  "พิษณุโลก", "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", 
-  "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร", "ยะลา", 
-  "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", 
-  "ลำปาง", "ลำพูน", "เลย", "ศรีสะเกษ", "สกลนคร", 
-  "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", 
-  "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", 
-  "สุราษฎร์ธานี", "สุรินทร์", "หนองคาย", "หนองบัวลำภู", "อ่างทอง", 
-  "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี", "อุบลราชธานี"
-]
-
 export default function DonorTable({ donors, dict }: Props) {
   const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [status, setStatus] = useState<'all' | 'active' | 'inactive'>('all')
   const [selectedProvince, setSelectedProvince] = useState('all')
   const [page, setPage] = useState(1)
+
+  // เช็กว่าเป็นภาษาอังกฤษหรือไม่จากคีย์ที่มีใน dict
+  const isEn = Boolean(dict.donors.searchTitle && dict.donors.searchTitle.toLowerCase() !== 'ค้นหาผู้บริจาค' && !dict.donors.searchTitle.includes('ค้นหา'))
 
   const filteredDonors = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase()
@@ -56,8 +41,10 @@ export default function DonorTable({ donors, dict }: Props) {
       const matchesStatus =
         status === 'all' ||
         (status === 'active' ? donor.is_active : !donor.is_active)
+      
       const matchesProvince =
-        selectedProvince === 'all' || donor.address === selectedProvince
+        selectedProvince === 'all' || 
+        (donor.address ? donor.address.includes(selectedProvince) : false)
 
       return matchesName && matchesStatus && matchesProvince
     })
@@ -114,7 +101,6 @@ export default function DonorTable({ donors, dict }: Props) {
                 id="donor-search"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                // 👉 ดักไม่ให้พิมพ์ตัวเลขในช่องค้นหาชื่อ
                 onInput={(e) => {
                   e.currentTarget.value = e.currentTarget.value.replace(/[0-9]/g, '')
                 }}
@@ -138,7 +124,7 @@ export default function DonorTable({ donors, dict }: Props) {
 
           {/* ตัวเลือกกรองตามจังหวัด */}
           <label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-            จังหวัด / พื้นที่
+            {isEn ? "Province / Area" : "จังหวัด / พื้นที่"}
             <select
               value={selectedProvince}
               onChange={(e) => {
@@ -147,8 +133,8 @@ export default function DonorTable({ donors, dict }: Props) {
               }}
               className="mt-1 block w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 sm:w-44"
             >
-              <option value="all">ทุกจังหวัด</option>
-              {allProvincesList.map((prov) => (
+              <option value="all">{isEn ? "All Provinces" : "ทุกจังหวัด"}</option>
+              {PROVINCES.map((prov: string) => (
                 <option key={prov} value={prov}>
                   {prov}
                 </option>
@@ -180,7 +166,7 @@ export default function DonorTable({ donors, dict }: Props) {
               onClick={handleClear}
               className="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              {dict.common.cancel} (ล้างตัวกรอง)
+              {dict.common.cancel} ({isEn ? "Clear Filter" : "ล้างตัวกรอง"})
             </button>
           </div>
         )}
@@ -193,7 +179,7 @@ export default function DonorTable({ donors, dict }: Props) {
               <th className="px-4 py-3">{dict.donors.sequence}</th>
               <th className="px-4 py-3">{dict.donors.name}</th>
               <th className="px-4 py-3">{dict.form.phone}</th>
-              <th className="px-4 py-3">ที่อยู่ / จังหวัด</th>
+              <th className="px-4 py-3">{isEn ? "Province / Area" : "จังหวัด / พื้นที่"}</th>
               <th className="px-4 py-3">{dict.common.status}</th>
               <th className="px-4 py-3 text-right">{dict.common.actions}</th>
             </tr>

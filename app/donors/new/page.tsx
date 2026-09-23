@@ -1,83 +1,82 @@
-'use client'
-
 import Link from 'next/link'
 import { createDonor } from '../actions'
+import { PROVINCES } from '@/app/lib/provinces'
+import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 
-// รายชื่อ 77 จังหวัดทั่วประเทศไทย
-const provinces = [
-  'กรุงเทพมหานคร', 'กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 
-  'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 
-  'ชัยภูมิ', 'ชุมพร', 'ตรัง', 'ตราด', 'ตาก', 
-  'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 
-  'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 
-  'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 
-  'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 
-  'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 
-  'มหาสารคาม', 'มุกดาหาร', 'ยะลา', 'ยโสธร', 'ร้อยเอ็ด', 
-  'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 
-  'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 
-  'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 
-  'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 
-  'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 
-  'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี'
-]
+export default async function NewDonorPage() {
+  const locale = await getLocale()
+  const dict = await getDictionary(locale)
 
-export default function NewDonorPage() {
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">
-        เพิ่มผู้บริจาคใหม่
+        {dict.donors.addNew}
       </h1>
 
       <form
         action={createDonor}
         className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
       >
-        {/* ช่องชื่อ (ห้ามพิมพ์ตัวเลข) */}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            ชื่อ <span className="text-red-500">*</span>
+            {locale === 'en' ? 'Name' : 'ชื่อ'} <span className="text-red-500">*</span>
           </label>
           <input
             name="name"
             required
-            placeholder="ระบุชื่อหรือนามสกุลผู้บริจาค"
-            onInput={(e) => {
-              // กรองตัวเลขออกทันทีถ้าผู้ใช้พยายามพิมพ์เข้ามา
-              e.currentTarget.value = e.currentTarget.value.replace(/[0-9]/g, '')
-            }}
+            placeholder={dict.donors.searchPlaceholder}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
 
-        {/* ช่องเบอร์โทร (พิมพ์ได้เฉพาะตัวเลขเท่านั้น) */}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            เบอร์โทร
+            {locale === 'en' ? 'Donor Type' : 'ประเภทผู้บริจาค'}
+          </label>
+          <select
+            name="donor_type"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          >
+            <option value="individual">{locale === 'en' ? 'Individual' : 'บุคคลธรรมดา'}</option>
+            <option value="organization">{locale === 'en' ? 'Organization' : 'องค์กร / นิติบุคคล'}</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {locale === 'en' ? 'Email' : 'อีเมล'}
+          </label>
+          <input
+            name="email"
+            type="email"
+            placeholder="example@email.com"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            {locale === 'en' ? 'Phone Number' : 'เบอร์โทร'}
           </label>
           <input
             name="phone"
             inputMode="numeric"
             placeholder="0xxxxxxxx"
-            onInput={(e) => {
-              // กรองตัวอักษรอื่นๆ ออก ให้เหลือแค่ตัวเลข
-              e.currentTarget.value = e.currentTarget.value.replace(/[^0-9]/g, '')
-            }}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>
 
-        {/* ช่องเลือกจังหวัด */}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            จังหวัด
+            {locale === 'en' ? 'Province' : 'จังหวัด'}
           </label>
           <select
             name="address"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="">-- เลือกจังหวัด --</option>
-            {provinces.map((prov) => (
+            <option value="">{locale === 'en' ? '-- Select Province --' : '-- เลือกจังหวัด --'}</option>
+            {PROVINCES.map((prov: string) => (
               <option key={prov} value={prov}>{prov}</option>
             ))}
           </select>
@@ -90,7 +89,7 @@ export default function NewDonorPage() {
               type="checkbox"
               className="rounded border-slate-300"
             />
-            ไม่ประสงค์ออกนาม
+            {dict.donors.anonymousCheckbox}
           </label>
         </div>
 
@@ -99,13 +98,13 @@ export default function NewDonorPage() {
             type="submit"
             className="flex-1 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
           >
-            บันทึกข้อมูล
+            {dict.common.save}
           </button>
           <Link
             href="/donors"
             className="flex-1 rounded-md border border-slate-300 bg-white px-4 py-2 text-center text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            ยกเลิก
+            {dict.common.cancel}
           </Link>
         </div>
       </form>
