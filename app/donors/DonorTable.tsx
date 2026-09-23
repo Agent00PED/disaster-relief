@@ -39,9 +39,14 @@ export default function DonorTable({ donors, dict }: Props) {
         status === 'all' ||
         (status === 'active' ? donor.is_active : !donor.is_active)
       
+      // ที่อยู่ถูกเก็บเป็น "<ตำบล> <จังหวัด>" (ดู app/donors/actions.ts)
+      // จึงเทียบที่ท้ายข้อความ ไม่ใช่ includes
+      //
+      // มีตำบล 17 ชื่อที่ซ้ำกับชื่อจังหวัด เช่น ต.ขอนแก่น อยู่ใน จ.ร้อยเอ็ด
+      // ถ้าใช้ includes คนในร้อยเอ็ดจะโผล่มาตอนกรองขอนแก่น
       const matchesProvince =
-        selectedProvince === 'all' || 
-        (donor.address ? donor.address.includes(selectedProvince) : false)
+        selectedProvince === 'all' ||
+        (donor.address ? donor.address.trim().endsWith(selectedProvince) : false)
 
       return matchesName && matchesStatus && matchesProvince
     })
