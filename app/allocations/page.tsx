@@ -22,6 +22,7 @@ import { sortByUrgency } from '@/lib/urgency'
 import { SuccessDialog, type AllocationSummary } from './success-dialog'
 import { ErrorDialog } from './error-dialog'
 import { unitLabel } from '@/lib/units'
+import { dietaryMatches } from '@/lib/dietary'
 import { itemsMatch } from '@/lib/item-match'
 import { bangkokToday, daysFromToday } from '@/lib/dates'
 
@@ -43,14 +44,14 @@ export default async function AllocationsPage({
     supabase
       .from('requests')
       .select(
-        'id, center_id, item_name, category, unit, quantity_requested, quantity_fulfilled, urgency, created_at, centers(name)',
+        'id, center_id, item_name, category, unit, dietary_type, quantity_requested, quantity_fulfilled, urgency, created_at, centers(name)',
       )
       .in('status', ['pending', 'partial'])
       .order('created_at', { ascending: true }),
     // FEFO: ใกล้หมดอายุก่อน และตัดล็อตที่หมดอายุแล้ว (ตามวันที่เวลาไทย) ออกตั้งแต่ตอนดึง
     supabase
       .from('donations')
-      .select('id, center_id, item_name, category, unit, quantity_remaining, expiry_date, received_at, centers(name)')
+      .select('id, center_id, item_name, category, unit, dietary_type, quantity_remaining, expiry_date, received_at, centers(name)')
       .gt('quantity_remaining', 0)
       .or(`expiry_date.is.null,expiry_date.gte.${bangkokToday()}`)
       .order('expiry_date', { ascending: true, nullsFirst: false }),
@@ -67,7 +68,10 @@ export default async function AllocationsPage({
         d.category === r.category &&
         (isAdmin || d.center_id === r.center_id) &&
         itemsMatch(r.item_name, d.item_name) &&
-        (!r.unit?.trim() || d.unit.trim() === r.unit.trim()),
+        (!r.unit?.trim() || d.unit.trim() === r.unit.trim()) &&
+        // ต้องเช็กข้อกำหนดด้านอาหารด้วย ไม่งั้นจะขึ้นว่า "มีของพร้อมจ่าย"
+        // แล้วพอกดจริงโดน F5:dietary_mismatch (ดู docs/sql/33_dietary_type.sql)
+        dietaryMatches(r.dietary_type, d.dietary_type),
     ),
   }))
   const requests = sortByUrgency([...withReady].sort((a, b) => Number(b.ready) - Number(a.ready)))
