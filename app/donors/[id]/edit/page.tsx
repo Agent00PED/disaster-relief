@@ -29,10 +29,22 @@ export default async function EditDonorPage({ params }: Props) {
     notFound()
   }
 
-  // แยก address เก่า (ถ้ามี) ออกเป็น ตำบล กับ จังหวัด คร่าวๆ เพื่อให้หน้า Edit แสดงผลได้
-  const addressParts = (donor?.address || '').split(' ')
-  const defaultProvince = PROVINCES.find(p => addressParts.includes(p)) || ''
-  const defaultSubdistrict = addressParts.filter((p: string) => p !== defaultProvince).join(' ')
+  // แยก address กลับเป็น ตำบล กับ จังหวัด
+  //
+  // ที่อยู่ถูกประกอบเป็น "<ตำบล> <จังหวัด>" (ดู app/donors/actions.ts)
+  // จึงต้องอ่านจังหวัดจาก "คำสุดท้าย" เท่านั้น
+  //
+  // ถ้าไล่หาชื่อจังหวัดจากที่ไหนก็ได้ในข้อความ จะสลับกันเองเมื่อชื่อตำบล
+  // ซ้ำกับชื่อจังหวัด ซึ่งมีอยู่จริง 22 กรณี เช่น ต.ขอนแก่น อยู่ใน จ.ร้อยเอ็ด
+  // เปิดหน้าแก้ไขแล้วกดบันทึก ที่อยู่จะกลับด้านถาวรโดยไม่มีใครรู้ตัว
+  const rawAddress = (donor?.address || '').trim()
+  const addressParts = rawAddress ? rawAddress.split(/\s+/) : []
+  const lastPart = addressParts[addressParts.length - 1] ?? ''
+  const defaultProvince = PROVINCES.includes(lastPart) ? lastPart : ''
+  // ที่อยู่เก่าที่ไม่ได้ลงท้ายด้วยชื่อจังหวัด เก็บไว้ทั้งก้อนในช่องตำบล ไม่ให้ข้อมูลหาย
+  const defaultSubdistrict = defaultProvince
+    ? addressParts.slice(0, -1).join(' ')
+    : rawAddress
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <div className="mb-6">
