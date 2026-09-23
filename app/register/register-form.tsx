@@ -31,6 +31,7 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
   const [centerId, setCenterId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [photoUploadFailed, setPhotoUploadFailed] = useState(false)
   const [done, setDone] = useState(false)
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
         setError(messages[result.error as keyof typeof messages] ?? dict.register.errGeneric)
         return
       }
+      setPhotoUploadFailed(Boolean(result.photoUploadFailed))
       setDone(true)
     } catch {
       setError(dict.register.errGeneric)
@@ -76,6 +78,7 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
     <div className={styles.success} role="status">
       <h2>{dict.register.successTitle}</h2>
       <p>{dict.register.successDesc}</p>
+      {photoUploadFailed && <p role="alert">{dict.register.photoUploadFailed}</p>}
       <button type="button" onClick={onLogin} className={styles.submit}>{dict.register.goToLogin}</button>
     </div>
   )
@@ -92,7 +95,7 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
       <div><label htmlFor="register-birth-date">{dict.register.birthDate}</label>
         <input id="register-birth-date" name="birth_date" type="date" autoComplete="bday" required min={birthDateRange.min} max={birthDateRange.max} /></div>
       <div><label htmlFor="register-photo">{dict.register.identityPhoto}</label>
-        <input id="register-photo" name="identity_photo" type="file" accept="image/jpeg,image/png,image/webp" required aria-describedby="register-photo-hint" />
+        <input id="register-photo" name="identity_photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="register-photo-hint" />
         <p id="register-photo-hint" className={styles.fieldHint}>{dict.register.photoHint}</p></div>
       <div><label htmlFor="register-username">{dict.register.username}</label>
         <input id="register-username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={username} onChange={e => setUsername(e.target.value)} /></div>

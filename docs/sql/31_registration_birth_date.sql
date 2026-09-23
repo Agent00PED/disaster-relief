@@ -2,6 +2,8 @@
 -- Do not invent a month/day for existing accounts that only have a birth year.
 begin;
 alter table public.profiles add column if not exists birth_date date;
+comment on column public.profiles.birth_date is 'Primary birth date for new registrations; unknown for legacy year-only accounts';
+comment on column public.profiles.birth_year is 'Buddhist calendar birth year; compatibility field derived from birth_date for new registrations';
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -28,7 +30,7 @@ begin
     end;
   end if;
 
-  insert into public.profiles (id, full_name, role, center_id, username, first_name, last_name, phone, birth_year, birth_date, identity_photo_path)
+  insert into public.profiles (id, full_name, role, center_id, username, first_name, last_name, phone, birth_year, birth_date, id_photo_path)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
@@ -41,7 +43,7 @@ begin
     coalesce(extract(year from nullif(new.raw_user_meta_data ->> 'birth_date', '')::date)::int + 543,
       nullif(new.raw_user_meta_data ->> 'birth_year', '')::int),
     nullif(new.raw_user_meta_data ->> 'birth_date', '')::date,
-    nullif(new.raw_user_meta_data ->> 'identity_photo_path', '')
+    null
   );
   return new;
 end;

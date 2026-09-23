@@ -1,11 +1,11 @@
--- Run after 29_missing_columns.sql. Existing accounts keep nullable new fields.
+-- Run after 28_volunteer_profile.sql and 29_missing_columns.sql. Existing accounts keep nullable new fields.
 begin;
 alter table public.profiles
   add column if not exists first_name text,
   add column if not exists last_name text,
   add column if not exists phone text,
   add column if not exists birth_year integer check (birth_year between 2400 and 2800),
-  add column if not exists identity_photo_path text;
+  add column if not exists id_photo_path text;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -32,7 +32,7 @@ begin
     end;
   end if;
 
-  insert into public.profiles (id, full_name, role, center_id, username, first_name, last_name, phone, birth_year, identity_photo_path)
+  insert into public.profiles (id, full_name, role, center_id, username, first_name, last_name, phone, birth_year, id_photo_path)
   values (
     new.id,
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
@@ -43,22 +43,11 @@ begin
     nullif(trim(new.raw_user_meta_data ->> 'last_name'), ''),
     nullif(new.raw_user_meta_data ->> 'phone', ''),
     nullif(new.raw_user_meta_data ->> 'birth_year', '')::int,
-    nullif(new.raw_user_meta_data ->> 'identity_photo_path', '')
+    null
   );
   return new;
 end;
 $$;
 
--- Private bucket: uploads are handled only by the server service role.
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('identity-photos', 'identity-photos', false, 3145728,
-  array['image/jpeg', 'image/png', 'image/webp'])
-on conflict (id) do update set public = false,
-  file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
-
--- Identity images are available to administrators only, never via public URLs.
-drop policy if exists identity_photos_admin_read on storage.objects;
-create policy identity_photos_admin_read on storage.objects
-  for select to authenticated
-  using (bucket_id = 'identity-photos' and public.is_admin());
+-- Reuse the private volunteer-ids bucket and policies from migration 28.
 commit;

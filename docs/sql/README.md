@@ -1,13 +1,28 @@
-# Supabase SQL — วิธีใช้
+# Supabase SQL
 
-ช่องวันเดือนปีเกิด: รัน `31_registration_birth_date.sql` หลัง `30_registration_details.sql` เพื่อเพิ่ม `profiles.birth_date` และปรับ trigger สมัครสมาชิกให้เก็บวันที่เต็ม โดยยังเก็บ `birth_year` สำหรับรองรับข้อมูลเดิม บัญชีเดิมที่มีเฉพาะปีเกิดจะยังไม่มีวันเดือนปีเกิดจนกว่าจะกรอกเพิ่ม ฟอร์มปฏิเสธวันที่ไม่มีจริงและวันที่ในอนาคต
+## Registration rollout (review with Hum before running SQL)
 
-สำหรับฟอร์มสมัครสมาชิกเวอร์ชันใหม่ ให้รัน `30_registration_details.sql` หลังไฟล์ `29_missing_columns.sql` (`11`, `13` และ `15`) เพื่อเพิ่มชื่อ นามสกุล เบอร์โทร ปีเกิด และที่เก็บรูปส่วนตัว จากนั้นตั้ง `SUPABASE_SERVICE_ROLE_KEY` ใน `.env.local` และ environment ของเซิร์ฟเวอร์ที่ deploy (ห้ามใช้คำนำหน้า `NEXT_PUBLIC_`) แล้ว restart แอป คีย์นี้ใช้เฉพาะ API ฝั่งเซิร์ฟเวอร์เพื่ออัปโหลดรูปก่อนยืนยันอีเมล การสมัครยังใช้ Supabase Auth ตามปกติ
+1. Confirm migrations 27, 28 and 29 have run. Review the shared profile/storage changes with Hum before applying 30 and then 31 in Supabase SQL Editor.
+2. Set `SUPABASE_SERVICE_ROLE_KEY` privately in `.env.local` and Vercel environment variables, then restart/redeploy. Never prefix it with `NEXT_PUBLIC_` or commit its value. Registration without a photo does not require this key; registration with a photo does.
+3. Use `profiles.id_photo_path` and the existing private `volunteer-ids` bucket. Upload paths start with the Auth user ID. Migration 30 no longer creates a second photo column or bucket. The trigger ignores client-supplied photo paths; the server writes the path after uploading.
+4. `birth_date` is the primary value for new registrations; `birth_year` remains the Buddhist-calendar compatibility value. Existing year-only accounts keep a null birth date.
 
-ตรวจสอบหลังตั้งค่า: สมัครด้วยข้อมูลครบและรูป JPG/PNG/WebP ไม่เกิน 3 MB, ยืนยันว่าข้อมูลใหม่อยู่ใน `profiles` และรูปอยู่ใน bucket `identity-photos` ที่เป็น private; ลองไฟล์ผิดชนิด/ขนาดเกินและปีเกิดอนาคต ต้องสมัครไม่สำเร็จ; ทดสอบทั้งกรณีเปิดและปิดการยืนยันอีเมล รูปเปิดอ่านได้เฉพาะ admin ผ่าน Storage API ที่ยืนยันตัวตนแล้ว การอัปโหลดรูปไม่ได้หมายความว่าผ่านการตรวจสอบตัวตนอัตโนมัติ
+Photos are optional. Signup uses ordinary Supabase Auth first, then the server uploads the photo and updates the profile. If photo storage fails after signup, the account remains valid and the form explicitly asks the user to upload again from `/volunteer`. Failed profile updates trigger file cleanup; cleanup failures are logged for operators. The volunteer page highlights missing photos. Existing storage policies govern owner/admin/center access.
 
-รันทีละไฟล์ตามลำดับเลขใน **Supabase Dashboard > SQL Editor > New query**
-(วางเนื้อหาไฟล์นั้นทั้งหมด แล้วกด Run ก่อนไปไฟล์ถัดไป)
+If an earlier version of 30/31 was already applied, inspect existing `identity_photo_path` values and `identity-photos` objects before rollout. These scripts do not migrate or delete legacy photos; plan a separate data migration if any exist.
+
+### Verification before release
+
+- Register with and without a photo; test with email confirmation enabled and disabled.
+- Check first/last name, phone, birth_date, Buddhist birth_year, and role `volunteer` on the new profile.
+- For photo signup, confirm `id_photo_path` starts with the user ID, storage uses `volunteer-ids`, and `/volunteer` shows and opens the uploaded photo. Check scoped access using owner, admin and center staff accounts.
+- Reject PDFs, spoofed image MIME types, oversized files and invalid/future birth dates before creating an account.
+- Simulate upload/profile failures: show the recovery message and remove unreferenced uploads without deleting the account. Duplicate signup must not overwrite or delete existing photos.
+- Check the homepage motto at 1366px and 375px.
+
+The attached review references `00-อ่านก่อน-ทุกคน.txt`; it was not present in this checkout or the supplied attachment.
+
+Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 
 | ลำดับ | ไฟล์ | เนื้อหา |
 |---|---|---|
