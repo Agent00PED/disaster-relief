@@ -1,4 +1,4 @@
--- 21_sanitize_demo_donors.sql
+-- 34_sanitize_demo_donors.sql
 -- เปลี่ยนข้อมูลผู้บริจาค demo ให้เป็นชื่อบุคคลสมมติทั้งหมดก่อนแชร์ฐานข้อมูลหรือเดโม
 -- รันด้วย SQL Editor ที่มีสิทธิ์ postgres/service role
 

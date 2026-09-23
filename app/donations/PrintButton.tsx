@@ -17,3 +17,4 @@ export function PrintButton({ label }: PrintButtonProps) {
 }
 
 export default PrintButton
+

@@ -47,7 +47,11 @@ export async function confirmPledge(formData: FormData) {
       donor_id: donorId,
       item_name: pledge.item_name,
       category: pledge.category,
-      unit: normalizeUnit(String(formData.get('unit') || '')) || 'ชิ้น',
+      // หน่วยที่ผู้บริจาคเลือกไว้เป็นหลัก ถ้า staff เลือกใหม่ในฟอร์มค่อยใช้ค่านั้นแทน
+      unit:
+        normalizeUnit(String(formData.get('unit') || '')) ||
+        normalizeUnit(String(pledge.unit || '')) ||
+        'ชิ้น',
       quantity_received: pledge.quantity,
       quantity_remaining: pledge.quantity,
       received_by: user.id,

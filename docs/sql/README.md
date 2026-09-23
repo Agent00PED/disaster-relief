@@ -1,7 +1,28 @@
-# Supabase SQL — วิธีใช้
+# Supabase SQL
 
-รันทีละไฟล์ตามลำดับเลขใน **Supabase Dashboard > SQL Editor > New query**
-(วางเนื้อหาไฟล์นั้นทั้งหมด แล้วกด Run ก่อนไปไฟล์ถัดไป)
+## Registration rollout (review with Hum before running SQL)
+
+1. Confirm migrations 27, 28 and 29 have run. Review the shared profile/storage changes with Hum before applying 30 and then 31 in Supabase SQL Editor.
+2. Set `SUPABASE_SERVICE_ROLE_KEY` privately in `.env.local` and Vercel environment variables, then restart/redeploy. Never prefix it with `NEXT_PUBLIC_` or commit its value. Registration without a photo does not require this key; registration with a photo does.
+3. Use `profiles.id_photo_path` and the existing private `volunteer-ids` bucket. Upload paths start with the Auth user ID. Migration 30 no longer creates a second photo column or bucket. The trigger ignores client-supplied photo paths; the server writes the path after uploading.
+4. `birth_date` is the primary value for new registrations; `birth_year` remains the Buddhist-calendar compatibility value. Existing year-only accounts keep a null birth date.
+
+Photos are optional. Signup uses ordinary Supabase Auth first, then the server uploads the photo and updates the profile. If photo storage fails after signup, the account remains valid and the form explicitly asks the user to upload again from `/volunteer`. Failed profile updates trigger file cleanup; cleanup failures are logged for operators. The volunteer page highlights missing photos. Existing storage policies govern owner/admin/center access.
+
+If an earlier version of 30/31 was already applied, inspect existing `identity_photo_path` values and `identity-photos` objects before rollout. These scripts do not migrate or delete legacy photos; plan a separate data migration if any exist.
+
+### Verification before release
+
+- Register with and without a photo; test with email confirmation enabled and disabled.
+- Check first/last name, phone, birth_date, Buddhist birth_year, and role `volunteer` on the new profile.
+- For photo signup, confirm `id_photo_path` starts with the user ID, storage uses `volunteer-ids`, and `/volunteer` shows and opens the uploaded photo. Check scoped access using owner, admin and center staff accounts.
+- Reject PDFs, spoofed image MIME types, oversized files and invalid/future birth dates before creating an account.
+- Simulate upload/profile failures: show the recovery message and remove unreferenced uploads without deleting the account. Duplicate signup must not overwrite or delete existing photos.
+- Check the homepage motto at 1366px and 375px.
+
+The attached review references `00-อ่านก่อน-ทุกคน.txt`; it was not present in this checkout or the supplied attachment.
+
+Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 
 | ลำดับ | ไฟล์ | เนื้อหา |
 |---|---|---|
@@ -26,6 +47,7 @@
 | — | `22_tc_f5_setup.sql` | (ไม่บังคับ) สร้างข้อมูล `[TEST]` สำหรับเก็บหลักฐาน TC07–TC11 ตามขั้นตอนใน `docs/test-evidence/README.md` — ลบด้วย `20` |
 | 23 | `23_f5_improvements.sql` | ปรับปรุง F5 (รันหลัง `18`): ผู้ยืนยันและจำนวนที่ได้รับจริงตอนรับของ, กันแก้ยอดคงเหลือ/ยอดคำขอตรงจาก client, หน่วยของคำขอ, `cancel_request` ยกเลิกคำขอพร้อมคืนยอด, staff ยกเลิกรายการของตัวเองได้ภายใน 30 นาที, วันหมดอายุตามเวลาไทย |
 | — | `24_f5_tests.sql` | (ไม่บังคับ) ทดสอบกฎ F5 ที่ระดับฐานข้อมูล 20 เคส โดยสวมสิทธิ์ admin/staff/อาสาสมัคร — ย้อนกลับทุกอย่าง ไม่ทิ้งข้อมูลค้าง |
+| 25 | `25_public_needs.sql` | ตัวเลข "สิ่งที่ศูนย์ยังต้องการ" แบบ realtime บนหน้าแรก สำหรับผู้ใช้ที่ยังไม่ล็อกอิน — ตาราง `public_needs` (สรุปรายหมวดหมู่) + trigger จาก `requests`/`donation_pledges` + เปิด Realtime เฉพาะตารางนี้ anon อ่านได้อย่างเดียว เขียนไม่ได้ ไม่แตะ RLS เดิม |
 | 26 | `26_standard_units.sql` | (ไม่บังคับ) ปรับหน่วยของสิ่งของที่บันทึกไว้แล้วให้เป็นคำมาตรฐานชุดเดียวกัน เช่น `แพ็ก`/`pack` → `แพ็ค`, `กก.` → `กิโลกรัม` แก้ปัญหาจัดสรรไม่ผ่านเพราะ `F5:unit_mismatch` — รันส่วน PREVIEW ดูก่อน |
 | 27 | `27_profile_phone.sql` | เบอร์ติดต่อของผู้ใช้ (`profiles.phone`) — หน้าอาสาสมัครแสดงเบอร์เจ้าหน้าที่ของศูนย์ตัวเอง, ฟอร์มสมัครเก็บเบอร์ผ่าน trigger, admin แก้ได้ที่ `/admin/centers` · ไม่ต้องเพิ่ม RLS เพราะ `profiles_select` เปิดให้คนศูนย์เดียวกันอ่านอยู่แล้ว |
 | 28 | `28_volunteer_profile.sql` | ข้อมูลอาสาสมัครเพิ่มเติม — `first_name`/`last_name`/`birth_year`/`id_photo_path` ใน `profiles`, trigger เก็บให้ตอนสมัคร, Storage bucket `volunteer-ids` (private 5MB เฉพาะรูป) + policy ผูก path กับ `auth.uid()` · รันหลัง `27` |
