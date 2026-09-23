@@ -7,27 +7,31 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmHelpRequest, dismissHelpRequest } from './actions'
 import { getLocale } from '@/lib/i18n/locale'
+import type { Locale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { sortByUrgency } from '@/lib/urgency'
 import RequestFilter from './request-filter'
 
 const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900'
 
-function formatRelativeTime(dateString?: string): string {
+function formatRelativeTime(dateString: string | undefined, locale: Locale, labels: Record<string, string>): string {
   if (!dateString) return ''
   const now = new Date()
   const created = new Date(dateString)
   const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000)
 
-  if (diffInSeconds < 60) return 'เมื่อสักครู่'
-  const diffInMinutes = Math.floor(diffInSeconds / 60)
-  if (diffInMinutes < 60) return `${diffInMinutes} นาทีที่แล้ว`
-  const diffInHours = Math.floor(diffInMinutes / 60)
-  if (diffInHours < 24) return `${diffInHours} ชม. ที่แล้ว`
-  const diffInDays = Math.floor(diffInHours / 24)
-  if (diffInDays < 7) return `${diffInDays} วันที่แล้ว`
+  const formatLabel = (key: string, value?: number) =>
+    (labels[key] ?? '').replace('{n}', String(value ?? ''))
 
-  return created.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' })
+  if (diffInSeconds < 60) return formatLabel('createdJustNow')
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  if (diffInMinutes < 60) return formatLabel('createdMinutesAgo', diffInMinutes)
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) return formatLabel('createdHoursAgo', diffInHours)
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 7) return formatLabel('createdDaysAgo', diffInDays)
+
+  return created.toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-US', { day: 'numeric', month: 'short' })
 }
 
 export default async function HelpRequestsPage({
@@ -114,10 +118,10 @@ export default async function HelpRequestsPage({
   })
 
   const filterTabs = [
-    { label: 'ทั้งหมด', value: '', count: counts.all },
-    { label: 'รอตรวจสอบ', value: 'pending', count: counts.pending },
-    { label: 'ยืนยันแล้ว', value: 'confirmed', count: counts.confirmed },
-    { label: 'ปฏิเสธ', value: 'dismissed', count: counts.dismissed },
+    { label: dict.requests.allCategories, value: '', count: counts.all },
+    { label: STATUS_LABEL.pending, value: 'pending', count: counts.pending },
+    { label: STATUS_LABEL.confirmed, value: 'confirmed', count: counts.confirmed },
+    { label: STATUS_LABEL.dismissed, value: 'dismissed', count: counts.dismissed },
   ]
 
   return (
@@ -158,7 +162,7 @@ export default async function HelpRequestsPage({
         })}
       </div>
 
-      <RequestFilter centers={centers} />
+      <RequestFilter centers={centers} dict={dict} />
 
       {error && (
         <p role="alert" className="mb-6 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
@@ -179,7 +183,9 @@ export default async function HelpRequestsPage({
                   <div>
                     <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base">{p.requester_name}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📞 {p.requester_phone || '—'}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{formatRelativeTime(p.created_at)}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {formatRelativeTime(p.created_at, locale, dict.requests)}
+                    </p>
                   </div>
                   <span
                     className={
@@ -195,9 +201,9 @@ export default async function HelpRequestsPage({
                 </div>
 
                 <div className="rounded-lg bg-slate-50 p-2.5 text-xs text-slate-700 dark:bg-slate-800/50 dark:text-slate-300 space-y-1">
-                  <p><span className="font-medium text-slate-500">ศูนย์:</span> {(p.centers as unknown as { name?: string } | null)?.name ?? '—'}</p>
-                  <p><span className="font-medium text-slate-500">รายการ:</span> {p.item_name} ({CATEGORY_LABEL[p.category] ?? p.category})</p>
-                  <p><span className="font-medium text-slate-500">จำนวน:</span> {p.quantity}</p>
+                  <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.center}:</span> {(p.centers as unknown as { name?: string } | null)?.name ?? '—'}</p>
+                  <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.item}:</span> {p.item_name} ({CATEGORY_LABEL[p.category] ?? p.category})</p>
+                  <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.quantity}:</span> {p.quantity}</p>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
@@ -242,7 +248,7 @@ export default async function HelpRequestsPage({
                   <th className="px-4 py-3 font-medium text-center">{dict.helpRequestQueue.quantity}</th>
                   <th className="px-4 py-3 font-medium text-center">{dict.requests.urgency}</th>
                   <th className="px-4 py-3 font-medium text-center">{dict.common.status}</th>
-                  <th className="px-4 py-3 font-medium text-right">การดำเนินการ</th>
+                  <th className="px-4 py-3 font-medium text-right">{dict.common.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -251,7 +257,9 @@ export default async function HelpRequestsPage({
                     <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
                       <div className="font-medium">{p.requester_name}</div>
                       <div className="text-xs text-slate-400">{p.requester_phone || '—'}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{formatRelativeTime(p.created_at)}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {formatRelativeTime(p.created_at, locale, dict.requests)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                       {(p.centers as unknown as { name?: string } | null)?.name ?? '—'}

@@ -170,7 +170,7 @@ export default async function RequestsPage({
 
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-          ไม่พบรายการคำขอที่ตรงกับเงื่อนไขการค้นหา
+          {dict.requests.noRequests}
         </p>
       ) : (
         <RequestList

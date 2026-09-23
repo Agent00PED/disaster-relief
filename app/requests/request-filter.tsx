@@ -109,7 +109,7 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
             onClick={handleReset}
             className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-200 hover:text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 dark:hover:text-white"
           >
-            ✕ ล้างตัวกรอง
+            ✕ {dict.common.clearFilters}
           </button>
         )}
       </div>

@@ -79,7 +79,6 @@ export default async function HelpRequestPage({
                   name="requester_name"
                   autoComplete="name"
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 />
               </div>
 
@@ -94,7 +93,6 @@ export default async function HelpRequestPage({
                     type="tel"
                     autoComplete="tel"
                     required
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                   />
                 </div>
                 <div>
@@ -107,7 +105,6 @@ export default async function HelpRequestPage({
                     type="email"
                     autoComplete="email"
                     placeholder={dict.pledge.emailPlaceholder}
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                   />
                 </div>
               </div>
@@ -139,7 +136,6 @@ export default async function HelpRequestPage({
                   id="item_name"
                   name="item_name"
                   required
-                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 />
               </div>
 
@@ -172,7 +168,6 @@ export default async function HelpRequestPage({
                     type="number"
                     min={1}
                     required
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                   />
                 </div>
               </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/locale";
 import { CancelRequestButton, type CancelRequestButtonLabels } from "./cancel-request-dialog";
@@ -84,25 +83,6 @@ export function RequestList({
   statusLabel,
   cancelLabels,
 }: RequestListProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const openRows = rows.filter((row) => row.open);
-
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedIds(rows.filter((row) => row.open).map((row) => row.r.id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleSelectOne = (id: string) => {
-    if (selectedIds.includes(id)) {
-      setSelectedIds(selectedIds.filter((itemId) => itemId !== id));
-    } else {
-      setSelectedIds([...selectedIds, id]);
-    }
-  };
-
   const progress = (row: RowData) => (
     <div className="min-w-[120px]">
       <p className="tabular-nums text-slate-700 dark:text-slate-300">
@@ -158,23 +138,13 @@ export function RequestList({
       {/* จอเล็ก: การ์ด */}
       <ul className="space-y-3 md:hidden">
         {rows.map((row) => {
-          const isSelected = selectedIds.includes(row.r.id);
           return (
             <li
               key={row.r.id}
-              className={`${panel} p-4 transition ${
-                isSelected ? "border-amber-400 bg-amber-50/30 dark:bg-amber-950/10" : ""
-              }`}
+              className={`${panel} p-4 transition`}
             >
-              <div className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  disabled={!row.open}
-                  onChange={() => handleSelectOne(row.r.id)}
-                  className="mt-1 rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
-                />
-                <div className="flex-1">
+              <div>
+                <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900 dark:text-slate-100">{row.r.item_name}</p>
@@ -206,14 +176,6 @@ export function RequestList({
         <table className="w-full min-w-[880px] text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
             <tr>
-              <th className="w-10 px-4 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.length === openRows.length && openRows.length > 0}
-                  onChange={handleSelectAll}
-                  className="rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
-                />
-              </th>
               <th className="px-4 py-2.5 font-medium">{dict.requests?.center}</th>
               <th className="px-4 py-2.5 font-medium">{dict.requests?.item}</th>
               <th className="px-4 py-2.5 font-medium">
@@ -226,25 +188,11 @@ export function RequestList({
           </thead>
           <tbody>
             {rows.map((row) => {
-              const isSelected = selectedIds.includes(row.r.id);
               return (
                 <tr
                   key={row.r.id}
-                  className={`border-b border-slate-100 align-top last:border-0 dark:border-slate-800 transition-colors ${
-                    isSelected
-                      ? "bg-amber-50/60 dark:bg-amber-950/20"
-                      : "hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
-                  }`}
+                  className="border-b border-slate-100 align-top last:border-0 dark:border-slate-800 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
                 >
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      disabled={!row.open}
-                      onChange={() => handleSelectOne(row.r.id)}
-                      className="rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-700"
-                    />
-                  </td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.center}</td>
                   <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
                     {row.r.item_name}
