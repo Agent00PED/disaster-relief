@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createDonation } from '../actions'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
@@ -5,7 +6,9 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
-import { UnitSelect } from '@/app/unit-select'
+import NewDonationForm from './NewDonationForm'
+
+export const dynamic = 'force-dynamic'
 
 export default async function NewDonationPage({
   searchParams,
@@ -20,94 +23,47 @@ export default async function NewDonationPage({
   const centers = await getCenterPicker(supabase, 'warehouse')
 
   return (
-    <main className="mx-auto w-full max-w-lg px-6 py-12">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.donationNew.title}</h1>
-
-      {error && (
-        <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
-          {error}
-        </p>
-      )}
-
-      <form
-        action={createDonation}
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
-      >
-        {centers && (
-          <CenterSelect centers={centers} label={dict.common.center} placeholder={dict.common.selectCenter} />
-        )}
+    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.table.itemName}</label>
-          <input
-            name="item_name"
-            required
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          />
+          <Link
+            href="/donations"
+            className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            ← {locale === 'th' ? 'กลับไปหน้ารายการของบริจาค' : 'Back to donation list'}
+          </Link>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {dict.donationNew.title}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {locale === 'th'
+              ? 'บันทึกรายการสิ่งของที่รับเข้าคลังสินค้า'
+              : 'Record incoming donated items into warehouse.'}
+          </p>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.form.category}</label>
-            <select
-              name="category"
-              required
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            >
-              <option value="food">{dict.form.categoryFood}</option>
-              <option value="water">{dict.form.categoryWater}</option>
-              <option value="medicine">{dict.form.categoryMedicine}</option>
-              <option value="clothing">{dict.form.categoryClothing}</option>
-              <option value="hygiene">{dict.form.categoryHygiene}</option>
-              <option value="other">{dict.form.categoryOther}</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.donationNew.unit}</label>
-            <UnitSelect
-              locale={locale}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              {dict.donationNew.receivedQtyLabel}
-            </label>
-            <input
-              name="quantity_received"
-              type="number"
-              min={1}
-              required
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              {dict.donationNew.expiryOptional}
-            </label>
-            <input
-              name="expiry_date"
-              type="date"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-            {dict.donationNew.donorNameOptional}
-          </label>
-          <input
-            name="donor_name"
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
+        <Link
+          href="/donations"
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         >
-          {dict.common.save}
-        </button>
-      </form>
+          ← {locale === 'th' ? 'รายการของบริจาค' : 'Donation List'}
+        </Link>
+      </div>
+
+      <NewDonationForm
+        locale={locale}
+        dict={dict}
+        error={error}
+        createDonationAction={createDonation}
+        centerSelect={
+          centers ? (
+            <CenterSelect
+              centers={centers}
+              label={dict.common.center}
+              placeholder={dict.common.selectCenter}
+            />
+          ) : null
+        }
+      />
     </main>
   )
 }
