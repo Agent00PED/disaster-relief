@@ -63,8 +63,6 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, userId, 
   const next = pending[0]
   const phone = center?.contact_phone?.replace(/[^\d+]/g, '')
   const telHref = (value: string | null) => (value ?? '').replace(/[^\d+]/g, '')
-  // แสดงเฉพาะคนที่กรอกเบอร์ไว้ — รายชื่อที่ไม่มีเบอร์ไม่ช่วยอะไรอาสาสมัคร
-  const staffWithPhone = staff.filter(person => (person.phone ?? '').trim() !== '')
   const a = dict.allocations
   // กรอกจำนวนที่ได้รับจริงก่อนยืนยัน — ได้รับไม่ครบต้องมีหมายเหตุ (mark_delivered)
   const receiptForm = (row: Delivery) => <DeliverButton
@@ -119,28 +117,6 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, userId, 
           {center?.address && <p className={`border-t border-slate-100 pt-4 dark:border-slate-800 ${muted}`}>{center.address}</p>}
           {center?.contact_phone && <p className={muted}>{dict.admin.contactPhone}: {center.contact_phone}</p>}
           {!center?.address && !center?.contact_phone && <p className={muted}>{t.noContact}</p>}
-          {/* เบอร์เจ้าหน้าที่รายคน — เบอร์ศูนย์ข้างบนเป็นเบอร์กลาง ถ้าของมาไม่ครบ
-              หรือมีปัญหาหน้างาน อาสาสมัครต้องโทรหาคนที่ดูแลเรื่องนั้นได้โดยตรง */}
-          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
-            <h4 className="text-sm font-semibold">{t.staffContacts}</h4>
-            {staffWithPhone.length === 0 ? (
-              <p className={`mt-1 ${muted}`}>{t.noStaffContacts}</p>
-            ) : (
-              <ul className="mt-2 space-y-2">
-                {staffWithPhone.map(person => (
-                  <li key={person.id} className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm">
-                      {person.name || t.staffUnnamed}
-                      {person.role === 'admin' && <span className={`ml-2 ${muted}`}>({dict.admin.role}: admin)</span>}
-                    </span>
-                    <a className="text-sm font-medium text-brand underline dark:text-sky-300" href={`tel:${telHref(person.phone)}`}>
-                      {person.phone}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
           <div className="flex flex-wrap gap-2">
             {center?.address && <a className={button} href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${center.name} ${center.address}`)}`} target="_blank" rel="noopener noreferrer">{t.map}</a>}
             {phone && <a className={button} href={`tel:${phone}`}>{t.call}</a>}
@@ -148,6 +124,28 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, userId, 
         </div>
       </section>
     </div>
+
+    <section className={panel}>
+      <h2 className={heading}><Icon kind={4} />{t.staffDirectory}</h2>
+      {staff.length === 0 ? (
+        <p className={`p-5 ${muted}`}>{t.noStaffMembers}</p>
+      ) : (
+        <ul className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
+          {staff.map(person => (
+            <li key={person.id} className="flex min-w-0 flex-col items-start gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <span className="text-sm font-semibold break-words text-slate-900 dark:text-slate-100">
+                {person.name || t.staffUnnamed}
+                {person.role === 'admin' && <span className={`ml-2 ${muted}`}>({dict.admin.role}: admin)</span>}
+              </span>
+              {person.phone?.trim() ? <a className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-lg px-2 text-sm font-medium break-all text-brand underline underline-offset-4 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 dark:text-sky-300 dark:hover:bg-slate-700" href={`tel:${telHref(person.phone)}`}>
+                <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .3 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.4 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1Z" /></svg>
+                {person.phone}
+              </a> : <p className={muted}>{t.noStaffPhone}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
 
     <IdPhotoCard
       dict={dict}
