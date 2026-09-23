@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { normalizeUnit } from '@/lib/units'
 import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 import { resolveCenterId } from '@/lib/center-choice'
 import { getLocale } from '@/lib/i18n/locale'
@@ -31,7 +32,9 @@ export async function createDonation(formData: FormData) {
     donor_id: donorId,
     item_name: String(formData.get('item_name')),
     category: String(formData.get('category')),
-    unit: String(formData.get('unit') || 'ชิ้น'),
+    // normalizeUnit กันข้อมูลที่ส่งมาจากนอกฟอร์ม (เช่น เรียก action ตรง)
+    // ให้ถูกแปลงเป็นคำมาตรฐานเสมอ ไม่งั้นจะจัดสรรไม่ผ่านเพราะหน่วยไม่ตรง
+    unit: normalizeUnit(String(formData.get('unit') || '')) || 'ชิ้น',
     quantity_received: quantity,
     quantity_remaining: quantity,
     expiry_date: String(formData.get('expiry_date') || '') || null,

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { confirmPledge, dismissPledge } from './actions'
 import { getLocale } from '@/lib/i18n/locale'
+import { UnitSelect } from '@/app/unit-select'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
@@ -102,13 +103,11 @@ export default async function PledgesPage({
                             />
                           )}
                           {/* ฟอร์มสาธารณะไม่มีช่องหน่วย — เจ้าหน้าที่ระบุตอนรับของจริง */}
-                          <input
-                            name="unit"
+                          <UnitSelect
+                            locale={locale}
                             required
-                            defaultValue="ชิ้น"
                             aria-label={dict.donationNew.unit}
-                            title={dict.donationNew.unit}
-                            className="w-20 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                            className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                           />
                           <button
                             type="submit"

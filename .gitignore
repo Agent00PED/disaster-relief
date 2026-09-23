@@ -40,3 +40,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# editor / tooling config (ของแต่ละคน ไม่ต้องขึ้น repo)
+.vscode/
+.idea/
+.claude/
+CLAUDE.md
+AGENTS.md
+
+# บันทึกรีวิวภายในทีม ไม่ต้องขึ้น repo
+/docs/review/

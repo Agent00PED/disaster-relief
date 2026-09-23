@@ -4,6 +4,7 @@ import { ErrorDialog } from '../allocations/error-dialog'
 import { DeliverButton } from '../allocations/deliver-dialog'
 import { FlashNotice } from '../flash-notice'
 import { confirmReceipt } from './actions'
+import { IdPhotoCard } from './id-photo-card'
 
 type RequestRow = {
   id: string; item_name: string; category: string; quantity_requested: number
@@ -17,6 +18,9 @@ type Delivery = {
 type Props = {
   dict: Dictionary; locale: Locale; name: string; error?: string
   center: { name: string; type: string; address: string | null; contact_phone: string | null } | null
+  staff: { id: string; name: string; phone: string | null; role: string }[]
+  userId: string
+  idPhotoPath: string | null
   requests: RequestRow[]; pending: Delivery[]; history: Delivery[]
   counts: (number | null)[]; loadError: boolean; notice?: string | null
   failed: { requests: boolean; pending: boolean; history: boolean }
@@ -33,7 +37,7 @@ function Icon({ kind = 0 }: { kind?: number }) {
   return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind]} /></svg>
 }
 
-export function VolunteerDashboard({ dict, locale, name, center, requests, pending, history, counts, error, failed, loadError, notice }: Props) {
+export function VolunteerDashboard({ dict, locale, name, center, staff, userId, idPhotoPath, requests, pending, history, counts, error, failed, loadError, notice }: Props) {
   const t = dict.volunteerDashboard
   const v = dict.volunteer
   const number = new Intl.NumberFormat(locale === 'th' ? 'th-TH' : 'en-US')
@@ -58,6 +62,9 @@ export function VolunteerDashboard({ dict, locale, name, center, requests, pendi
   const unit = (row: Delivery) => (row.donations as { unit?: string } | null)?.unit ?? ''
   const next = pending[0]
   const phone = center?.contact_phone?.replace(/[^\d+]/g, '')
+  const telHref = (value: string | null) => (value ?? '').replace(/[^\d+]/g, '')
+  // แสดงเฉพาะคนที่กรอกเบอร์ไว้ — รายชื่อที่ไม่มีเบอร์ไม่ช่วยอะไรอาสาสมัคร
+  const staffWithPhone = staff.filter(person => (person.phone ?? '').trim() !== '')
   const a = dict.allocations
   // กรอกจำนวนที่ได้รับจริงก่อนยืนยัน — ได้รับไม่ครบต้องมีหมายเหตุ (mark_delivered)
   const receiptForm = (row: Delivery) => <DeliverButton
@@ -112,6 +119,28 @@ export function VolunteerDashboard({ dict, locale, name, center, requests, pendi
           {center?.address && <p className={`border-t border-slate-100 pt-4 dark:border-slate-800 ${muted}`}>{center.address}</p>}
           {center?.contact_phone && <p className={muted}>{dict.admin.contactPhone}: {center.contact_phone}</p>}
           {!center?.address && !center?.contact_phone && <p className={muted}>{t.noContact}</p>}
+          {/* เบอร์เจ้าหน้าที่รายคน — เบอร์ศูนย์ข้างบนเป็นเบอร์กลาง ถ้าของมาไม่ครบ
+              หรือมีปัญหาหน้างาน อาสาสมัครต้องโทรหาคนที่ดูแลเรื่องนั้นได้โดยตรง */}
+          <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+            <h4 className="text-sm font-semibold">{t.staffContacts}</h4>
+            {staffWithPhone.length === 0 ? (
+              <p className={`mt-1 ${muted}`}>{t.noStaffContacts}</p>
+            ) : (
+              <ul className="mt-2 space-y-2">
+                {staffWithPhone.map(person => (
+                  <li key={person.id} className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm">
+                      {person.name || t.staffUnnamed}
+                      {person.role === 'admin' && <span className={`ml-2 ${muted}`}>({dict.admin.role}: admin)</span>}
+                    </span>
+                    <a className="text-sm font-medium text-brand underline dark:text-sky-300" href={`tel:${telHref(person.phone)}`}>
+                      {person.phone}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
             {center?.address && <a className={button} href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${center.name} ${center.address}`)}`} target="_blank" rel="noopener noreferrer">{t.map}</a>}
             {phone && <a className={button} href={`tel:${phone}`}>{t.call}</a>}
@@ -119,6 +148,16 @@ export function VolunteerDashboard({ dict, locale, name, center, requests, pendi
         </div>
       </section>
     </div>
+
+    <IdPhotoCard
+      dict={dict}
+      userId={userId}
+      initialPath={idPhotoPath}
+      panelClass={panel}
+      headingClass={heading}
+      mutedClass={muted}
+      buttonClass={button}
+    />
 
     <section className={panel}>
       <h2 className={heading}><Icon kind={2} />{v.openRequestsSection}</h2>
