@@ -3,6 +3,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
+import {
+  DIETARY_TYPES,
+  DEFAULT_DIETARY,
+  dietaryHint,
+  dietaryLabel,
+} from '@/lib/dietary'
 import { UNITS } from '@/lib/units'
 
 interface Province {
@@ -180,8 +186,10 @@ export default function NewDonationForm({
   const [receivedDate, setReceivedDate] =
     useState('')
 
-  const [religion, setReligion] =
-    useState('พุทธ')
+  // ข้อกำหนดด้านอาหารของล็อตนี้ ไม่ใช่ศาสนาของผู้บริจาค
+  // ใช้จับคู่กับคำขอตอนจัดสรร (ดู lib/dietary.ts)
+  const [dietaryType, setDietaryType] =
+    useState<string>(DEFAULT_DIETARY)
 
   const [
     selectedDonationType,
@@ -746,7 +754,7 @@ export default function NewDonationForm({
     setProvinceId('')
     setSubdistrict('')
     setReceivedDate('')
-    setReligion('พุทธ')
+    setDietaryType(DEFAULT_DIETARY)
     setSelectedDonationType('')
     setValidationError('')
 
@@ -1371,62 +1379,55 @@ export default function NewDonationForm({
           </div>
 
           <div>
-            <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
+            <label
+              htmlFor="donation-dietary"
+              className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300"
+            >
               {tr(
-                'ประเภทตามศาสนา',
-                'Religious Type'
+                'ข้อกำหนดด้านอาหาร',
+                'Dietary Requirement'
               )}
             </label>
 
-            <div className="flex gap-3">
-              <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
-                <input
-                  type="radio"
-                  name="religion"
-                  value="พุทธ"
-                  checked={
-                    religion ===
-                    'พุทธ'
-                  }
-                  onChange={(e) =>
-                    setReligion(
-                      e.target.value
-                    )
-                  }
-                />
+            <select
+              id="donation-dietary"
+              name="dietary_type"
+              value={dietaryType}
+              onChange={(e) =>
+                setDietaryType(
+                  e.target.value
+                )
+              }
+              className={
+                inputClassName
+              }
+            >
+              {DIETARY_TYPES.map(
+                (option) => (
+                  <option
+                    key={option}
+                    value={option}
+                  >
+                    {dietaryLabel(
+                      option,
+                      currentLocale
+                    )}
+                    {' — '}
+                    {dietaryHint(
+                      option,
+                      currentLocale
+                    )}
+                  </option>
+                )
+              )}
+            </select>
 
-                <span className="text-xs text-slate-700 dark:text-slate-300">
-                  {tr(
-                    'พุทธ',
-                    'Buddhist'
-                  )}
-                </span>
-              </label>
-
-              <label className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-4 py-3 dark:border-slate-700">
-                <input
-                  type="radio"
-                  name="religion"
-                  value="ฮาลาล"
-                  checked={
-                    religion ===
-                    'ฮาลาล'
-                  }
-                  onChange={(e) =>
-                    setReligion(
-                      e.target.value
-                    )
-                  }
-                />
-
-                <span className="text-xs text-slate-700 dark:text-slate-300">
-                  {tr(
-                    'ฮาลาล',
-                    'Halal'
-                  )}
-                </span>
-              </label>
-            </div>
+            <p className="mt-1 text-[11px] text-slate-400">
+              {tr(
+                'ใช้จับคู่กับศูนย์ที่ระบุว่าต้องการอาหารแบบนั้น',
+                'Used to match centres that request this kind of food.'
+              )}
+            </p>
           </div>
         </div>
       </section>
