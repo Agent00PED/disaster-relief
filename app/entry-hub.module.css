@@ -81,7 +81,11 @@
 :global(.dark) .needsPledged { color: #8fe0b8; }
 :global(.dark) .supplyCard:hover { background: #1e3449; }
 :global(.dark) .icon { background: color-mix(in srgb, var(--tone) 25%, #17293b); color: var(--edge); }
-@media (max-width: 1400px) { .motto { display: none; } }
+@media (width <= 1400px) {
+  .motto { position: static; width: auto; margin: 24px auto 0; font-size: 18px; transform: none; }
+  .mottoHeart { display: inline-block; position: static; margin-left: 10px; vertical-align: middle; }
+  .mottoUnderline { display: none; }
+}
 @media (max-width: 1000px) { .content { max-width: 800px; } .card { padding: 18px 12px 12px; } .action { padding-inline: 10px; font-size: 13px; } .card h2 { font-size: 19px; } }
 @media (max-width: 640px) {
   .hero { padding: 134px 20px 32px; }
