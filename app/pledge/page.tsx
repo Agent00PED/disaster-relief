@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 
 import { submitPledge } from './actions'
+import { UnitSelect } from '@/app/unit-select'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
@@ -223,25 +224,15 @@ export default async function PledgePage({
     catOther: isEn ? 'Other' : 'อื่น ๆ',
 
     // Units
-    unitPiece: isEn ? 'Piece(s)' : 'ชิ้น',
 
-    unitBox: isEn ? 'Box(es)' : 'กล่อง',
 
-    unitPack: isEn ? 'Pack(s)' : 'แพ็ค',
 
-    unitBag: isEn ? 'Bag(s)' : 'ถุง',
 
-    unitSet: isEn ? 'Set(s)' : 'ชุด',
 
-    unitBottle: isEn ? 'Bottle(s)' : 'ขวด',
 
-    unitCrate: isEn ? 'Crate(s)' : 'ลัง',
 
-    unitSack: isEn ? 'Sack(s)' : 'กระสอบ',
 
-    unitKg: isEn ? 'Kg' : 'กิโลกรัม',
 
-    unitOther: isEn ? 'Other' : 'อื่นๆ',
 
     // Side Features
     feat1Title:
@@ -693,84 +684,11 @@ export default async function PledgePage({
 
                       <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1d3b5a] focus-within:ring-2 focus-within:ring-[#1d3b5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
 
-                        <select
-                          name="unit"
+                        <UnitSelect
+                          locale={locale}
                           required
-                          defaultValue="ชิ้น"
                           className="w-full cursor-pointer border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none dark:bg-slate-800 dark:text-slate-100"
-                        >
-
-                          <option
-                            value="ชิ้น"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitPiece}
-                          </option>
-
-                          <option
-                            value="กล่อง"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitBox}
-                          </option>
-
-                          <option
-                            value="แพ็ค"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitPack}
-                          </option>
-
-                          <option
-                            value="ถุง"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitBag}
-                          </option>
-
-                          <option
-                            value="ชุด"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitSet}
-                          </option>
-
-                          <option
-                            value="ขวด"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitBottle}
-                          </option>
-
-                          <option
-                            value="ลัง"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitCrate}
-                          </option>
-
-                          <option
-                            value="กระสอบ"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitSack}
-                          </option>
-
-                          <option
-                            value="กิโลกรัม"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitKg}
-                          </option>
-
-                          <option
-                            value="อื่นๆ"
-                            className="dark:bg-slate-800"
-                          >
-                            {t.unitOther}
-                          </option>
-
-                        </select>
+                        />
 
                       </div>
 

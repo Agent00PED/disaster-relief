@@ -24,6 +24,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
 import PrintButton from './PrintButton'
+import { unitLabel } from '@/lib/units'
 
 export const dynamic = 'force-dynamic'
 
@@ -508,7 +509,7 @@ export default async function PledgesPage({
 
                       {/* หน่วย */}
                       <td className="px-3 py-3 text-[11px] text-slate-600 dark:text-slate-300">
-                        {p.unit ?? (locale === 'en' ? 'box' : 'กล่อง')}
+                        {p.unit ? unitLabel(p.unit, locale) : '—'}
                       </td>
 
                       {/* วันที่ต้องการ */}

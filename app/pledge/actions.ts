@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { normalizeUnit } from '@/lib/units'
 
 // ไม่ต้อง login — RLS (pledges_public_insert) อนุญาต anon insert ได้อยู่แล้ว
 export async function submitPledge(formData: FormData) {
@@ -14,6 +15,7 @@ export async function submitPledge(formData: FormData) {
     item_name: String(formData.get('item_name')),
     category: String(formData.get('category')),
     quantity: Number(formData.get('quantity')),
+    unit: normalizeUnit(String(formData.get('unit') || '')) || 'ชิ้น',
     note: String(formData.get('note') || '') || null,
   })
 

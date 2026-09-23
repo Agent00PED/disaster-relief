@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { updateDonation } from '@/app/donations/actions'
+import { UnitSelect } from '@/app/unit-select'
+import { getLocale } from '@/lib/i18n/locale'
 
 type EditDonationPageProps = {
   params: Promise<{
@@ -30,6 +32,8 @@ export default async function EditDonationPage({
 }: EditDonationPageProps) {
   const { id } = await params
   const { error: errorMessage } = await searchParams
+
+  const locale = await getLocale()
 
   const supabase = await createClient()
 
@@ -159,10 +163,9 @@ export default async function EditDonationPage({
               หน่วย
             </label>
 
-            <input
+            <UnitSelect
               id="unit"
-              name="unit"
-              type="text"
+              locale={locale}
               required
               defaultValue={donation.unit}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
