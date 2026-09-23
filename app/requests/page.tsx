@@ -1,16 +1,29 @@
-// =====================================================================
-// หน้ารายการคำขอ (F4) — เรียงตามความเร่งด่วน
-// staff เห็นเฉพาะศูนย์ตัวเอง / admin เห็นทุกศูนย์ (บังคับด้วย RLS)
-// =====================================================================
-
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { sortByUrgency } from '@/lib/urgency'
+import { unitLabel } from '@/lib/units'
+import { noticeMessage, type NoticeParams } from '@/lib/notice'
+import { ErrorDialog } from '../allocations/error-dialog'
+import { FlashNotice } from '../flash-notice'
+import { RequestFilter } from './request-filter'
+import { RequestList } from './request-list'
 
-export default async function RequestsPage() {
+const panel = 'rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900'
+const URGENCY_STYLE: Record<string, string> = {
+  high: 'bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400',
+  medium: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
+  low: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+}
+
+export default async function RequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; q?: string; category?: string; urgency?: string; center_id?: string } & NoticeParams>
+}) {
+  const params = await searchParams
   const supabase = await createClient()
   await requireStaffOrAdmin(supabase)
   const locale = await getLocale()
@@ -36,17 +49,83 @@ export default async function RequestsPage() {
     cancelled: dict.requests.statusCancelled,
   }
 
+  // 1. ดึงข้อมูลรายชื่อศูนย์พักพิงทั้งหมด
+  const { data: centersData } = await supabase
+    .from('centers')
+    .select('id, name, name_en')
+    .order('name', { ascending: true })
+
+  // 2. ดึงข้อมูลรายการคำขอ
   const { data: requestRows } = await supabase
     .from('requests')
     .select(
-      'id, item_name, category, quantity_requested, quantity_fulfilled, urgency, status, created_at, centers(name)',
+      'id, item_name, item_name_en, category, unit, quantity_requested, quantity_fulfilled, urgency, status, cancel_reason, created_at, center_id, centers(name, name_en)',
     )
     .order('created_at', { ascending: false })
+
   const requests = requestRows ? sortByUrgency(requestRows) : null
+  const notice = noticeMessage(params, dict, locale)
+
+  // คำนวณสถิติภาพรวม
+  const totalCount = requests?.length ?? 0
+  const pendingCount = requests?.filter((r) => r.status === 'pending' || r.status === 'partial').length ?? 0
+  const highUrgencyCount = requests?.filter((r) => r.urgency === 'high' && (r.status === 'pending' || r.status === 'partial')).length ?? 0
+
+  const cancelLabels = {
+    button: dict.requests.cancelRequest,
+    message: dict.requests.cancelRequestConfirm,
+    reasonLabel: dict.allocations.cancelReasonLabel,
+    reasonPlaceholder: dict.requests.cancelRequestReasonPlaceholder,
+    back: dict.allocations.close,
+    submit: dict.requests.cancelRequestSubmit,
+    reasonTooShort: dict.allocations.reasonTooShort,
+    saving: dict.common.saving,
+  }
+
+  // ดึงค่าการกรองจาก URL Parameters
+  const searchQuery = (params.q ?? '').toLowerCase().trim()
+  const selectedCategory = params.category ?? ''
+  const selectedUrgency = params.urgency ?? ''
+  const selectedCenter = params.center_id ?? ''
+
+  const filteredRequests = (requests ?? []).filter((r) => {
+    const center = r.centers as unknown as { name?: string; name_en?: string | null } | null
+    const centerName = (center?.name ?? '').toLowerCase()
+    const centerNameEnglish = (center?.name_en ?? '').toLowerCase()
+    const itemName = (r.item_name ?? '').toLowerCase()
+    const itemNameEnglish = (r.item_name_en ?? '').toLowerCase()
+
+    const matchesSearch =
+      !searchQuery ||
+      itemName.includes(searchQuery) ||
+      itemNameEnglish.includes(searchQuery) ||
+      centerName.includes(searchQuery) ||
+      centerNameEnglish.includes(searchQuery)
+    const matchesCategory = !selectedCategory || r.category === selectedCategory
+    const matchesUrgency = !selectedUrgency || r.urgency === selectedUrgency
+    const matchesCenter = !selectedCenter || r.center_id === selectedCenter
+
+    return matchesSearch && matchesCategory && matchesUrgency && matchesCenter
+  })
+
+  const rows = filteredRequests.map((r) => ({
+    r: {
+      ...r,
+      item_name:
+        locale === 'en' && r.item_name_en ? r.item_name_en : r.item_name,
+    },
+    center: (() => {
+      const center = r.centers as unknown as { name?: string; name_en?: string | null } | null
+      return locale === 'en' && center?.name_en ? center.name_en : center?.name ?? '—'
+    })(),
+    unit: r.unit ? unitLabel(r.unit, locale) : '',
+    open: r.status === 'pending' || r.status === 'partial',
+    percent: r.quantity_requested > 0 ? Math.min(100, Math.round((r.quantity_fulfilled / r.quantity_requested) * 100)) : 0,
+  }))
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-12">
-      <header className="mb-8 flex items-center justify-between">
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
+      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.requests.title}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{dict.requests.subtitle}</p>
@@ -59,56 +138,51 @@ export default async function RequestsPage() {
         </Link>
       </header>
 
-      {!requests || requests.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900">
+      {/* สถิติภาพรวม */}
+      <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className={`${panel} p-4`}>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.totalRequests}</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">{totalCount}</p>
+        </div>
+        <div className={`${panel} p-4`}>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.pendingAllocation}</p>
+          <p className="mt-1 text-2xl font-semibold text-amber-600 dark:text-amber-400">{pendingCount}</p>
+        </div>
+        <div className={`${panel} p-4`}>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{dict.requests.urgentCases}</p>
+          <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">{highUrgencyCount}</p>
+        </div>
+      </div>
+
+      {/* ตัวกรอง */}
+      <RequestFilter centers={centersData ?? []} dict={dict} lang={locale} />
+
+      {params.error && (
+        <ErrorDialog
+          key={params.error}
+          title={dict.allocations.errorTitle}
+          message={params.error}
+          closeLabel={dict.allocations.close}
+          clearHref="/requests"
+        />
+      )}
+      {notice && <FlashNotice key={notice} message={notice} clearHref="/requests" closeLabel={dict.allocations.close} />}
+
+      {rows.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
           {dict.requests.noRequests}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-              <tr>
-                <th className="px-4 py-2 font-medium">{dict.requests.center}</th>
-                <th className="px-4 py-2 font-medium">{dict.requests.item}</th>
-                <th className="px-4 py-2 font-medium">{dict.requests.requested}</th>
-                <th className="px-4 py-2 font-medium">{dict.requests.fulfilled}</th>
-                <th className="px-4 py-2 font-medium">{dict.requests.urgency}</th>
-                <th className="px-4 py-2 font-medium">{dict.common.status}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requests.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">
-                    {(r.centers as unknown as { name?: string } | null)?.name ?? '—'}
-                  </td>
-                  <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                    {r.item_name}{' '}
-                    <span className="text-xs text-slate-400">
-                      ({CATEGORY_LABEL[r.category] ?? r.category})
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{r.quantity_requested}</td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{r.quantity_fulfilled}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={
-                        r.urgency === 'high'
-                          ? 'rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-500/10 dark:text-red-400'
-                          : r.urgency === 'medium'
-                            ? 'rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
-                            : 'rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300'
-                      }
-                    >
-                      {URGENCY_LABEL[r.urgency] ?? r.urgency}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{STATUS_LABEL[r.status] ?? r.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <RequestList
+          rows={rows}
+          locale={locale}
+          dict={dict}
+          categoryLabel={CATEGORY_LABEL}
+          urgencyLabel={URGENCY_LABEL}
+          urgencyStyle={URGENCY_STYLE}
+          statusLabel={STATUS_LABEL}
+          cancelLabels={cancelLabels}
+        />
       )}
     </main>
   )

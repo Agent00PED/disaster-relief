@@ -1,13 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import type { Dictionary } from '@/lib/i18n/dictionaries' // <-- นำเข้า Type Dictionary
-
-export const UNIT_TH_TO_EN_MAP: Record<string, string> = {
-  'ชุด': 'set', 'ขวด': 'bottle', 'กระป๋อง': 'can', 
-  'ถุง': 'bag', 'แพ็ค': 'pack', 'ชิ้น': 'piece', 
-  'กล่อง': 'box', 'ลัง': 'crate', 'ผืน': 'piece', 'ห่อ': 'packet'
-}
+import type { Dictionary } from '@/lib/i18n/dictionaries'
+import type { Locale } from '@/lib/i18n/locale'
+import { unitLabel } from '@/lib/units' 
 
 type StockRow = {
   center_id: string
@@ -24,11 +20,9 @@ type Props = {
   isAdmin: boolean
   centers: { id: string; name: string }[]
   categoryLabels: Record<string, string>
-  dict: Dictionary // <-- เปลี่ยนจาก any เป็น Dictionary แล้ว!
-  locale: string 
+  dict: Dictionary
+  locale: Locale
 }
-
-// ... (ฟังก์ชันด้านล่างทั้งหมดเหมือนเดิมครับ) ...
 
 function daysUntil(dateStr: string) {
   const diff = new Date(dateStr).getTime() - Date.now()
@@ -43,26 +37,22 @@ const SortIcon = ({ columnKey, sortConfig }: { columnKey: string, sortConfig: { 
 export default function InventoryTable({ stockRows, isAdmin, centers, categoryLabels, dict, locale }: Props) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [hideExpired, setHideExpired] = useState(false)
   
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
   const centerName = new Map(centers.map((c) => [c.id, c.name]))
 
-  const renderPlural = (count: number, word: string) => {
-    if (locale === 'th') return word;
-    if (count <= 1) return word;
-    if (word === 'box') return 'boxes'; 
-    if (word.endsWith('s')) return word; // <--- ป้องกัน s ซ้อนเช่นกัน
-    return `${word}s`;
-  }
-
   const filteredRows = useMemo(() => {
     return stockRows.filter((row) => {
+      if (hideExpired && row.nearest_expiry !== null && daysUntil(row.nearest_expiry) < 0) {
+        return false
+      }
       const matchSearch = row.item_name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchCategory = selectedCategory === 'all' || row.category === selectedCategory
       return matchSearch && matchCategory
     })
-  }, [stockRows, searchTerm, selectedCategory])
+  }, [stockRows, searchTerm, selectedCategory, hideExpired])
 
   const sortedRows = useMemo(() => {
     const sortableItems = [...filteredRows]
@@ -110,8 +100,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
       const cat = categoryLabels[row.category] ?? row.category
       
       const cleanUnit = row.unit.trim()
-      const rawUnit = locale === 'th' ? cleanUnit : (UNIT_TH_TO_EN_MAP[cleanUnit] ?? cleanUnit)
-      const displayUnit = renderPlural(row.total_remaining, rawUnit)
+      const displayUnit = unitLabel(cleanUnit, locale)
       
       const escapedItemName = row.item_name.replace(/"/g, '""')
 
@@ -140,7 +129,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
           {dict.inventory.nearExpirySection}
         </h2>
         
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           <button 
             onClick={exportToCSV}
             className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-colors"
@@ -160,6 +149,16 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
             ))}
           </select>
 
+          <label className="flex cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-slate-600 dark:text-slate-300">
+            <input 
+              type="checkbox" 
+              checked={hideExpired} 
+              onChange={(e) => setHideExpired(e.target.checked)}
+              className="h-4 w-4 rounded border-slate-300 text-brand focus:ring-brand dark:border-slate-600 dark:bg-slate-800"
+            />
+            {dict.inventory.hideExpired}
+          </label>
+
           <input
             type="text"
             placeholder={dict.inventory.searchPlaceholder}
@@ -175,33 +174,34 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
           <p className="text-sm text-slate-400">{dict.inventory.notFound}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-md ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/5">
-          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50/80 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto rounded-xl border border-slate-200/80 bg-white shadow-md ring-1 ring-black/5 dark:border-slate-700 dark:bg-slate-900 dark:ring-white/5">
+          <table className="w-full min-w-[640px] text-left text-sm relative">
+            <thead className="sticky top-0 z-10 border-b border-slate-200 bg-slate-50 text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
               <tr>
-                {isAdmin && <th className="px-5 py-3 font-semibold">{dict.requests.center}</th>}
-                <th className="px-5 py-3 font-semibold">{dict.form.category}</th>
-                <th className="px-5 py-3 font-semibold">{dict.table.itemName}</th>
+                {isAdmin && <th className="px-5 py-3 font-semibold whitespace-nowrap">{dict.requests.center}</th>}
+                <th className="px-5 py-3 font-semibold whitespace-nowrap">{dict.form.category}</th>
+                <th className="px-5 py-3 font-semibold whitespace-nowrap">{dict.table.itemName}</th>
                 <th 
-                  className="px-5 py-3 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  className="px-5 py-3 font-semibold whitespace-nowrap cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                   onClick={() => handleSort('total_remaining')}
                 >
                   {dict.table.remainingQty} <SortIcon columnKey="total_remaining" sortConfig={sortConfig} />
                 </th>
                 <th 
-                  className="px-5 py-3 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  className="px-5 py-3 font-semibold whitespace-nowrap cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                   onClick={() => handleSort('lot_count')}
                 >
                   {dict.inventory.lotCount} <SortIcon columnKey="lot_count" sortConfig={sortConfig} />
                 </th>
                 <th 
-                  className="px-5 py-3 font-semibold cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
+                  className="px-5 py-3 font-semibold whitespace-nowrap cursor-pointer hover:text-slate-700 dark:hover:text-slate-300"
                   onClick={() => handleSort('nearest_expiry')}
                 >
                   {dict.inventory.nearestExpiry} <SortIcon columnKey="nearest_expiry" sortConfig={sortConfig} />
                 </th>
               </tr>
             </thead>
+            
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {sortedRows.map((row) => {
                 const days = row.nearest_expiry !== null ? daysUntil(row.nearest_expiry) : null
@@ -209,8 +209,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
                 const isSoon = days !== null && days >= 0 && days <= 7
                 
                 const cleanUnit = row.unit.trim()
-                const rawUnit = locale === 'th' ? cleanUnit : (UNIT_TH_TO_EN_MAP[cleanUnit] ?? cleanUnit)
-                const displayUnit = renderPlural(row.total_remaining, rawUnit)
+                const displayUnit = unitLabel(cleanUnit, locale)
 
                 const rowBgClass = isExpired 
                   ? 'bg-red-50/80 hover:bg-red-100/80 dark:bg-red-950/20 dark:hover:bg-red-900/30' 
@@ -224,24 +223,24 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
                     className={`group transition-colors duration-200 ${rowBgClass}`}
                   >
                     {isAdmin && (
-                      <td className="px-5 py-3 text-slate-600 dark:text-slate-300">
+                      <td className="px-5 py-3 text-slate-600 dark:text-slate-300 min-w-[160px]">
                         {centerName.get(row.center_id) ?? '—'}
                       </td>
                     )}
-                    <td className="px-5 py-3 text-slate-600 dark:text-slate-300">
+                    <td className="px-5 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
                       <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-500/10 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-400/20">
                         {categoryLabels[row.category] ?? row.category}
                       </span>
                     </td>
-                    <td className="px-5 py-3 font-medium text-slate-900 group-hover:text-brand dark:text-slate-100 dark:group-hover:text-blue-400">
+                    <td className="px-5 py-3 font-medium text-slate-900 group-hover:text-brand dark:text-slate-100 dark:group-hover:text-blue-400 min-w-[180px]">
                       {row.item_name}
                     </td>
-                    <td className="px-5 py-3 font-semibold text-slate-900 dark:text-slate-100">
+                    <td className="px-5 py-3 font-semibold whitespace-nowrap text-slate-900 dark:text-slate-100">
                       {row.total_remaining} <span className="font-normal text-slate-500 dark:text-slate-400">{displayUnit}</span>
                     </td>
-                    <td className="px-5 py-3 text-slate-600 dark:text-slate-300">{row.lot_count}</td>
+                    <td className="px-5 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">{row.lot_count}</td>
                     
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3 whitespace-nowrap">
                       {isExpired ? (
                         <span className="inline-flex items-center rounded-md bg-red-100 px-2 py-1 font-bold text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-500/20 dark:text-red-400 dark:ring-red-500/30">
                           {row.nearest_expiry} {dict.inventory.expiredBadge}
