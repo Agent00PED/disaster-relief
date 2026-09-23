@@ -446,48 +446,21 @@ export default async function PledgePage({
                     </FieldShell>
                   </div>
 
-                  {/* Quantity & Unit */}
-                  <div className="grid grid-cols-[1fr_110px] gap-3 sm:grid-cols-[1fr_120px]">
-                    <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                        {t.quantity} <span className="text-slate-400 dark:text-slate-500">*</span>
-                      </label>
-                      <FieldShell icon={<Package className="h-3.5 w-3.5" />}>
-                        <input
-                          name="quantity"
-                          type="number"
-                          min={1}
-                          required
-                          placeholder={t.qtyPlaceholder}
-                          className="w-full border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
-                        />
-                      </FieldShell>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                        {t.unit} <span className="text-slate-400 dark:text-slate-500">*</span>
-                      </label>
-                      <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1d3b5a] focus-within:ring-2 focus-within:ring-[#1d3b5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
-                        <select
-                          name="unit"
-                          required
-                          defaultValue="ชิ้น"
-                          className="w-full cursor-pointer border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none dark:bg-slate-800 dark:text-slate-100"
-                        >
-                          <option value="ชิ้น" className="dark:bg-slate-800">{t.unitPiece}</option>
-                          <option value="กล่อง" className="dark:bg-slate-800">{t.unitBox}</option>
-                          <option value="แพ็ค" className="dark:bg-slate-800">{t.unitPack}</option>
-                          <option value="ถุง" className="dark:bg-slate-800">{t.unitBag}</option>
-                          <option value="ชุด" className="dark:bg-slate-800">{t.unitSet}</option>
-                          <option value="ขวด" className="dark:bg-slate-800">{t.unitBottle}</option>
-                          <option value="ลัง" className="dark:bg-slate-800">{t.unitCrate}</option>
-                          <option value="กระสอบ" className="dark:bg-slate-800">{t.unitSack}</option>
-                          <option value="กิโลกรัม" className="dark:bg-slate-800">{t.unitKg}</option>
-                          <option value="อื่นๆ" className="dark:bg-slate-800">{t.unitOther}</option>
-                        </select>
-                      </div>
-                    </div>
+                  {/* Quantity */}
+                  <div>
+                    <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      {t.quantity} <span className="text-slate-400 dark:text-slate-500">*</span>
+                    </label>
+                    <FieldShell icon={<Package className="h-3.5 w-3.5" />}>
+                      <input
+                        name="quantity"
+                        type="number"
+                        min={1}
+                        required
+                        placeholder={t.qtyPlaceholder}
+                        className="w-full border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+                      />
+                    </FieldShell>
                   </div>
 
                   {/* Note */}
