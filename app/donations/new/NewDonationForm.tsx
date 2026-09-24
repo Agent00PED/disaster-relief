@@ -60,7 +60,7 @@ const donationTypes = [
   },
   {
     id: 'milk',
-    value: 'milk',
+    value: 'food',
     labelTh: 'นม',
     labelEn: 'Milk',
     icon: '🍼',
