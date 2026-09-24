@@ -41,7 +41,7 @@ export default async function VolunteerPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, username, role, center_id, centers(name, type, address, contact_phone)')
+    .select('full_name, username, role, center_id, id_photo_path, centers(name, type, address, contact_phone)')
     .eq('id', user.id)
     .single()
 
@@ -102,5 +102,7 @@ export default async function VolunteerPage({
     counts={[pending.error ? null : pending.count, urgent.error ? null : urgent.count, requests.error ? null : requests.count, delivered.error ? null : delivered.count]}
     failed={{ requests: !!requests.error, pending: !!pending.error, history: !!history.error }}
     loadError={loadError}
+    userId={user.id}
+    idPhotoPath={profile.id_photo_path ?? null}
   />
 }
