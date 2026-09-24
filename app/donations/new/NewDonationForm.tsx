@@ -1345,23 +1345,41 @@ export default function NewDonationForm({
               </span>
             </label>
 
-            <input
-              type="date"
-              name="received_date"
-              value={
-                receivedDate
-              }
-              required
-              onChange={(e) => {
-                setReceivedDate(
-                  e.target.value
-                )
-                setValidationError('')
-              }}
-              className={
-                inputClassName
-              }
-            />
+            {/* แก้เฉพาะส่วนวันที่ */}
+            <div className="relative">
+              {!receivedDate && (
+                <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+                  {currentLocale === 'th'
+                    ? 'วว/ดด/ปปปป'
+                    : 'mm/dd/yyyy'}
+                </span>
+              )}
+
+              <input
+                type="date"
+                name="received_date"
+                value={
+                  receivedDate
+                }
+                required
+                onChange={(e) => {
+                  setReceivedDate(
+                    e.target.value
+                  )
+                  setValidationError('')
+                }}
+                lang={
+                  currentLocale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
+                className={`${inputClassName} ${
+                  !receivedDate
+                    ? 'text-transparent'
+                    : ''
+                }`}
+              />
+            </div>
 
             <p className="mt-1 text-[11px] text-slate-400">
               {formatDisplayDate(
@@ -2619,6 +2637,14 @@ function ExpiryField({
       </label>
 
       <div className="relative">
+        {!value && (
+          <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+            {locale === 'th'
+              ? 'วว/ดด/ปปปป'
+              : 'mm/dd/yyyy'}
+          </span>
+        )}
+
         <input
           type="date"
           value={
@@ -2636,7 +2662,16 @@ function ExpiryField({
               ? 'วันหมดอายุ'
               : 'Expiry Date'
           }
-          className="block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          lang={
+            locale === 'th'
+              ? 'th-TH'
+              : 'en-US'
+          }
+          className={`block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
+            !value
+              ? 'text-transparent'
+              : 'text-slate-900 dark:text-slate-100'
+          }`}
         />
       </div>
     </div>
