@@ -4,6 +4,7 @@ import { BrandMark } from './brand-mark'
 import styles from './entry-hub.module.css'
 import controls from './public-controls.module.css'
 import { EntryNeeds, type NeedRow } from './entry-needs'
+import { EntrySteps } from './entry-steps'
 
 type IconName = 'heart' | 'people' | 'box'
 
@@ -20,9 +21,9 @@ function EntryIcon({ name }: { name: IconName }) {
 export function EntryHub({ dict, needs }: { dict: Dictionary; needs: NeedRow[] }) {
   const copy = dict.entryHub
   const choices = [
-    { href: '/register', icon: 'people', tone: 'green', label: copy.volunteerLabel, desc: copy.volunteerDesc, action: copy.volunteerAction },
-    { href: '/help-request', icon: 'heart', tone: 'red', label: copy.helpLabel, desc: copy.helpDesc, action: copy.helpAction },
-    { href: '/pledge', icon: 'box', tone: 'blue', label: copy.donateLabel, desc: copy.donateDesc, action: copy.donateAction },
+    { href: '/register', icon: 'people', tone: 'green', label: copy.volunteerLabel, desc: copy.volunteerDesc, action: copy.volunteerAction, steps: [copy.volunteerStep1, copy.volunteerStep2, copy.volunteerStep3] },
+    { href: '/help-request', icon: 'heart', tone: 'red', label: copy.helpLabel, desc: copy.helpDesc, action: copy.helpAction, steps: [] },
+    { href: '/pledge', icon: 'box', tone: 'blue', label: copy.donateLabel, desc: copy.donateDesc, action: copy.donateAction, steps: [copy.donateStep1, copy.donateStep2, copy.donateStep3] },
   ] as const
   return <main className={styles.hero}>
     <div className={styles.artwork} aria-hidden="true" />
@@ -35,13 +36,6 @@ export function EntryHub({ dict, needs }: { dict: Dictionary; needs: NeedRow[] }
     </div>
     <div className={styles.content}>
       <header className={styles.header}><h1>{copy.title}</h1><p>{copy.landingSubtitle}</p></header>
-      <div className={styles.choices}>
-        {choices.map(choice => <Link key={choice.href} href={choice.href} className={styles.card} data-tone={choice.tone}>
-          <span className={styles.icon}><EntryIcon name={choice.icon} /></span>
-          <h2>{choice.label}</h2><p>{choice.desc}</p>
-          <span className={styles.action}>{choice.action}<span aria-hidden="true">&rarr;</span></span>
-        </Link>)}
-      </div>
       <p className={styles.motto}>
         {copy.motto}
         <svg className={styles.mottoHeart} viewBox="0 0 32 32" fill="none" aria-hidden="true">
@@ -51,6 +45,14 @@ export function EntryHub({ dict, needs }: { dict: Dictionary; needs: NeedRow[] }
           <path d="M3 22C41 8 119 1 177 3C126 5 49 13 3 22Z" fill="currentColor" />
         </svg>
       </p>
+      <div className={styles.choices}>
+        {choices.map(choice => <article key={choice.href} className={styles.card} data-tone={choice.tone}>
+          <span className={styles.icon}><EntryIcon name={choice.icon} /></span>
+          <h2>{choice.label}</h2><p>{choice.desc}</p>
+          {choice.steps.length > 0 && <EntrySteps steps={choice.steps} label={choice.label} viewLabel={copy.viewSteps} hideLabel={copy.hideSteps} />}
+          <Link href={choice.href} className={styles.action}>{choice.action}<span aria-hidden="true">&rarr;</span></Link>
+        </article>)}
+      </div>
       <EntryNeeds dict={dict} initialNeeds={needs} />
     </div>
   </main>

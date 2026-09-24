@@ -7,10 +7,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { requireStaffOrAdmin } from '@/lib/guard'
-import { updateUser } from './actions'
 import { CentersDashboard } from './centers-dashboard'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { UsersDirectory } from './users-directory'
 
 export default async function AdminCentersPage({
   searchParams,
@@ -40,95 +40,19 @@ export default async function AdminCentersPage({
     supabase.from('centers').select('*').order('name'),
     supabase
       .from('profiles')
-      .select('id, full_name, username, role, center_id, phone, first_name, last_name, centers(name)')
+      .select('id, full_name, username, role, center_id, phone, first_name, last_name, id_photo_path, centers(name)')
       .order('full_name'),
   ])
+  const rolePriority = new Map([['admin', 0], ['staff', 1], ['volunteer', 2]])
+  const sortedUsers = [...(users ?? [])].sort((a, b) =>
+    (rolePriority.get(a.role) ?? 3) - (rolePriority.get(b.role) ?? 3)
+    || (a.full_name || a.username || '').localeCompare(b.full_name || b.username || '', locale)
+    || a.id.localeCompare(b.id)
+  )
 
   return (
-    <CentersDashboard centers={centers ?? []} users={users ?? []} dict={dict} error={error} loadError={!!centersError || !!usersError}>
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-slate-700 dark:text-slate-300">{dict.admin.usersInSystem}</h2>
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <table className="w-full min-w-[640px] whitespace-nowrap text-left text-sm">
-            <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-              <tr>
-                <th className="px-4 py-2 font-medium">{dict.admin.name}</th>
-                <th className="px-4 py-2 font-medium">{dict.admin.role}</th>
-                <th className="px-4 py-2 font-medium">{dict.admin.center}</th>
-                <th className="px-4 py-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {(users ?? []).map((u) => (
-                <tr key={u.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                  <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                    {/* บัญชีที่สร้างจาก Dashboard ไม่มี full_name — ใช้ username แทนให้แยกได้ว่าใครเป็นใคร */}
-                    {u.full_name || u.username || '—'}
-                  </td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">{u.role}</td>
-                  <td className="px-4 py-2 text-slate-600 dark:text-slate-300">
-                    {(u.centers as unknown as { name?: string } | null)?.name ?? '—'}
-                  </td>
-                  <td className="px-4 py-2">
-                    <form action={updateUser} className="flex flex-wrap items-center gap-2">
-                      <input type="hidden" name="id" value={u.id} />
-                      <select
-                        name="role"
-                        defaultValue={u.role}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                      >
-                        <option value="staff">staff</option>
-                        <option value="admin">admin</option>
-                        <option value="volunteer">volunteer</option>
-                      </select>
-                      <select
-                        name="center_id"
-                        defaultValue={u.center_id ?? ''}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                      >
-                        <option value="">{dict.admin.noCenter}</option>
-                        {(centers ?? []).map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        name="first_name"
-                        defaultValue={u.first_name ?? ''}
-                        placeholder={dict.register.firstName}
-                        aria-label={dict.register.firstName}
-                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                      />
-                      <input
-                        name="last_name"
-                        defaultValue={u.last_name ?? ''}
-                        placeholder={dict.register.lastName}
-                        aria-label={dict.register.lastName}
-                        className="w-24 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                      />
-                      <input
-                        name="phone"
-                        type="tel"
-                        defaultValue={u.phone ?? ''}
-                        placeholder={dict.admin.userPhone}
-                        aria-label={dict.admin.userPhone}
-                        className="w-32 rounded-md border border-slate-300 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                      />
-                      <button
-                        type="submit"
-                        className="rounded-md bg-brand px-3 py-1 text-xs font-medium text-white hover:bg-brand-deep"
-                      >
-                        {dict.common.save}
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+    <CentersDashboard centers={centers ?? []} users={sortedUsers} dict={dict} error={error} loadError={!!centersError || !!usersError}>
+      <UsersDirectory users={sortedUsers} centers={centers ?? []} dict={dict} />
     </CentersDashboard>
   )
 }

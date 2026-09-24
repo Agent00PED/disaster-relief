@@ -21,10 +21,15 @@ import { noticeMessage, type NoticeParams } from '@/lib/notice'
 export default async function VolunteerPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string } & NoticeParams>
+  searchParams: Promise<{ error?: string; history?: string; page?: string } & NoticeParams>
 }) {
   const params = await searchParams
   const { error } = params
+  const allHistory = params.history === 'all'
+  const parsedPage = Number(params.page)
+  const historyPage = allHistory && Number.isSafeInteger(parsedPage) && parsedPage > 0 && parsedPage <= 100000 ? parsedPage : 1
+  const historySize = 5
+  const historyOffset = (historyPage - 1) * historySize
   const supabase = await createClient()
   const locale = await getLocale()
   const dict = getDictionary(locale)
@@ -47,17 +52,16 @@ export default async function VolunteerPage({
 
   const centerId = profile.center_id
 
-  // เบอร์ติดต่อเจ้าหน้าที่ของศูนย์เดียวกัน (comment อาจารย์: เดิมมีแค่เบอร์ศูนย์)
+  // รายชื่อสมาชิกทุกบทบาทในศูนย์เดียวกัน รวมอาสาสมัคร
   // RLS profiles_select เปิดให้เห็นเฉพาะคนในศูนย์ตัวเองอยู่แล้ว จึงไม่ต้อง
   // กรองซ้ำเรื่องสิทธิ์ แต่กรอง center_id ตรงนี้ด้วยเพื่อไม่ดึงแถวที่ไม่ใช้
-  const { data: staffRows } = centerId
+  const { data: staffRows, error: staffError } = centerId
     ? await supabase
         .from('profiles')
         .select('id, full_name, username, phone, role')
         .eq('center_id', centerId)
-        .in('role', ['staff', 'admin'])
         .order('full_name')
-    : { data: [] }
+    : { data: [], error: null }
   const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })
   const start = `${day}T00:00:00+07:00`
   const end = new Date(new Date(start).getTime() + 86400000).toISOString()
@@ -72,9 +76,10 @@ export default async function VolunteerPage({
       .eq('status', 'allocated').eq('requests.center_id', centerId)
       .order('allocated_at', { ascending: true }) : Promise.resolve(empty),
     centerId ? supabase.from('allocations')
-      .select('id, quantity_allocated, received_quantity, delivered_at, requests!inner(item_name, center_id), donations(unit)')
+      .select('id, quantity_allocated, received_quantity, delivered_at, requests!inner(item_name, center_id), donations(unit)', { count: 'exact' })
       .eq('status', 'delivered').eq('requests.center_id', centerId)
-      .order('delivered_at', { ascending: false }).limit(5) : Promise.resolve(empty),
+      .order('delivered_at', { ascending: false }).order('id', { ascending: false })
+      .range(historyOffset, historyOffset + historySize - 1) : Promise.resolve(empty),
     centerId ? supabase.from('allocations')
       .select('id, requests!inner(center_id)', { count: 'exact', head: true })
       .eq('status', 'delivered').eq('requests.center_id', centerId)
@@ -83,7 +88,11 @@ export default async function VolunteerPage({
       .eq('center_id', centerId).in('status', ['pending', 'partial']).eq('urgency', 'high') : Promise.resolve(empty),
   ])
 
+  const loadError = !!staffError || [requests, pending, history, delivered, urgent].some(result => result.error)
+
   return <VolunteerDashboard
+    allHistory={allHistory} historyPage={historyPage} historyTotal={history.error ? null : history.count}
+    updatedAt={loadError ? null : new Date().toISOString()}
     dict={dict} locale={locale} error={error} notice={noticeMessage(params, dict, locale)}
     name={profile.full_name || profile.username || dict.volunteer.defaultName}
     center={profile.centers as unknown as { name: string; type: string; address: string | null; contact_phone: string | null } | null}
@@ -92,6 +101,6 @@ export default async function VolunteerPage({
     pending={pending.data ?? []} history={history.data ?? []}
     counts={[pending.error ? null : pending.count, urgent.error ? null : urgent.count, requests.error ? null : requests.count, delivered.error ? null : delivered.count]}
     failed={{ requests: !!requests.error, pending: !!pending.error, history: !!history.error }}
-    loadError={[requests, pending, history, delivered, urgent].some(result => result.error)}
+    loadError={loadError}
   />
 }
