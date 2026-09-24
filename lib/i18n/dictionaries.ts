@@ -510,7 +510,8 @@ const th = {
     expiringSoonBadge: '(ใกล้หมดอายุ)',
     defaultUnit: 'หน่วย',
     hideExpired: 'ซ่อนของหมดอายุ',
-
+    dietaryType: 'ข้อกำหนดด้านอาหาร',
+    allDietary: 'ข้อกำหนดอาหารทั้งหมด',
   },
   allocations: {
     title: 'จัดสรรของ',
@@ -1255,7 +1256,8 @@ const en: typeof th = {
     expiringSoonBadge: '(Near expiry)',
     defaultUnit: 'unit',
     hideExpired: 'Hide expired',
-
+    dietaryType: 'ข้อกำหนดด้านอาหาร',
+    allDietary: 'ข้อกำหนดอาหารทั้งหมด',
   },
   allocations: {
     title: 'Allocate items',
