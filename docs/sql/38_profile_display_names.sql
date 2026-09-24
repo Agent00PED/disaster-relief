@@ -1,0 +1,69 @@
+-- =====================================================================
+-- 38. เติมชื่อ-นามสกุลให้บัญชีผู้ใช้
+--
+-- ปัญหา: ทุกบัญชีในระบบมี full_name เป็นค่าว่าง
+-- คอลัมน์นี้ถูกใช้แสดงชื่อในแถบเมนู ใบรับของ และตารางจัดการผู้ใช้
+-- เปิดหน้าไหนก็เห็นช่องชื่อโล่ง ดูเหมือนระบบพัง
+--
+-- ไฟล์นี้แบ่งเป็น 2 ส่วน
+--   ส่วน A  บัญชีทดสอบ — ใช้ชื่อสมมติ รันได้เลย
+--   ส่วน B  บัญชีของคนจริง — ต้องกรอกชื่อเองก่อนรัน (ดูหมายเหตุ)
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- ส่วน A — บัญชีทดสอบ
+-- ---------------------------------------------------------------------
+
+-- adminTest: ตั้งชื่อให้ดูเป็นบัญชีระบบชัดเจน จะได้ไม่สับสนกับคนจริง
+update public.profiles
+   set first_name = 'ผู้ดูแล', last_name = 'ระบบ', full_name = 'ผู้ดูแล ระบบ'
+ where username = 'adminTest';
+
+-- staffTest: ชื่อนี้ถูกแสดงเป็น "เจ้าหน้าที่ประจำศูนย์" ในหน้า /volunteer
+-- ซึ่งเป็นจุดที่อาจารย์สั่งให้เพิ่มพอดี เดิมเป็น "สมหญิง ทดสอบระบบ"
+-- คำว่า "ทดสอบระบบ" ขึ้นจอตอนนำเสนอจะดูเหมือนยังทำไม่เสร็จ
+--
+-- ใช้ชื่อสมมติแทนการใช้เบอร์จริงของคนในทีม เพราะจะขัดกับไฟล์ 37
+-- ที่เพิ่งล้างข้อมูลส่วนตัวออกไป
+update public.profiles
+   set first_name = 'สมหญิง', last_name = 'ใจดี', full_name = 'สมหญิง ใจดี',
+       phone = '081-234-5678'
+ where username = 'staffTest';
+
+
+-- ---------------------------------------------------------------------
+-- ส่วน B — บัญชีของคนในทีม
+--
+-- *** ยังไม่ได้รัน *** เพราะไม่ควรเดาชื่อ-นามสกุลของคนอื่น
+-- ให้เจ้าของบัญชีกรอกชื่อตัวเองแล้วค่อยรัน
+--
+-- แกะ comment ออกและใส่ชื่อจริงก่อนรัน
+-- ---------------------------------------------------------------------
+
+-- update public.profiles set first_name = '', last_name = '',
+--        full_name = trim(concat_ws(' ', first_name, last_name))
+--  where username = 'kitthakarn';
+
+-- update public.profiles set first_name = '', last_name = '',
+--        full_name = trim(concat_ws(' ', first_name, last_name))
+--  where username = 'chalisa';
+
+-- update public.profiles set first_name = '', last_name = '',
+--        full_name = trim(concat_ws(' ', first_name, last_name))
+--  where username = 'chitakan';
+
+-- update public.profiles set first_name = '', last_name = '',
+--        full_name = trim(concat_ws(' ', first_name, last_name))
+--  where username = 'Meen';
+
+-- update public.profiles set first_name = '', last_name = '',
+--        full_name = trim(concat_ws(' ', first_name, last_name))
+--  where username = 'Sareeya';
+
+
+-- ---------------------------------------------------------------------
+-- ตรวจผล — บัญชีไหนที่ full_name ยังว่างอยู่
+-- ---------------------------------------------------------------------
+select username, full_name, first_name, last_name, role
+  from public.profiles
+ order by (nullif(trim(full_name), '') is null) desc, role, username;
