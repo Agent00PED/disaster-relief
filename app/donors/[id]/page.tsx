@@ -90,13 +90,13 @@ export default async function DonorDetailPage({ params }: Props) {
 
   // 4. เช็กเงื่อนไขผู้บริจาคที่ไม่ประสงค์ออกนาม (is_anonymous)
 
-  const displayName = donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : donor.name
+  const displayName = donor.is_anonymous ? dict.donors.anonymousLabel : donor.name
 
-  const displayPhone = donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : (donor.phone || '-')
+  const displayPhone = donor.is_anonymous ? dict.donors.anonymousLabel : (donor.phone || '-')
 
-  const displayEmail = donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : (donor.email || '-')
+  const displayEmail = donor.is_anonymous ? dict.donors.anonymousLabel : (donor.email || '-')
 
-  const displayAddress = donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : (donor.address || '-')
+  const displayAddress = donor.is_anonymous ? dict.donors.anonymousLabel : (donor.address || '-')
 
 
 
@@ -132,17 +132,17 @@ export default async function DonorDetailPage({ params }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700 dark:text-slate-300">
 
-          <div><span className="font-medium">ประเภท:</span> {donor.donor_type === 'organization' ? 'องค์กร' : 'บุคคลทั่วไป'}</div>
+          <div><span className="font-medium">{dict.donors.type}:</span> {donor.donor_type === 'organization' ? dict.donors.typeOrganization : dict.donors.typeIndividual}</div>
 
-          <div><span className="font-medium">เบอร์โทรศัพท์:</span> {displayPhone}</div>
+          <div><span className="font-medium">{dict.form.phone}:</span> {displayPhone}</div>
 
-          <div><span className="font-medium">อีเมล:</span> {displayEmail}</div>
+          <div><span className="font-medium">{dict.form.email}:</span> {displayEmail}</div>
 
-          <div><span className="font-medium">ที่อยู่:</span> {displayAddress}</div>
+          <div><span className="font-medium">{dict.donors.address}:</span> {displayAddress}</div>
 
-          <div><span className="font-medium">สถานะ:</span> {donor.is_active ? 'Active' : 'Inactive'}</div>
+          <div><span className="font-medium">{dict.common.status}:</span> {donor.is_active ? dict.donors.active : dict.donors.inactive}</div>
 
-          <div><span className="font-medium">ไม่ประสงค์ออกนาม:</span> {donor.is_anonymous ? 'ใช่' : 'ไม่ใช่'}</div>
+          <div><span className="font-medium">{dict.donors.anonymousLabel}:</span> {donor.is_anonymous ? dict.donors.yes : dict.donors.no}</div>
 
         </div>
 
@@ -156,15 +156,15 @@ export default async function DonorDetailPage({ params }: Props) {
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
-          <p className="text-sm text-slate-500">บริจาคทั้งหมด</p>
+          <p className="text-sm text-slate-500">{dict.donors.totalDonations}</p>
 
-          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{summary?.donation_count ?? 0} ครั้ง</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{summary?.donation_count ?? 0} {dict.donors.timesUnit}</p>
 
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
-          <p className="text-sm text-slate-500">ครั้งแรกเมื่อไหร่</p>
+          <p className="text-sm text-slate-500">{dict.donors.firstDonation}</p>
 
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
 
@@ -176,7 +176,7 @@ export default async function DonorDetailPage({ params }: Props) {
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
 
-          <p className="text-sm text-slate-500">ครั้งล่าสุดเมื่อไหร่</p>
+          <p className="text-sm text-slate-500">{dict.donors.lastDonation}</p>
 
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">
 
@@ -196,7 +196,7 @@ export default async function DonorDetailPage({ params }: Props) {
 
         <div className="p-4 border-b border-slate-200 dark:border-slate-700">
 
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">ประวัติการบริจาค</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">{dict.donors.historyTitle}</h2>
 
         </div>
 
@@ -208,17 +208,17 @@ export default async function DonorDetailPage({ params }: Props) {
 
               <tr>
 
-                <th className="px-4 py-3">วันที่</th>
+                <th className="px-4 py-3">{dict.donors.date}</th>
 
-                <th className="px-4 py-3">ศูนย์</th>
+                <th className="px-4 py-3">{dict.requests.center}</th>
 
-                <th className="px-4 py-3">ชื่อสิ่งของ</th>
+                <th className="px-4 py-3">{dict.table.itemName}</th>
 
-                <th className="px-4 py-3">จำนวน</th>
+                <th className="px-4 py-3">{dict.form.quantity}</th>
 
-                <th className="px-4 py-3">หน่วย</th>
+                <th className="px-4 py-3">{dict.donationNew.unit}</th>
 
-                <th className="px-4 py-3">ลิงก์ใบรับของ</th>
+                <th className="px-4 py-3">{dict.donors.receiptLinkLabel}</th>
 
               </tr>
 
@@ -246,7 +246,7 @@ export default async function DonorDetailPage({ params }: Props) {
 
                       <Link href={`/donations/${row.id}`} className="text-brand hover:underline">
 
-                        ดูใบรับของ
+                        {dict.donors.viewReceipt}
 
                       </Link>
 
@@ -262,7 +262,7 @@ export default async function DonorDetailPage({ params }: Props) {
 
                   <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
 
-                    ยังไม่มีประวัติการบริจาค
+                    {dict.donors.historyEmpty}
 
                   </td>
 

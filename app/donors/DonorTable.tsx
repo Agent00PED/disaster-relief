@@ -92,16 +92,25 @@ export default function DonorTable({ donors, dict }: Props) {
 
   // ฟังก์ชันดาวน์โหลด CSV (ตามเงื่อนไข: เฉพาะข้อมูลที่ผ่านตัวกรอง, มี \uFEFF และ escape เครื่องหมาย " )
   const exportToCSV = () => {
-    const headers = ['ลำดับ', 'ชื่อ', 'ประเภท', 'เบอร์โทรศัพท์', 'อีเมล', 'ที่อยู่', 'จำนวนครั้งที่บริจาค', 'สถานะ']
+    const headers = [
+      dict.donors.csvIndex,
+      dict.donors.name,
+      dict.donors.type,
+      dict.form.phone,
+      dict.form.email,
+      dict.donors.address,
+      dict.donors.csvDonationCount,
+      dict.common.status,
+    ]
     
     const rows = filteredDonors.map((donor, index) => {
-      const name = donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : `"${donor.name.replace(/"/g, '""')}"`
-      const donorType = donor.donor_type === 'organization' ? 'องค์กร' : 'บุคคลทั่วไป'
+      const name = donor.is_anonymous ? dict.donors.anonymousLabel : `"${donor.name.replace(/"/g, '""')}"`
+      const donorType = donor.donor_type === 'organization' ? dict.donors.typeOrganization : dict.donors.typeIndividual
       const phone = donor.is_anonymous ? '-' : `"${(donor.phone || '-').replace(/"/g, '""')}"`
       const email = donor.is_anonymous ? '-' : `"${(donor.email || '-').replace(/"/g, '""')}"`
       const address = donor.is_anonymous ? '-' : `"${(donor.address || '-').replace(/"/g, '""')}"`
       const donationCount = donor.donation_count
-      const statusText = donor.is_active ? 'ใช้งาน' : 'ไม่ใช้งาน'
+      const statusText = donor.is_active ? dict.donors.active : dict.donors.inactive
 
       return [
         index + 1,
@@ -139,7 +148,7 @@ export default function DonorTable({ donors, dict }: Props) {
               onClick={exportToCSV}
               className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
-              ดาวน์โหลด CSV
+              {dict.donors.exportCsv}
             </button>
             <Link
               href="/donors/new"
