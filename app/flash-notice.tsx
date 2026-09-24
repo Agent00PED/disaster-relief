@@ -9,10 +9,12 @@ export function FlashNotice({
   message,
   clearHref,
   closeLabel,
+  variant = 'bar',
 }: {
   message: string
   clearHref: string
   closeLabel: string
+  variant?: 'bar' | 'toast'
 }) {
   const [visible, setVisible] = useState(true)
 
@@ -25,7 +27,9 @@ export function FlashNotice({
   return (
     <div
       role="status"
-      className="mb-5 flex items-start justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+      className={variant === 'toast'
+        ? 'fixed right-4 top-4 z-50 flex max-w-sm items-start justify-between gap-3 rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm text-emerald-800 shadow-lg dark:border-emerald-500/30 dark:bg-slate-900 dark:text-emerald-300'
+        : 'mb-5 flex items-start justify-between gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'}
     >
       <span className="flex items-start gap-2">
         <span aria-hidden="true">✓</span>

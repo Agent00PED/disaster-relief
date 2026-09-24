@@ -14,7 +14,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { RevealNeedCard, UpdatedNeedValue } from './entry-needs-motion'
 import { createClient } from '@/lib/supabase/client'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import styles from './entry-hub.module.css'
@@ -58,6 +58,7 @@ export function EntryNeeds({
 }) {
   const copy = dict.entryHub
   const [needs, setNeeds] = useState<NeedRow[]>(initialNeeds)
+  const [showAll, setShowAll] = useState(false)
   // true เมื่อ subscribe สำเร็จเท่านั้น — ถ้า realtime ใช้ไม่ได้
   // (ยังไม่ได้เปิด replication / เน็ตมีปัญหา) จะไม่ขึ้นป้าย "อัปเดตสด"
   // หลอกผู้ใช้ว่าเลขสด ทั้งที่มันค้างอยู่
@@ -115,11 +116,11 @@ export function EntryNeeds({
     other: dict.form.categoryOther,
   }
 
-  // เรียงจากขาดมากสุด แล้วตัดเหลือ 3 อันดับแรกที่ยังขาดจริง
-  const top = [...needs]
+  // แสดง 3 หมวดแรกก่อน และขยายดูทุกหมวดที่ยังขาดได้
+  const outstanding = [...needs]
     .filter((n) => n.shortage > 0)
     .sort((a, b) => b.shortage - a.shortage)
-    .slice(0, 3)
+  const visibleNeeds = showAll ? outstanding : outstanding.slice(0, 3)
 
   return (
     <section className={styles.supplies} aria-labelledby="supplies-title">
@@ -135,45 +136,63 @@ export function EntryNeeds({
         </span>
       </header>
 
-      {top.length === 0 ? (
+      <div id="supplies-results">
+      {visibleNeeds.length === 0 ? (
         <p className={styles.needsEmpty}>{copy.needsEmpty}</p>
       ) : (
         <div className={styles.supplyGrid}>
-          {top.map((need) => (
-            <Link
+          {visibleNeeds.map((need, index) => (
+            <RevealNeedCard
               key={need.category}
               href={`/pledge?category=${need.category}`}
-              className={styles.supplyCard}
-              data-tone={TONE[need.category] ?? 'green'}
+              tone={TONE[need.category] ?? 'green'}
+              index={index}
             >
               <div className={styles.supplyHeading}>
                 <span className={styles.icon}><NeedIcon category={need.category} /></span>
                 <div>
                   <h3>{categoryLabel[need.category] ?? need.category}</h3>
                   <p className={styles.needsShortage}>
+                    <UpdatedNeedValue value={need.shortage}>
                     {copy.needsShortage
                       .replace('{n}', need.shortage.toLocaleString())
                       .replace('{unit}', copy.needsUnit)}
+                    </UpdatedNeedValue>
                   </p>
                 </div>
               </div>
               <ul className={styles.needsMeta}>
-                <li>{copy.needsCenters.replace('{n}', String(need.center_count))}</li>
+                <li><UpdatedNeedValue value={need.center_count}>{copy.needsCenters.replace('{n}', String(need.center_count))}</UpdatedNeedValue></li>
                 {/* ยอดที่ยังขาดจะลดก็ต่อเมื่อเจ้าหน้าที่จัดสรรจริง บรรทัดนี้
                     จึงสำคัญ — บอกว่ามีคนแจ้งบริจาคเข้ามาแล้วกี่ราย เพื่อไม่ให้
                     ทุกคนเห็นเลขเดิมแล้วแห่บริจาคของอย่างเดียวกันซ้ำ ๆ */}
                 {need.pledged_count > 0 && (
                   <li className={styles.needsPledged}>
+                    <UpdatedNeedValue value={need.pledged_count}>
                     {copy.needsPledged.replace('{n}', String(need.pledged_count))}
+                    </UpdatedNeedValue>
                   </li>
                 )}
               </ul>
               <span className={styles.supplyAction}>
                 {copy.donateCategory} <span aria-hidden="true">&rarr;</span>
               </span>
-            </Link>
+            </RevealNeedCard>
           ))}
         </div>
+      )}
+      </div>
+      {(outstanding.length > 3 || showAll) && (
+        <button
+          type="button"
+          className={styles.needsToggle}
+          aria-expanded={showAll}
+          aria-controls="supplies-results"
+          onClick={() => setShowAll((expanded) => !expanded)}
+        >
+          {showAll ? copy.needsShowLess : copy.needsViewAll}
+          <span aria-hidden="true">{showAll ? '↑' : '↓'}</span>
+        </button>
       )}
     </section>
   )
