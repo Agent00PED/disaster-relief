@@ -129,6 +129,7 @@ export default async function PledgesPage({
     if (!match) return value
 
     const [, day, month, year] = match
+
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   }
 
@@ -606,10 +607,9 @@ export default async function PledgesPage({
                       {/* หน่วย */}
 
                       <td className="px-3 py-3 text-[11px] text-slate-600 dark:text-slate-300">
-                        {p.unit ??
-                          (locale === 'en'
-                            ? 'box'
-                            : 'กล่อง')}
+                        {p.unit
+                          ? unitLabel(p.unit, locale)
+                          : '—'}
                       </td>
 
                       {/* วันที่ต้องการ */}
