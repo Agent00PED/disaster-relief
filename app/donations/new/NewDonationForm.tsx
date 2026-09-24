@@ -1112,7 +1112,10 @@ export default function NewDonationForm({
               }
               onChange={(e) =>
                 setDonorFirstName(
-                  e.target.value
+                  e.target.value.replace(
+                    /[0-9]/g,
+                    ''
+                  )
                 )
               }
               placeholder={tr(
@@ -1140,7 +1143,10 @@ export default function NewDonationForm({
               }
               onChange={(e) =>
                 setDonorLastName(
-                  e.target.value
+                  e.target.value.replace(
+                    /[0-9]/g,
+                    ''
+                  )
                 )
               }
               placeholder={tr(
@@ -1175,9 +1181,13 @@ export default function NewDonationForm({
               value={phone}
               onChange={(e) =>
                 setPhone(
-                  e.target.value
+                  e.target.value.replace(
+                    /\D/g,
+                    ''
+                  )
                 )
               }
+              inputMode="numeric"
               placeholder={tr(
                 'กรอกเบอร์โทรศัพท์',
                 'Enter phone number'
@@ -2191,7 +2201,10 @@ export default function NewDonationForm({
                                   handleItemChange(
                                     item.id,
                                     'otherItemType',
-                                    e.target.value
+                                    e.target.value.replace(
+                                      /[0-9]/g,
+                                      ''
+                                    )
                                   )
                                 }
                                 placeholder={tr(
@@ -2312,7 +2325,10 @@ export default function NewDonationForm({
                                       handleItemChange(
                                         item.id,
                                         'otherBrand',
-                                        e.target.value
+                                        e.target.value.replace(
+                                          /[0-9]/g,
+                                          ''
+                                        )
                                       )
                                     }
                                     placeholder={tr(
@@ -2649,7 +2665,7 @@ function ExpiryField({
               : 'mm/dd/yyyy'}
           </span>
         )}
-
+        
         <input
           type="date"
           value={
