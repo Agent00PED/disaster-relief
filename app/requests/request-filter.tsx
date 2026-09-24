@@ -19,10 +19,11 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
   const currentCategory = searchParams.get("category") ?? "";
   const currentUrgency = searchParams.get("urgency") ?? "";
   const currentCenter = searchParams.get("center_id") ?? "";
+  const currentStatus = searchParams.get("status") ?? "";
 
   // ตรวจสอบว่ามีการใช้ตัวกรองอยู่หรือไม่
   const isFiltered = Boolean(
-    currentSearch || currentCategory || currentUrgency || currentCenter
+    currentSearch || currentCategory || currentUrgency || currentCenter || currentStatus
   );
 
   const handleFilter = (key: string, value: string) => {
@@ -32,6 +33,19 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
       params.set(key, value);
     } else {
       params.delete(key);
+    }
+
+    const query = params.toString();
+    replace(query ? `${pathname}?${query}` : pathname);
+  };
+
+  const handleStatusFilter = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (value === "") {
+      params.delete("status");
+    } else {
+      params.set("status", value);
     }
 
     const query = params.toString();
@@ -60,17 +74,29 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
     { label: `🟢 ${dict.requests.urgencyLow}`, value: "low" },
   ];
 
+  const statusFilters = [
+    { label: dict.requests.allCategories, value: "" },
+    { label: dict.requests.statusPending, value: "pending" },
+    { label: dict.requests.statusPartial, value: "partial" },
+    { label: dict.requests.statusFulfilled, value: "fulfilled" },
+    { label: dict.requests.statusCancelled, value: "cancelled" },
+  ];
+
   return (
     <div className="mb-6 space-y-3">
       {/* แถบค้นหา + ตัวกรองศูนย์พักพิง + ตัวกรองความเร่งด่วน + ปุ่มล้างตัวกรอง */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap items-center gap-2">
         {/* ช่องค้นหา */}
         <div className="relative w-full sm:w-72">
           <input
             type="text"
             value={currentSearch}
             onChange={(e) => handleFilter("q", e.target.value)}
-            placeholder={dict.requests.searchPlaceholder}
+            placeholder={
+              lang === "en"
+                ? "Search items, shelters, addresses..."
+                : "ค้นหาสิ่งของ, ศูนย์พักพิง, ที่อยู่..."
+            }
             className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
           />
         </div>
@@ -102,6 +128,19 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
           ))}
         </select>
 
+        {/* ตัวกรองสถานะ */}
+        <select
+          value={currentStatus}
+          onChange={(e) => handleStatusFilter(e.target.value)}
+          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 transition focus:border-brand focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+        >
+          {statusFilters.map((status) => (
+            <option key={status.value} value={status.value}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+
         {/* ปุ่มล้างตัวกรอง (จะแสดงเฉพาะเมื่อมีการกรองค้างอยู่) */}
         {isFiltered && (
           <button
@@ -115,7 +154,7 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
       </div>
 
       {/* ปุ่มเลือกหมวดหมู่ */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2 mt-3">
         {categoryFilters.map((filter) => {
           const isActive = currentCategory === filter.value;
 

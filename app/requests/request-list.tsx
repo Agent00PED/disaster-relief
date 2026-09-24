@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/locale";
+import { dietaryLabel } from "@/lib/dietary";
 import { CancelRequestButton, type CancelRequestButtonLabels } from "./cancel-request-dialog";
 
 interface RowData {
@@ -13,8 +14,14 @@ interface RowData {
     quantity_fulfilled: number;
     urgency: string;
     status: string;
+    dietary_type?: string;
     cancel_reason?: string | null;
     created_at: string;
+    centers?: {
+      name?: string | null;
+      name_en?: string | null;
+      address?: string | null;
+    } | null;
   };
   center: string;
   unit: string;
@@ -133,6 +140,13 @@ export function RequestList({
     </span>
   );
 
+  const dietaryPill = (row: RowData) =>
+    row.r.dietary_type && row.r.dietary_type !== "general" ? (
+      <span className="whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+        {dietaryLabel(row.r.dietary_type, locale)}
+      </span>
+    ) : null;
+
   return (
     <div className="space-y-4">
       {/* จอเล็ก: การ์ด */}
@@ -147,9 +161,18 @@ export function RequestList({
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">{row.r.item_name}</p>
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-slate-900 dark:text-slate-100">
+                        {row.r.item_name}
+                        {dietaryPill(row)}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{row.center}</p>
+                      {row.r.centers?.address && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {row.r.centers.address}
+                        </p>
+                      )}
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {row.center} · {categoryLabel[row.r.category] ?? row.r.category}
+                        {categoryLabel[row.r.category] ?? row.r.category}
                       </p>
                       <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
                         {formatRelativeTime(row.r.created_at, locale, dict.requests)}
@@ -172,11 +195,12 @@ export function RequestList({
       </ul>
 
       {/* จอใหญ่: ตาราง */}
-      <div className={`${panel} hidden overflow-x-auto md:block`}>
-        <table className="w-full min-w-[880px] text-left text-sm">
+      <div className={`${panel} hidden md:block`}>
+        <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[800px] text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
             <tr>
-              <th className="px-4 py-2.5 font-medium">{dict.requests?.center}</th>
+              <th className="min-w-[240px] pl-4 pr-4 py-2.5 font-medium">{dict.requests?.center}</th>
               <th className="px-4 py-2.5 font-medium">{dict.requests?.item}</th>
               <th className="px-4 py-2.5 font-medium">
                 {dict.requests?.fulfilled} / {dict.requests?.requested}
@@ -193,9 +217,19 @@ export function RequestList({
                   key={row.r.id}
                   className="border-b border-slate-100 align-top last:border-0 dark:border-slate-800 transition-colors hover:bg-slate-50/50 dark:hover:bg-slate-800/30"
                 >
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{row.center}</td>
+                  <td className="min-w-[240px] pl-4 pr-4 py-3 text-slate-600 dark:text-slate-300">
+                    <span className="block">{row.center}</span>
+                    {row.r.centers?.address && (
+                      <span className="block text-xs text-slate-500 dark:text-slate-400">
+                        {row.r.centers.address}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
-                    {row.r.item_name}
+                    <span className="inline-flex flex-wrap items-center gap-2">
+                      {row.r.item_name}
+                      {dietaryPill(row)}
+                    </span>
                     <span className="block text-xs text-slate-500 dark:text-slate-400">
                       {categoryLabel[row.r.category] ?? row.r.category}
                     </span>
@@ -212,6 +246,7 @@ export function RequestList({
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
