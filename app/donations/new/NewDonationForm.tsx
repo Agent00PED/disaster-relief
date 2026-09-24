@@ -60,7 +60,7 @@ const donationTypes = [
   },
   {
     id: 'milk',
-    value: 'food',
+    value: 'milk',
     labelTh: 'นม',
     labelEn: 'Milk',
     icon: '🍼',
@@ -1066,6 +1066,7 @@ export default function NewDonationForm({
       {/* =========================
           DESTINATION CENTER
       ========================= */}
+
       {centerSelect && (
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4">
@@ -1076,6 +1077,7 @@ export default function NewDonationForm({
               )}
             </h2>
           </div>
+
           {centerSelect}
         </section>
       )}
@@ -1095,7 +1097,6 @@ export default function NewDonationForm({
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -1333,7 +1334,7 @@ export default function NewDonationForm({
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-
+          {/* RECEIVED DATE */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -1345,7 +1346,6 @@ export default function NewDonationForm({
               </span>
             </label>
 
-            {/* แก้เฉพาะส่วนวันที่ */}
             <div className="relative">
               {!receivedDate && (
                 <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
@@ -1524,7 +1524,6 @@ export default function NewDonationForm({
           item.donationType !== ''
       ) && (
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-
           <div className="mb-5">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
               {tr(
@@ -1558,7 +1557,6 @@ export default function NewDonationForm({
                     }
                     className="relative rounded-xl border border-slate-200 p-5 dark:border-slate-700"
                   >
-
                     {items.length > 1 && (
                       <button
                         type="button"
@@ -1662,7 +1660,6 @@ export default function NewDonationForm({
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-
                           {/* MILK TYPE */}
                           {item.donationType ===
                             'milk' && (
@@ -2452,14 +2449,22 @@ export default function NewDonationForm({
                                 )}
                               </option>
 
-                              {UNITS.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                >
-                                  {optionLabel(option)}
-                                </option>
-                              ))}
+                              {UNITS.map(
+                                (option) => (
+                                  <option
+                                    key={
+                                      option
+                                    }
+                                    value={
+                                      option
+                                    }
+                                  >
+                                    {optionLabel(
+                                      option
+                                    )}
+                                  </option>
+                                )
+                              )}
                             </select>
                           </div>
 
