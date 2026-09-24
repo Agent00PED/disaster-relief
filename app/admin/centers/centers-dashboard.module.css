@@ -11,8 +11,16 @@
 }
 .dialog[open] { animation: enter 220ms ease-out; }
 .dialog::backdrop { background: rgb(2 6 23 / 45%); animation: fade 220ms ease-out; }
+.reveal { animation: reveal 320ms ease-out both; }
+.rowReveal { animation: rowReveal 260ms ease-out both; }
+.toast { animation: toast 240ms ease-out both; }
+.tabPanel { animation: tabPanel 220ms ease-out both; }
 @keyframes enter { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rowReveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toast { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes tabPanel { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) {
-  .dialog[open], .dialog::backdrop { animation: none; }
+  .dialog[open], .dialog::backdrop, .reveal, .rowReveal, .toast, .tabPanel { animation: none; }
 }
