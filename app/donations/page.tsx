@@ -77,8 +77,25 @@ const CATEGORIES_CONFIG = [
 ]
 
 // ฟังก์ชันระบุ ID ของหมวดหมู่
-function getCategoryId(categoryKey?: string): string {
+function getCategoryId(
+  categoryKey?: string,
+  itemName?: string
+): string {
   const key = categoryKey?.toLowerCase().trim() || ''
+  const name = itemName?.toLowerCase().trim() || ''
+
+  // =====================================================
+  // แก้กรณีนมถูกบันทึก category เป็น food
+  // ให้ตรวจจากชื่อรายการด้วย
+  // =====================================================
+  if (
+    key === 'milk' ||
+    key === 'นม' ||
+    name.includes('milk') ||
+    name.includes('นม')
+  ) {
+    return 'milk'
+  }
 
   const found = CATEGORIES_CONFIG.find((cat) =>
     cat.matchKeys.includes(key)
@@ -149,7 +166,8 @@ export default async function DonationsPage({
 
   if (category) {
     filteredDonations = filteredDonations.filter(
-      (item) => getCategoryId(item.category) === category
+      (item) =>
+        getCategoryId(item.category, item.item_name) === category
     )
   }
 
@@ -198,7 +216,10 @@ export default async function DonationsPage({
   const groupedDonations: Record<string, DonationItem[]> = {}
 
   filteredDonations.forEach((item) => {
-    const catId = getCategoryId(item.category)
+    const catId = getCategoryId(
+      item.category,
+      item.item_name
+    )
 
     if (!groupedDonations[catId]) {
       groupedDonations[catId] = []
