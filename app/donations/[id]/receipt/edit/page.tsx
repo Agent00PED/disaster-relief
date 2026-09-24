@@ -5,6 +5,7 @@ import { requireStaffOrAdmin } from '@/lib/guard'
 import { updateDonation } from '@/app/donations/actions'
 import { UnitSelect } from '@/app/unit-select'
 import { getLocale } from '@/lib/i18n/locale'
+import { getDictionary } from '@/lib/i18n/dictionaries'
 
 type EditDonationPageProps = {
   params: Promise<{
@@ -17,14 +18,6 @@ type EditDonationPageProps = {
 
 export const dynamic = 'force-dynamic'
 
-const categories = [
-  { value: 'food', label: 'อาหาร' },
-  { value: 'water', label: 'น้ำดื่ม' },
-  { value: 'medicine', label: 'ยาและเวชภัณฑ์' },
-  { value: 'clothing', label: 'เสื้อผ้า' },
-  { value: 'hygiene', label: 'ของใช้ส่วนตัว' },
-  { value: 'other', label: 'อื่น ๆ' },
-]
 
 export default async function EditDonationPage({
   params,
@@ -34,6 +27,17 @@ export default async function EditDonationPage({
   const { error: errorMessage } = await searchParams
 
   const locale = await getLocale()
+  const dict = getDictionary(locale)
+
+  // ดึงชื่อหมวดจาก dictionary เพื่อให้สลับภาษาได้ ไม่ใช่รายการที่พิมพ์ไทยตายตัว
+  const categories = [
+    { value: 'food', label: dict.form.categoryFood },
+    { value: 'water', label: dict.form.categoryWater },
+    { value: 'medicine', label: dict.form.categoryMedicine },
+    { value: 'clothing', label: dict.form.categoryClothing },
+    { value: 'hygiene', label: dict.form.categoryHygiene },
+    { value: 'other', label: dict.form.categoryOther },
+  ]
 
   const supabase = await createClient()
 
