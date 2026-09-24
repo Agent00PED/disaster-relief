@@ -34,31 +34,24 @@ update public.profiles
 -- ---------------------------------------------------------------------
 -- ส่วน B — บัญชีของคนในทีม
 --
--- *** ยังไม่ได้รัน *** เพราะไม่ควรเดาชื่อ-นามสกุลของคนอื่น
--- ให้เจ้าของบัญชีกรอกชื่อตัวเองแล้วค่อยรัน
+-- เจ้าของบัญชีแจ้งชื่อมาเองแล้ว รันเรียบร้อย
 --
--- แกะ comment ออกและใส่ชื่อจริงก่อนรัน
+-- full_name ประกอบจาก first_name + last_name ด้วย concat_ws
+-- ไม่พิมพ์ชื่อเต็มซ้ำ เพื่อว่าถ้าแก้ชื่อทีหลังจะได้ไม่ลืมแก้ full_name ตาม
 -- ---------------------------------------------------------------------
 
--- update public.profiles set first_name = '', last_name = '',
---        full_name = trim(concat_ws(' ', first_name, last_name))
---  where username = 'kitthakarn';
-
--- update public.profiles set first_name = '', last_name = '',
---        full_name = trim(concat_ws(' ', first_name, last_name))
---  where username = 'chalisa';
-
--- update public.profiles set first_name = '', last_name = '',
---        full_name = trim(concat_ws(' ', first_name, last_name))
---  where username = 'chitakan';
-
--- update public.profiles set first_name = '', last_name = '',
---        full_name = trim(concat_ws(' ', first_name, last_name))
---  where username = 'Meen';
-
--- update public.profiles set first_name = '', last_name = '',
---        full_name = trim(concat_ws(' ', first_name, last_name))
---  where username = 'Sareeya';
+update public.profiles p
+   set first_name = v.first_name,
+       last_name  = v.last_name,
+       full_name  = trim(concat_ws(' ', v.first_name, v.last_name))
+  from (values
+    ('chalisa',    'ชาลิสา',     'นาคสอิ้ง'),
+    ('chitakan',   'ชิตากานต์',   'ไสวศรี'),
+    ('Sareeya',    'สรียา',      'นาคาพิศ'),
+    ('kitthakarn', 'กฤษฏิ์ธกาล',  'สวัสดิภาพ'),
+    ('Meen',       'รัฐนันท์',     'ยิดนรดิน')
+  ) as v(username, first_name, last_name)
+ where p.username = v.username;
 
 
 -- ---------------------------------------------------------------------
