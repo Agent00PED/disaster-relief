@@ -103,11 +103,13 @@ export default async function HelpRequestsPage({
     if (selectedStatus === 'dismissed' && p.status !== 'dismissed') return false
     if (selectedStatus && !['pending', 'confirmed', 'dismissed'].includes(selectedStatus) && p.status !== selectedStatus) return false
 
+    // ระบบค้นหา: หาจาก ชื่อ, เบอร์โทร, และ ที่อยู่ (address)
     if (search) {
       const query = search.toLowerCase()
       const nameMatch = p.requester_name?.toLowerCase().includes(query)
       const phoneMatch = p.requester_phone?.toLowerCase().includes(query)
-      if (!nameMatch && !phoneMatch) return false
+      const addressMatch = p.address?.toLowerCase().includes(query) // <--- เพิ่มค้นหาที่อยู่
+      if (!nameMatch && !phoneMatch && !addressMatch) return false
     }
 
     if (selectedCenter && p.center_id !== selectedCenter) return false
@@ -176,6 +178,7 @@ export default async function HelpRequestsPage({
         </p>
       ) : (
         <>
+          {/* มุมมอง Mobile (Card) */}
           <ul className="space-y-3 lg:hidden">
             {pledges.map((p) => (
               <li key={p.id} className={`${panel} p-4 space-y-3`}>
@@ -183,6 +186,9 @@ export default async function HelpRequestsPage({
                   <div>
                     <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-base">{p.requester_name}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📞 {p.requester_phone || '—'}</p>
+                    {/* แทรกที่อยู่ตรงนี้ */}
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">📍 {p.address || '—'}</p>
+                    
                     <p className="text-[11px] text-slate-400 mt-0.5">
                       {formatRelativeTime(p.created_at, locale, dict.requests)}
                     </p>
@@ -238,6 +244,7 @@ export default async function HelpRequestsPage({
             ))}
           </ul>
 
+          {/* มุมมอง Desktop (Table) */}
           <div className={`${panel} hidden overflow-hidden lg:block`}>
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-400">
@@ -257,6 +264,10 @@ export default async function HelpRequestsPage({
                     <td className="px-4 py-3 text-slate-900 dark:text-slate-100">
                       <div className="font-medium">{p.requester_name}</div>
                       <div className="text-xs text-slate-400">{p.requester_phone || '—'}</div>
+                      
+                      {/* แทรกที่อยู่ตรงนี้ */}
+                      <div className="text-xs text-slate-400 mt-0.5 whitespace-normal">📍 {p.address || '—'}</div>
+                      
                       <div className="text-[11px] text-slate-400 mt-0.5">
                         {formatRelativeTime(p.created_at, locale, dict.requests)}
                       </div>
