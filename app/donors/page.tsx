@@ -10,8 +10,8 @@ export default async function DonorsPage() {
 
   const dict = getDictionary(await getLocale());
 
-  // ดึงข้อมูลตรง ๆ จาก Supabase โดยไม่มีการแปลงหรือสุ่มข้อมูลจังหวัดทับ
-  const { data: donors, error } = await supabase
+  // 1. ดึงข้อมูลรายชื่อผู้บริจาค
+  const { data: donorsData, error } = await supabase
     .from("donors")
     .select("id, name, donor_type, phone, address, is_anonymous, is_active")
     .order("created_at", { ascending: false });
@@ -20,9 +20,28 @@ export default async function DonorsPage() {
     console.error("Error fetching donors:", error.message);
   }
 
+  // 2. ดึงข้อมูลสรุปจาก v_donor_summary เพื่อเอาจำนวนครั้งที่บริจาค (donation_count)
+  const { data: summaryData } = await supabase
+    .from("v_donor_summary")
+    .select("donor_id, donation_count");
+
+  // สร้าง Map สำหรับเก็บจำนวนครั้งการบริจาคเทียบกับ donor_id
+  const countMap = new Map<string, number>();
+  if (summaryData) {
+    summaryData.forEach((item) => {
+      countMap.set(item.donor_id, item.donation_count ?? 0);
+    });
+  }
+
+  // 3. แม็ปจำนวนครั้งการบริจาค (donation_count) เข้าไปในข้อมูล donors
+  const donors = (donorsData ?? []).map((donor) => ({
+    ...donor,
+    donation_count: countMap.get(donor.id) ?? 0,
+  }));
+
   return (
     <main className="mx-auto w-full max-w-6xl space-y-6 px-6 py-10">
-      <DonorTable donors={donors ?? []} dict={dict} />
+      <DonorTable donors={donors} dict={dict} />
     </main>
   );
 }
