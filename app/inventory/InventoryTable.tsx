@@ -95,14 +95,13 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
     const headers = []
     if (isAdmin) {
       headers.push(dict.requests.center)
-      // เพิ่ม Header ที่อยู่ (สมมติว่าในดิกชันนารีมี form.address ถ้าไม่มีอาจจะแจ้งเตือนแดงๆ ให้ไปเติมในดิกชันนารีนะครับ)
-      headers.push((dict.form as any)?.address ?? 'ที่อยู่') 
+      headers.push(dict.form.address)
     }
     headers.push(dict.form.category)
     headers.push(dict.table.itemName)
     headers.push(dict.table.remainingQty)
     headers.push(dict.inventory.defaultUnit)
-    headers.push((dict.inventory as any).dietaryType ?? 'ข้อกำหนดอาหาร')
+    headers.push(dict.inventory.dietaryType)
     headers.push(dict.inventory.lotCount)
     headers.push(dict.inventory.nearestExpiry)
 
@@ -171,7 +170,7 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
             onChange={(e) => setSelectedDietary(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
           >
-            <option value="all">{(dict.inventory as any).allDietary ?? 'ข้อกำหนดอาหารทั้งหมด'}</option>
+            <option value="all">{dict.inventory.allDietary}</option>
             {DIETARY_TYPES.map((type) => (
               <option key={type} value={type}>{dietaryLabel(type, locale)}</option>
             ))}

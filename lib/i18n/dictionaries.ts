@@ -204,6 +204,7 @@ const th = {
   form: {
     name: 'ชื่อของคุณ',
     phone: 'เบอร์โทร',
+    address: 'ที่อยู่',
     phoneContact: 'เบอร์โทรติดต่อกลับ',
     email: 'อีเมล',
     category: 'หมวดหมู่',
@@ -949,6 +950,7 @@ const en: typeof th = {
   form: {
     name: 'Your name',
     phone: 'Phone number',
+    address: 'Address',
     phoneContact: 'Contact phone number',
     email: 'Email',
     category: 'Category',
@@ -1256,8 +1258,8 @@ const en: typeof th = {
     expiringSoonBadge: '(Near expiry)',
     defaultUnit: 'unit',
     hideExpired: 'Hide expired',
-    dietaryType: 'ข้อกำหนดด้านอาหาร',
-    allDietary: 'ข้อกำหนดอาหารทั้งหมด',
+    dietaryType: 'Dietary requirement',
+    allDietary: 'All dietary types',
   },
   allocations: {
     title: 'Allocate items',
