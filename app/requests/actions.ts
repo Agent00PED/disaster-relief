@@ -8,7 +8,6 @@ import { normalizeDietary } from '@/lib/dietary'
 import { resolveCenterId } from '@/lib/center-choice'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
-import { translateAllocationError } from '@/lib/allocation-errors'
 import { withNotice } from '@/lib/notice'
 
 export async function createRequest(formData: FormData) {
@@ -43,22 +42,68 @@ export async function createRequest(formData: FormData) {
   redirect('/requests')
 }
 
+export async function updateRequest(formData: FormData) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const id = String(formData.get('id') ?? '')
+  const quantity = Number(formData.get('quantity_requested'))
+  const urgency = String(formData.get('urgency') ?? '')
+
+  if (!id || !Number.isInteger(quantity) || quantity <= 0 || !['low', 'medium', 'high'].includes(urgency)) {
+    const dict = getDictionary(await getLocale())
+    redirect('/requests?error=' + encodeURIComponent(dict.requests.invalidUpdate))
+  }
+
+  const { data, error } = await supabase.rpc('update_request', {
+    p_id: id,
+    p_quantity: quantity,
+    p_urgency: urgency,
+  })
+
+  if (error || !data) {
+    const dict = getDictionary(await getLocale())
+    redirect('/requests?error=' + encodeURIComponent(error?.message ?? dict.requests.updateNotAllowed))
+  }
+
+  revalidatePath('/requests')
+  revalidatePath('/allocations')
+  redirect(withNotice('/requests', 'request_updated'))
+}
+
 // ยกเลิกคำขอ — cancel_request (docs/sql/23_f5_improvements.sql) ตรวจสิทธิ์ศูนย์
 // และคืนยอดรายการจัดสรรที่ยังไม่ส่งมอบให้ใน transaction เดียว
 export async function cancelRequest(formData: FormData) {
   const supabase = await createClient()
-  const { data: returned, error } = await supabase.rpc('cancel_request', {
-    p_request_id: String(formData.get('id')),
-    p_reason: String(formData.get('reason') ?? ''),
-  })
-  if (error) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data, error } = await supabase
+    .from('requests')
+    .update({
+      status: 'cancelled',
+      cancel_reason: String(formData.get('reason') ?? '').trim() || null,
+      cancelled_by: user.id,
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq('id', String(formData.get('id') ?? ''))
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle()
+
+  if (error || !data) {
     const dict = getDictionary(await getLocale())
-    redirect('/requests?error=' + encodeURIComponent(translateAllocationError(error.message, dict)))
+    redirect('/requests?error=' + encodeURIComponent(error?.message ?? dict.requests.updateNotAllowed))
   }
+
   for (const path of ['/requests', '/allocations', '/allocations/history', '/inventory', '/donations', '/volunteer', '/']) {
     revalidatePath(path)
   }
   revalidatePath('/', 'layout')
-  // cancel_request คืนจำนวนรายการจัดสรรที่ถูกยกเลิกและคืนยอด
-  redirect(withNotice('/requests', 'request_cancelled', { n: Number(returned) || 0 }))
+  redirect(withNotice('/requests', 'request_cancelled'))
 }
