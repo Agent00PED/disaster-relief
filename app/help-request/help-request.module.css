@@ -1,0 +1,3 @@
+.fieldLabel.fieldLabel { display: flex; align-items: center; gap: 7px; }
+.fieldLabel svg { width: 17px; height: 17px; color: #8ca2b8; }
+:global(.dark) .fieldLabel svg { color: #91a8bd; }
