@@ -40,10 +40,9 @@ export default async function AdminCentersPage({
     supabase.from('centers').select('*').order('name'),
     supabase
       .from('profiles')
-      .select('id, full_name, username, role, center_id, phone, first_name, last_name, centers(name)')
+      .select('id, full_name, username, role, center_id, phone, first_name, last_name, id_photo_path, centers(name)')
       .order('full_name'),
   ])
-
   const rolePriority = new Map([['admin', 0], ['staff', 1], ['volunteer', 2]])
   const sortedUsers = [...(users ?? [])].sort((a, b) =>
     (rolePriority.get(a.role) ?? 3) - (rolePriority.get(b.role) ?? 3)
@@ -51,7 +50,9 @@ export default async function AdminCentersPage({
     || a.id.localeCompare(b.id)
   )
 
-  return <CentersDashboard centers={centers ?? []} users={sortedUsers} dict={dict} error={error} loadError={!!centersError || !!usersError}>
-    <UsersDirectory users={sortedUsers} centers={centers ?? []} dict={dict} />
-  </CentersDashboard>
+  return (
+    <CentersDashboard centers={centers ?? []} users={sortedUsers} dict={dict} error={error} loadError={!!centersError || !!usersError}>
+      <UsersDirectory users={sortedUsers} centers={centers ?? []} dict={dict} />
+    </CentersDashboard>
+  )
 }
