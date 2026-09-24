@@ -39,6 +39,13 @@ begin
     raise exception 'F5:request_not_found';
   end if;
 
+  -- staff แก้ได้เฉพาะคำขอของศูนย์ตัวเอง admin แก้ได้ทุกศูนย์
+  -- กฎเดียวกับ cancel_request และ allocate_items ใน 23_f5_improvements.sql
+  if not public.is_admin()
+     and v_request.center_id is distinct from public.my_center_id() then
+    raise exception 'F5:not_your_center';
+  end if;
+
   if v_request.status <> 'pending' or v_request.quantity_fulfilled <> 0 then
     raise exception 'F5:update_not_allowed';
   end if;
