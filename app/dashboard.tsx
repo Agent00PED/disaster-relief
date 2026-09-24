@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { DashboardRefresh } from './dashboard-refresh'
 import type { createClient } from '@/lib/supabase/server'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/locale'
@@ -43,9 +44,9 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
   const muted = 'text-sm text-slate-500 dark:text-slate-400'
   const tones = ['bg-lime-100 text-lime-700 dark:bg-lime-950 dark:text-lime-300', 'bg-sky-100 text-sky-600 dark:bg-sky-950 dark:text-sky-300', 'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-300', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300']
   const stats = [
-    { label: t.stock, hint: t.stockHint, result: stock, href: '/inventory' },
-    { label: t.pending, hint: t.pendingHint, result: pending, href: '/requests' },
-    { label: t.urgent, hint: t.urgentHint, result: urgent, href: '/requests' },
+    { label: t.stock, hint: t.stockHint, result: stock, href: '/inventory/lots' },
+    { label: t.pending, hint: t.pendingHint, result: pending, href: '/requests?status=open' },
+    { label: t.urgent, hint: t.urgentHint, result: urgent, href: '/requests?status=open&urgency=high' },
     { label: t.delivered, hint: t.deliveredHint, result: delivered, href: '/allocations/history?status=delivered&from=' + day + '&to=' + day },
   ]
   const menus = [
@@ -71,6 +72,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
         <Link className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800" href="/allocations"><Icon />{dict.home.allocationsLabel}</Link>
       </div>
     </header>
+    <DashboardRefresh updatedAt={hasError ? null : new Date().toISOString()} locale={locale} labels={dict.volunteerDashboard} />
     {hasError && <p role="alert" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">{t.loadError}</p>}
     <section aria-label={t.overview} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {stats.map((stat, i) => <Link key={stat.label} href={stat.href} className={`${panel} flex items-center gap-4 transition hover:border-slate-400`}><span className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${tones[i]}`}><Icon kind={i} /></span><div><h2 className="text-sm font-semibold">{stat.label}</h2><p className={`my-1 text-3xl font-bold tabular-nums ${i === 2 ? 'text-red-600 dark:text-red-400' : ''}`}>{count(stat.result)} <span className="text-sm font-medium">{i === 0 ? t.lots : t.records}</span></p><p className="text-xs text-slate-500 dark:text-slate-400">{stat.hint}</p></div></Link>)}
@@ -79,7 +81,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
       <section className={`${panel} min-w-0 lg:col-span-2`}><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-semibold">{t.recentRequests}</h2><Link className="text-sm text-sky-700 hover:underline dark:text-sky-400" href="/requests">{t.viewAll} →</Link></div>
         {recent.error ? <p className={muted}>{t.loadError}</p> : !recent.data?.length ? <p className={`${muted} py-10 text-center`}>{dict.requests.noRequests}</p> : <div className="overflow-x-auto"><table className="w-full min-w-[580px] text-left text-sm"><thead className="bg-slate-50 dark:bg-slate-800"><tr>{[dict.requests.center, dict.requests.item, dict.requests.urgency, dict.common.status, t.date].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{recent.data.map(row => <tr key={row.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800"><td className="px-3 py-4">{(row.centers as unknown as { name: string } | null)?.name ?? '—'}</td><td className="px-3 py-4">{row.item_name}</td><td className="px-3 py-4"><span className={`whitespace-nowrap rounded-md px-2 py-1 text-xs ${row.urgency === 'high' ? tones[2] : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>{urgency[row.urgency] ?? row.urgency}</span></td><td className="px-3 py-4">{status[row.status] ?? row.status}</td><td className="whitespace-nowrap px-3 py-4 text-slate-500 dark:text-slate-400">{formatDate(row.created_at)}</td></tr>)}</tbody></table></div>}
       </section>
-      <section className={panel}><h2 className="mb-4 font-semibold">{t.todo}</h2><div className="space-y-2">{[[t.pending, pending, '/requests'], [dict.home.pledgesLabel, pledges, '/pledges'], [t.expiring, expiring, '/inventory']] .map(([label, result, href], i) => <Link key={String(href)} href={String(href)} className="flex min-h-16 items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"><Icon kind={i + 1} /><span className="flex-1 text-sm font-medium">{String(label)}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-sm tabular-nums dark:bg-slate-800">{count(result as typeof pending)}</span><span aria-hidden="true" className="text-slate-400">›</span></Link>)}</div><p className={`mt-3 text-xs ${muted}`}>{t.expiryHint}</p></section>
+      <section className={panel}><h2 className="mb-4 font-semibold">{t.todo}</h2><div className="space-y-2">{[[t.pending, pending, '/requests?status=open'], [dict.home.pledgesLabel, pledges, '/pledges?status=open'], [t.expiring, expiring, '/inventory/lots?expiry=soon']] .map(([label, result, href], i) => <Link key={String(href)} href={String(href)} className="flex min-h-16 items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"><Icon kind={i + 1} /><span className="flex-1 text-sm font-medium">{String(label)}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-sm tabular-nums dark:bg-slate-800">{count(result as typeof pending)}</span><span aria-hidden="true" className="text-slate-400">›</span></Link>)}</div><p className={`mt-3 text-xs ${muted}`}>{t.expiryHint}</p></section>
     </div>
     <div className="grid gap-4 lg:grid-cols-2">
       <section className={panel}><h2 className="font-semibold">{t.inventory}</h2><p className={`mb-4 mt-1 ${muted}`}>{t.inventoryHint}</p><div className="space-y-3">{categories.map(([key, label], i) => {
