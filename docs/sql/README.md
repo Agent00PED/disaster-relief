@@ -20,8 +20,6 @@ If an earlier version of 30/31 was already applied, inspect existing `identity_p
 - Simulate upload/profile failures: show the recovery message and remove unreferenced uploads without deleting the account. Duplicate signup must not overwrite or delete existing photos.
 - Check the homepage motto at 1366px and 375px.
 
-The attached review references `00-อ่านก่อน-ทุกคน.txt`; it was not present in this checkout or the supplied attachment.
-
 Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 
 | ลำดับ | ไฟล์ | เนื้อหา |
@@ -38,6 +36,9 @@ Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 | — | `10_public_pledges.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): แจ้งความประสงค์บริจาคผ่านตาราง `donation_pledges` — เพิ่มแบบ additive ไม่แตะ RLS/role เดิม |
 | — | `11_username_login.sql` | เข้าสู่ระบบด้วย username แทนอีเมล — เพิ่มคอลัมน์ `profiles.username` + ฟังก์ชัน `get_email_by_username` |
 | — | `12_public_help_requests.sql` | ฟีเจอร์ผู้ใช้ทั่วไป (ไม่ต้อง login): ขอความช่วยเหลือผ่านตาราง `request_pledges` — คู่กับ `10_public_pledges.sql` แต่กลับทิศทาง เพิ่มแบบ additive |
+| 13 | 13_volunteer_role.sql | เพิ่มบทบาทอาสาสมัครในระบบ |
+| 14 | 14_reset_and_seed_realistic.sql | ล้างข้อมูลและจำลองข้อมูลสมจริงสำหรับทดสอบ |
+| 15 | 15_fix_role_trigger.sql | แก้ไขการทำงานของ Trigger กำหนดบทบาท |
 | — | `17_f5_hardening.sql` | ปิดช่องโหว่สิทธิ์ F5 (รันหลัง `05` และ `13`): `allocate_items` ต้องเป็น staff/admin และจัดสรรข้ามศูนย์ได้เฉพาะ admin, `mark_delivered` เฉพาะ admin/ศูนย์ปลายทาง, ยกเลิกไม่เปิดคำขอที่ถูกยกเลิกกลับมา, `allocations_select` เห็นเฉพาะศูนย์ที่เกี่ยวข้อง — error เป็นรหัส `F5:<key>` ให้หน้าเว็บแปล TH/EN |
 | — | `18_f5_features.sql` | ฟีเจอร์เพิ่ม F5 (รันหลัง `17`): `allocate_items_multi` จัดสรรหลายล็อตใน transaction เดียว, คอลัมน์ + บังคับเหตุผลการยกเลิก (`cancel_allocation` รับ `p_reason`), computed column `allocated_by_name` / `cancelled_by_name` สำหรับหน้าประวัติ |
 | — | `16_manually_confirm_user.sql` | (ไม่บังคับ) ยืนยันอีเมลของบัญชีที่ค้างสถานะ "Waiting for verification" ด้วย SQL เพราะโปรเจกต์ยังไม่ได้ตั้งค่าส่งอีเมลจริง — แก้อีเมลในไฟล์ก่อนรัน |
@@ -52,6 +53,11 @@ Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 | 27 | `27_profile_phone.sql` | เบอร์ติดต่อของผู้ใช้ (`profiles.phone`) — หน้าอาสาสมัครแสดงเบอร์เจ้าหน้าที่ของศูนย์ตัวเอง, ฟอร์มสมัครเก็บเบอร์ผ่าน trigger, admin แก้ได้ที่ `/admin/centers` · ไม่ต้องเพิ่ม RLS เพราะ `profiles_select` เปิดให้คนศูนย์เดียวกันอ่านอยู่แล้ว |
 | 28 | `28_volunteer_profile.sql` | ข้อมูลอาสาสมัครเพิ่มเติม — `first_name`/`last_name`/`birth_year`/`id_photo_path` ใน `profiles`, trigger เก็บให้ตอนสมัคร, Storage bucket `volunteer-ids` (private 5MB เฉพาะรูป) + policy ผูก path กับ `auth.uid()` · รันหลัง `27` |
 | 29 | `29_missing_columns.sql` | เขียนย้อนหลังให้คอลัมน์ที่ถูกเพิ่มลง Supabase ตรง ๆ โดยไม่มีไฟล์ migration — `centers.name_en`, `requests.item_name_en`, `donations.received_date` · ไม่เปลี่ยนข้อมูลเดิม มีไว้ให้ฐานข้อมูลที่สร้างใหม่โครงสร้างตรงกับของจริง |
+| 30 | 30_registration_details.sql | เพิ่มรายละเอียดการลงทะเบียน |
+| 31 | 31_registration_birth_date.sql | เพิ่มฟิลด์วันเกิดในการลงทะเบียน |
+| 32 | 32_pledge_unit.sql | ปรับปรุงหน่วยการบริจาค (Pledge) |
+| 33 | 33_dietary_type.sql | เพิ่มระบบแยกข้อกำหนดด้านอาหาร (ฮาลาล/ทั่วไป) |
+| 34 | 34_sanitize_demo_donors.sql | ล้างข้อมูลผู้บริจาคตัวอย่างให้ปลอดภัย |
 
 หลังรันครบ 1–6 แล้ว:
 

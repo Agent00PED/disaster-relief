@@ -23,6 +23,7 @@ import { useRef, useState } from 'react'
 import { allocate } from './actions'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import { itemCore, itemsMatch } from '@/lib/item-match'
+import { dietaryMatches } from '@/lib/dietary'
 import { unitLabel } from '@/lib/units'
 import { formatDateOnly } from '@/lib/dates'
 import { SubmitButton } from '../submit-button'
@@ -33,6 +34,7 @@ type Req = {
   item_name: string
   category: string
   unit: string | null
+  dietary_type: string | null
   urgency: string
   quantity_requested: number
   quantity_fulfilled: number
@@ -45,6 +47,7 @@ type Don = {
   item_name: string
   category: string
   unit: string
+  dietary_type: string | null
   quantity_remaining: number
   expiry_date: string | null
   received_at: string
@@ -135,11 +138,17 @@ export function AllocateForm({
     ? sameCategoryLots.filter((d) => d.unit.trim() === requestUnit)
     : sameCategoryLots
   const hiddenByUnit = sameCategoryLots.length - categoryLots.length
+  // คำขอที่ระบุข้อกำหนดด้านอาหาร: allocate_items ปฏิเสธล็อตที่ไม่ตรง
+  // จึงไม่แสดงให้เลือกตั้งแต่แรก แบบเดียวกับเรื่องหน่วย
+  const dietaryLots = categoryLots.filter((d) =>
+    dietaryMatches(selectedRequest?.dietary_type, d.dietary_type),
+  )
+  const hiddenByDietary = categoryLots.length - dietaryLots.length
   const matchedLots = selectedRequest
-    ? categoryLots.filter((d) => itemsMatch(selectedRequest.item_name, d.item_name))
+    ? dietaryLots.filter((d) => itemsMatch(selectedRequest.item_name, d.item_name))
     : []
   const matchedIds = new Set(matchedLots.map((d) => d.id))
-  const otherLots = categoryLots.filter((d) => !matchedIds.has(d.id))
+  const otherLots = dietaryLots.filter((d) => !matchedIds.has(d.id))
 
   const requestRemaining = selectedRequest
     ? selectedRequest.quantity_requested - selectedRequest.quantity_fulfilled
@@ -475,6 +484,11 @@ export function AllocateForm({
                 </button>
               )}
 
+              {hiddenByDietary > 0 && (
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {t.dietaryFilteredNote.replace('{n}', String(hiddenByDietary))}
+                </p>
+              )}
               {hiddenByUnit > 0 && (
                 <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                   {t.unitFilteredNote.replace('{n}', String(hiddenByUnit))}

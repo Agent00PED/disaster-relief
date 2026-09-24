@@ -4,12 +4,14 @@ import { useState, useMemo } from 'react'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/locale'
 import { unitLabel } from '@/lib/units' 
+import { DIETARY_TYPES, dietaryLabel } from '@/lib/dietary'
 
 type StockRow = {
   center_id: string
   category: string
   item_name: string
   unit: string
+  dietary_type: string
   total_remaining: number
   lot_count: number
   nearest_expiry: string | null
@@ -18,7 +20,7 @@ type StockRow = {
 type Props = {
   stockRows: StockRow[]
   isAdmin: boolean
-  centers: { id: string; name: string }[]
+  centers: { id: string; name: string; address?: string | null }[] // อัปเดต type มารับ address
   categoryLabels: Record<string, string>
   dict: Dictionary
   locale: Locale
@@ -37,11 +39,13 @@ const SortIcon = ({ columnKey, sortConfig }: { columnKey: string, sortConfig: { 
 export default function InventoryTable({ stockRows, isAdmin, centers, categoryLabels, dict, locale }: Props) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedDietary, setSelectedDietary] = useState('all')
   const [hideExpired, setHideExpired] = useState(false)
   
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
 
-  const centerName = new Map(centers.map((c) => [c.id, c.name]))
+  // เปลี่ยนเป็นเก็บ Object ทั้งก้อนเพื่อให้ดึง address มาใช้ได้
+  const centerData = new Map(centers.map((c) => [c.id, c]))
 
   const filteredRows = useMemo(() => {
     return stockRows.filter((row) => {
@@ -50,9 +54,11 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
       }
       const matchSearch = row.item_name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchCategory = selectedCategory === 'all' || row.category === selectedCategory
-      return matchSearch && matchCategory
+      const matchDietary = selectedDietary === 'all' || row.dietary_type === selectedDietary
+      
+      return matchSearch && matchCategory && matchDietary
     })
-  }, [stockRows, searchTerm, selectedCategory, hideExpired])
+  }, [stockRows, searchTerm, selectedCategory, hideExpired, selectedDietary])
 
   const sortedRows = useMemo(() => {
     const sortableItems = [...filteredRows]
@@ -87,26 +93,36 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
 
   const exportToCSV = () => {
     const headers = []
-    if (isAdmin) headers.push(dict.requests.center)
+    if (isAdmin) {
+      headers.push(dict.requests.center)
+      headers.push(dict.form.address)
+    }
     headers.push(dict.form.category)
     headers.push(dict.table.itemName)
     headers.push(dict.table.remainingQty)
     headers.push(dict.inventory.defaultUnit)
+    headers.push(dict.inventory.dietaryType)
     headers.push(dict.inventory.lotCount)
     headers.push(dict.inventory.nearestExpiry)
 
     const csvRows = sortedRows.map(row => {
-      const center = centerName.get(row.center_id) ?? ''
+      const centerInfo = centerData.get(row.center_id)
+      const center = centerInfo?.name ?? ''
+      const address = centerInfo?.address ?? '' // ดึงที่อยู่
+      
       const cat = categoryLabels[row.category] ?? row.category
       
       const cleanUnit = row.unit.trim()
       const displayUnit = unitLabel(cleanUnit, locale)
+      const displayDietary = dietaryLabel(row.dietary_type, locale)
       
       const escapedItemName = row.item_name.replace(/"/g, '""')
 
       const rowData = []
-      if (isAdmin) rowData.push(`"${center}"`)
-      rowData.push(`"${cat}"`, `"${escapedItemName}"`, row.total_remaining, `"${displayUnit}"`, row.lot_count, `"${row.nearest_expiry ?? ''}"`)
+      if (isAdmin) {
+        rowData.push(`"${center}"`, `"${address}"`) // ส่งออกที่อยู่ลง CSV ด้วย
+      }
+      rowData.push(`"${cat}"`, `"${escapedItemName}"`, row.total_remaining, `"${displayUnit}"`, `"${displayDietary}"`, row.lot_count, `"${row.nearest_expiry ?? ''}"`)
 
       return rowData.join(',')
     })
@@ -146,6 +162,17 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
             <option value="all">{dict.inventory.allCategories}</option>
             {Object.entries(categoryLabels).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+
+          <select
+            value={selectedDietary}
+            onChange={(e) => setSelectedDietary(e.target.value)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-brand focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+          >
+            <option value="all">{dict.inventory.allDietary}</option>
+            {DIETARY_TYPES.map((type) => (
+              <option key={type} value={type}>{dietaryLabel(type, locale)}</option>
             ))}
           </select>
 
@@ -219,12 +246,20 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
 
                 return (
                   <tr
-                    key={`${row.center_id}-${row.category}-${row.item_name}-${row.unit}`}
+                    key={`${row.center_id}-${row.category}-${row.item_name}-${row.unit}-${row.dietary_type}`}
                     className={`group transition-colors duration-200 ${rowBgClass}`}
                   >
                     {isAdmin && (
                       <td className="px-5 py-3 text-slate-600 dark:text-slate-300 min-w-[160px]">
-                        {centerName.get(row.center_id) ?? '—'}
+                        <div className="font-medium text-slate-700 dark:text-slate-200">
+                          {centerData.get(row.center_id)?.name ?? '—'}
+                        </div>
+                        {/* ถ้ามีที่อยู่จะแสดงข้างใต้ด้วยสีจางๆ ถ้าไม่มีจะข้ามไปอัตโนมัติ */}
+                        {centerData.get(row.center_id)?.address && (
+                          <div className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
+                            {centerData.get(row.center_id)?.address}
+                          </div>
+                        )}
                       </td>
                     )}
                     <td className="px-5 py-3 whitespace-nowrap text-slate-600 dark:text-slate-300">
@@ -233,7 +268,14 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
                       </span>
                     </td>
                     <td className="px-5 py-3 font-medium text-slate-900 group-hover:text-brand dark:text-slate-100 dark:group-hover:text-blue-400 min-w-[180px]">
-                      {row.item_name}
+                      <div className="flex items-center gap-2">
+                        <span>{row.item_name}</span>
+                        {row.dietary_type !== 'general' && (
+                          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-500/20 dark:text-blue-400 dark:ring-blue-500/30">
+                            {dietaryLabel(row.dietary_type, locale)}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-5 py-3 font-semibold whitespace-nowrap text-slate-900 dark:text-slate-100">
                       {row.total_remaining} <span className="font-normal text-slate-500 dark:text-slate-400">{displayUnit}</span>
