@@ -19,6 +19,7 @@ type StockRow = {
   total_remaining: number
   lot_count: number
   nearest_expiry: string | null
+  dietary_type: string
 }
 
 type ShortageRow = {
@@ -86,7 +87,7 @@ export default async function InventoryPage() {
       .select('*')
       .order('nearest_expiry', { ascending: true, nullsFirst: false }),
     supabase.from('v_shortage_ranking').select('*').limit(5),
-    supabase.from('centers').select('id, name'),
+    supabase.from('centers').select('id, name, address'), // เพิ่มการดึง address
   ])
 
   const centerName = new Map((centers ?? []).map((c) => [c.id as string, c.name as string]))
@@ -375,7 +376,7 @@ export default async function InventoryPage() {
       <InventoryTable 
         stockRows={stockRows} 
         isAdmin={isAdmin} 
-        centers={(centers ?? []) as { id: string; name: string }[]} 
+        centers={(centers ?? []) as { id: string; name: string; address?: string | null }[]} 
         categoryLabels={CATEGORY_LABEL}
         dict={dict} 
         locale={locale}

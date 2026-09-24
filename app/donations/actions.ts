@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeUnit } from '@/lib/units'
+import { normalizeDietary } from '@/lib/dietary'
 import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 import { resolveCenterId } from '@/lib/center-choice'
 import { getLocale } from '@/lib/i18n/locale'
@@ -102,6 +103,12 @@ export async function createDonation(formData: FormData) {
 
   const receivedDate = receivedDateRaw || null
 
+  // ข้อกำหนดด้านอาหารใช้ค่าเดียวกันทั้งใบ เพราะของที่รับมาครั้งเดียวกัน
+  // มักมาจากผู้บริจาครายเดียวและมาตรฐานเดียวกัน
+  const dietaryType = normalizeDietary(
+    String(formData.get('dietary_type') || ''),
+  )
+
   const rows = itemNames
     .map((name, i) => {
       const quantity = quantities[i] || 0
@@ -116,6 +123,7 @@ export async function createDonation(formData: FormData) {
         quantity_remaining: quantity,
         expiry_date: expiryDates[i] || null,
         received_date: receivedDate,
+        dietary_type: dietaryType,
         received_by: user.id,
       }
     })

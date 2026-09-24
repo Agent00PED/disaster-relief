@@ -575,10 +575,10 @@ insert into public.centers (id, name, type, address, contact_phone) values
 on conflict (id) do nothing;
 
 insert into public.donors (id, name, donor_type, phone, is_anonymous) values
-  ('aaaaaaaa-0000-0000-0000-000000000001', 'บริษัท น้ำใจไทย จำกัด', 'organization', '02-000-0001', false),
-  ('aaaaaaaa-0000-0000-0000-000000000002', 'คุณสมชาย ใจดี',        'individual',   '081-000-0002', false),
-  ('aaaaaaaa-0000-0000-0000-000000000003', 'ผู้ไม่ประสงค์ออกนาม',   'individual',   null,           true),
-  ('aaaaaaaa-0000-0000-0000-000000000004', 'ชมรมอาสาพัฒนา มวล.',   'organization', '081-000-0004', false)
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'คุณธารา สายรุ้ง (นามสมมติ)', 'individual', '000-000-0001', false),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'คุณฟ้าใส เมฆา (นามสมมติ)', 'individual', '000-000-0002', false),
+  ('aaaaaaaa-0000-0000-0000-000000000003', 'ผู้ไม่ประสงค์ออกนาม', 'individual', null, true),
+  ('aaaaaaaa-0000-0000-0000-000000000004', 'คุณปันน้ำใจ วัฒนา (นามสมมติ)', 'individual', '000-000-0003', false)
 on conflict (id) do nothing;
 
 insert into public.donations
