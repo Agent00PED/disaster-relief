@@ -15,8 +15,7 @@ export type CancelRequestButtonLabels = {
   saving: string
 }
 
-// ยกเลิกคำขอ — ต้องกรอกเหตุผล รายการจัดสรรที่ยังไม่รับของถูกยกเลิกและคืนยอดให้อัตโนมัติ
-// (cancel_request ใน docs/sql/23_f5_improvements.sql)
+// ยกเลิกคำขอ — ต้องยืนยันก่อนส่ง และบันทึกเหตุผลไว้กับคำขอ
 // เป็นปุ่มรองโดยเจตนา ไม่ให้เด่นกว่าปุ่ม "จัดสรร" ในแถวเดียวกัน
 export function CancelRequestButton({
   id,
