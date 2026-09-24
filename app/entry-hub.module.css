@@ -5,11 +5,14 @@
   isolation: isolate;
   min-height: 100svh;
   overflow: hidden;
+  /* Clip the fixed artwork to this section so it cannot cover the footer. */
+  clip-path: inset(0);
   padding: 100px 24px 36px;
   color: var(--entry-ink);
   background: #fcf7ed;
 }
-.artwork { position: absolute; z-index: -1; inset: 0; pointer-events: none; background: url('/images/entry-relief.webp') center bottom / cover no-repeat; }
+/* Anchor decoration to the viewport so expanding content cannot resize the image. */
+.artwork { position: fixed; z-index: -1; inset: 0; pointer-events: none; background: url('/images/entry-relief.webp') center bottom / cover no-repeat; }
 .topbar { position: absolute; top: 16px; left: max(24px, calc((100% - 1260px) / 2)); right: 124px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .staffLink { gap: 8px; padding: 8px 14px; font-size: 13px; font-weight: 600; }
 .staffLink svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -22,16 +25,35 @@
 .card, .supplyCard { --tone: #3774a6; --tint: #dceeff; --edge: #91c4ea; }
 [data-tone='green'].card, [data-tone='green'].supplyCard { --tone: #287c65; --tint: #d8efe5; --edge: #8acdb7; }
 [data-tone='red'].card, [data-tone='red'].supplyCard { --tone: #cf3e49; --tint: #ffe2e5; --edge: #f3a0a5; }
-.card { display: flex; flex-direction: column; align-items: center; padding: 22px 18px 16px; border-radius: 17px; border-bottom: 7px solid var(--edge); background: #fffffff5; box-shadow: 0 6px 20px #5946260c; text-align: center; transition: transform .2s ease, box-shadow .2s ease; }
-.card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px #1c3d5a20; }
+.card { position: relative; display: flex; flex-direction: column; align-items: center; padding: 22px 18px 16px; border: 1px solid var(--edge); border-bottom-width: 7px; border-radius: 17px; background: #fffffff5; box-shadow: 0 6px 20px #5946260c; text-align: center; will-change: transform; transition: transform .42s cubic-bezier(.22, 1, .36, 1); }
+.card::after { content: ''; position: absolute; z-index: 0; inset: -2px; border: 2px solid color-mix(in srgb, var(--edge) 58%, white); border-bottom-width: 7px; border-radius: inherit; box-shadow: 0 12px 34px color-mix(in srgb, var(--tone) 34%, transparent); opacity: 0; pointer-events: none; transition: opacity .48s cubic-bezier(.22, 1, .36, 1); }
+.card:hover, .card:focus-visible { transform: translateY(-6px); }
+.card:hover::after, .card:focus-visible::after { opacity: 1; }
 .hero a:focus-visible { outline: 3px solid var(--entry-ink); outline-offset: 4px; }
-.icon { display: grid; place-items: center; flex-shrink: 0; width: 76px; height: 76px; border-radius: 50%; background: var(--tint); color: var(--tone); }
+.icon { display: grid; place-items: center; flex-shrink: 0; width: 76px; height: 76px; border-radius: 50%; background: var(--tint); color: var(--tone); transition: background-color .42s ease, color .42s ease, box-shadow .48s cubic-bezier(.22, 1, .36, 1); }
+.card:hover .icon, .card:focus-visible .icon { background: color-mix(in srgb, var(--tint) 68%, white); color: color-mix(in srgb, var(--tone) 72%, white); box-shadow: 0 0 0 6px color-mix(in srgb, var(--tint) 65%, transparent); }
 .icon svg { width: 40px; height: 40px; }
+.card > * { position: relative; z-index: 1; }
 .card h2 { font-size: 21px; font-weight: 700; line-height: 1.5; margin-top: 12px; }
 .card > p { max-width: 230px; margin: 8px 0 18px; font-size: 15px; line-height: 1.55; color: var(--entry-muted); text-wrap: balance; }
 .action { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 46px; margin-top: auto; padding: 10px 14px; border-radius: 12px; background: var(--tone); color: white; font-size: 14px; font-weight: 600; }
 .action > span { font-size: 23px; line-height: 1; }
-.motto { position: absolute; top: 24%; left: max(24px, calc(50% - 700px)); width: 190px; font-size: 22px; font-weight: 600; line-height: 1.7; transform: rotate(-10deg); text-align: center; text-wrap: balance; }
+.steps { width: 100%; margin-bottom: 14px; text-align: left; }
+.stepsButton { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; padding: 8px; border: 0; background: transparent; border-radius: 8px; color: var(--entry-ink); font-size: 14px; font-weight: 600; cursor: pointer; }
+.stepsButton:hover { background: color-mix(in srgb, var(--entry-ink) 8%, transparent); }
+.stepsButton:focus-visible { outline: 3px solid var(--entry-ink); outline-offset: 3px; }
+.stepsChevron { transition: transform .45s ease; }
+.steps[data-open='true'] .stepsChevron { transform: rotate(180deg); }
+.stepsPanel { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .6s cubic-bezier(.22, 1, .36, 1), opacity .4s ease; }
+.steps[data-open='true'] .stepsPanel { grid-template-rows: 1fr; opacity: 1; }
+.stepsInner { min-height: 0; overflow: hidden; }
+.stepsInner > ol { transform: translateY(-16px); transition: transform .6s cubic-bezier(.22, 1, .36, 1); }
+.steps[data-open='true'] .stepsInner > ol { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .stepsPanel, .stepsChevron, .stepsInner > ol { transition: none; } .stepsInner > ol { transform: none; } }
+.steps ol { display: grid; gap: 12px; padding: 12px 0 4px; list-style: none; }
+.steps li { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.7; color: var(--entry-muted); }
+.stepNumber { display: grid; place-items: center; flex-shrink: 0; width: 25px; height: 25px; border-radius: 50%; background: var(--tint); color: var(--tone); font-weight: 700; }
+.motto { position: absolute; top: clamp(190px, 24svh, 280px); left: max(24px, calc(50% - 700px)); width: 190px; font-size: 22px; font-weight: 600; line-height: 1.7; transform: rotate(-10deg); text-align: center; text-wrap: balance; }
 .mottoHeart { position: absolute; top: 8px; right: -29px; width: 27px; height: 27px; color: #df756d; transform: rotate(-7deg); }
 .mottoUnderline { display: block; width: 170px; height: 24px; margin: 2px auto 0; color: #df756d; transform: rotate(-2deg); }
 .supplies { max-width: 850px; margin: 26px auto 0; padding: 18px; border: 1px solid #fff; border-radius: 22px; background: #fffffff2; box-shadow: 0 5px 20px #5946260d; }
@@ -57,9 +79,14 @@
 /* ตัวเล็กมาก จึงใช้สีเข้มกว่า --entry-muted เพื่อให้คอนทราสต์ผ่าน AA (>=4.5) */
 .needsMeta { display: grid; gap: 3px; margin-top: 2px; font-size: 12px; line-height: 1.6; color: #526d87; }
 .needsPledged { color: #2f7d5f; }
-.supplyCard h3 { color: var(--entry-ink); }
+.updatedNeedValue { --needs-highlight: #fce3a0; border-radius: 4px; box-decoration-break: clone; }
+:global(.dark) .updatedNeedValue { --needs-highlight: #70551e; }
+.supplyCard h3, .supplyCard p.needsShortage { color: var(--entry-ink) !important; }
 .supplyAction { margin-top: auto; padding-top: 4px; font-size: 12px; font-weight: 600; color: var(--tone); }
 .needsEmpty { padding: 18px 4px; text-align: center; font-size: 13px; line-height: 1.7; color: var(--entry-muted); }
+.needsToggle { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin-top: 14px; padding: 10px 14px; border: 1px solid currentColor; border-radius: 12px; color: var(--entry-ink); background: transparent; font-size: 14px; font-weight: 600; cursor: pointer; }
+.needsToggle:hover { background: color-mix(in srgb, var(--entry-ink) 8%, transparent); }
+.needsToggle:focus-visible { outline: 3px solid var(--entry-ink); outline-offset: 4px; }
 /* ป้าย "อัปเดตสด" ขึ้นเฉพาะตอน subscribe realtime สำเร็จจริงเท่านั้น */
 .liveBadge, .staticBadge { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; flex-shrink: 0; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .liveBadge { color: #1d7a52; background: #d8efe5; }
@@ -82,7 +109,7 @@
 :global(.dark) .supplyCard:hover { background: #1e3449; }
 :global(.dark) .icon { background: color-mix(in srgb, var(--tone) 25%, #17293b); color: var(--edge); }
 @media (width <= 1400px) {
-  .motto { position: static; width: auto; margin: 24px auto 0; font-size: 18px; transform: none; }
+  .motto { position: static; width: auto; margin: 0 auto 24px; font-size: 18px; transform: none; }
   .mottoHeart { display: inline-block; position: static; margin-left: 10px; vertical-align: middle; }
   .mottoUnderline { display: none; }
 }
@@ -107,4 +134,4 @@
   .suppliesHeader > a { margin-left: 42px; }
   .artwork { background-size: auto 620px; opacity: .35; mask-image: linear-gradient(to bottom, transparent calc(100% - 560px), #000 100%); }
 }
-@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card, .icon, .card::after { transition: none; } .card:hover, .card:focus-visible { transform: none; } }
