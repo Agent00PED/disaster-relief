@@ -142,12 +142,14 @@ export default async function DonationsPage({
   // =====================================================
   // ดึงข้อมูลบริจาค
   // ใช้ received_date และ fallback received_at
+  //
+  // เพิ่ม address และ is_anonymous ของผู้บริจาค
   // =====================================================
 
   const { data: initialDonations, error } = await supabase
     .from('donations')
     .select(
-      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_date, received_at, donors(name)'
+      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_date, received_at, donors(name, address, is_anonymous)'
     )
     .order('expiry_date', {
       ascending: true,
@@ -156,11 +158,19 @@ export default async function DonationsPage({
 
   let donations = initialDonations
 
-  if (error && error.message && error.message.includes('received_date')) {
+  // =====================================================
+  // fallback กรณีฐานข้อมูลยังไม่มี received_date
+  // =====================================================
+
+  if (
+    error &&
+    error.message &&
+    error.message.includes('received_date')
+  ) {
     const fallback = await supabase
       .from('donations')
       .select(
-        'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_at, donors(name)'
+        'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_at, donors(name, address, is_anonymous)'
       )
       .order('expiry_date', {
         ascending: true,
@@ -169,7 +179,10 @@ export default async function DonationsPage({
 
     donations = fallback.data as typeof donations
   } else if (error) {
-    console.error('Error fetching donations:', error.message)
+    console.error(
+      'Error fetching donations:',
+      error.message
+    )
   }
 
   // =====================================================
@@ -181,7 +194,10 @@ export default async function DonationsPage({
   if (category) {
     filteredDonations = filteredDonations.filter(
       (item) =>
-        getCategoryId(item.category, item.item_name) === category
+        getCategoryId(
+          item.category,
+          item.item_name
+        ) === category
     )
   }
 
@@ -189,45 +205,66 @@ export default async function DonationsPage({
     const q = search.toLowerCase().trim()
 
     filteredDonations = filteredDonations.filter((item) => {
-      const donor = item.donors as unknown as {
-        name?: string
-      } | null
+      const donor = item.donors as unknown as
+        | {
+            name?: string
+            address?: string | null
+            is_anonymous?: boolean | null
+          }
+        | null
 
-      const donorName = donor?.name?.toLowerCase() || ''
-      const itemName = (item.item_name || '').toLowerCase()
+      const donorName =
+        donor?.name?.toLowerCase() || ''
 
-      return itemName.includes(q) || donorName.includes(q)
+      const itemName =
+        (item.item_name || '').toLowerCase()
+
+      return (
+        itemName.includes(q) ||
+        donorName.includes(q)
+      )
     })
   }
 
   if (date_from) {
-    filteredDonations = filteredDonations.filter((item) => {
-      const d =
-        item.received_date ||
-        (item.received_at
-          ? String(item.received_at).split('T')[0]
-          : '')
+    filteredDonations = filteredDonations.filter(
+      (item) => {
+        const d =
+          item.received_date ||
+          (item.received_at
+            ? String(item.received_at).split('T')[0]
+            : '')
 
-      return !d || d >= date_from
-    })
+        return !d || d >= date_from
+      }
+    )
   }
 
   if (date_to) {
-    filteredDonations = filteredDonations.filter((item) => {
-      const d =
-        item.received_date ||
-        (item.received_at
-          ? String(item.received_at).split('T')[0]
-          : '')
+    filteredDonations = filteredDonations.filter(
+      (item) => {
+        const d =
+          item.received_date ||
+          (item.received_at
+            ? String(item.received_at).split('T')[0]
+            : '')
 
-      return !d || d <= date_to
-    })
+        return !d || d <= date_to
+      }
+    )
   }
 
+  // =====================================================
   // จัดกลุ่มข้อมูลตามประเภทสิ่งของ
-  type DonationItem = NonNullable<typeof donations>[number]
+  // =====================================================
 
-  const groupedDonations: Record<string, DonationItem[]> = {}
+  type DonationItem =
+    NonNullable<typeof donations>[number]
+
+  const groupedDonations: Record<
+    string,
+    DonationItem[]
+  > = {}
 
   filteredDonations.forEach((item) => {
     const catId = getCategoryId(
@@ -319,7 +356,8 @@ export default async function DonationsPage({
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="">
-                {dict.form.category} ({dict.inventory.allCategories})
+                {dict.form.category} (
+                {dict.inventory.allCategories})
               </option>
 
               <option value="water">
@@ -373,7 +411,11 @@ export default async function DonationsPage({
                 name="date_from"
                 defaultValue={date_from || ''}
                 aria-label={dict.table.dateFrom}
-                lang={locale === 'th' ? 'th-TH' : 'en-US'}
+                lang={
+                  locale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
                 className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
                   !date_from
                     ? 'text-transparent'
@@ -401,7 +443,11 @@ export default async function DonationsPage({
                 name="date_to"
                 defaultValue={date_to || ''}
                 aria-label={dict.table.dateTo}
-                lang={locale === 'th' ? 'th-TH' : 'en-US'}
+                lang={
+                  locale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
                 className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
                   !date_to
                     ? 'text-transparent'
@@ -416,7 +462,11 @@ export default async function DonationsPage({
             <button
               type="submit"
               className="flex flex-1 items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-              title={locale === 'th' ? 'ค้นหา' : 'Search'}
+              title={
+                locale === 'th'
+                  ? 'ค้นหา'
+                  : 'Search'
+              }
             >
               <svg
                 className="h-3.5 w-3.5"
@@ -459,7 +509,8 @@ export default async function DonationsPage({
       {/* แถบสรุปจำนวนรายการรวม และ ปุ่มพิมพ์ */}
       <div className="mb-6 flex items-center justify-between">
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-          {dict.table.totalPrefix} {filteredDonations.length}{' '}
+          {dict.table.totalPrefix}{' '}
+          {filteredDonations.length}{' '}
           {dict.table.totalSuffix}
         </span>
 
@@ -475,16 +526,22 @@ export default async function DonationsPage({
 
           {/* วนลูปสร้างตารางแยกตามแต่ละประเภทสิ่งของ */}
           {CATEGORIES_CONFIG.map((cat) => {
-            const items = groupedDonations[cat.id] || []
+            const items =
+              groupedDonations[cat.id] || []
 
             // หากหมวดหมู่นี้ไม่มีข้อมูล ให้ข้ามไม่แสดงตาราง
             if (items.length === 0) return null
 
             const catLabel =
-              locale === 'th' ? cat.labelTh : cat.labelEn
+              locale === 'th'
+                ? cat.labelTh
+                : cat.labelEn
 
             return (
-              <section key={cat.id} className="space-y-3">
+              <section
+                key={cat.id}
+                className="space-y-3"
+              >
 
                 {/* หัวข้อหมวดหมู่ + ไอคอน */}
                 <div className="flex items-center gap-2">
@@ -499,7 +556,8 @@ export default async function DonationsPage({
                   </span>
 
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    ({items.length} {dict.table.totalSuffix})
+                    ({items.length}{' '}
+                    {dict.table.totalSuffix})
                   </span>
                 </div>
 
@@ -564,11 +622,18 @@ export default async function DonationsPage({
                       {items.map((item, index) => {
                         const donor =
                           item.donors as unknown as
-                            | { name?: string }
+                            | {
+                                name?: string
+                                address?: string | null
+                                is_anonymous?: boolean | null
+                              }
                             | null
 
                         // ตัดคำจาก item_name โดยใช้ ' - '
-                        const parts = (item.item_name || '').split(' - ')
+                        const parts =
+                          (item.item_name || '').split(
+                            ' - '
+                          )
 
                         const itemName =
                           parts[0]?.trim() || '—'
@@ -582,18 +647,24 @@ export default async function DonationsPage({
                         const rawDate =
                           item.received_date ||
                           (item.received_at
-                            ? String(item.received_at).split('T')[0]
+                            ? String(
+                                item.received_at
+                              ).split('T')[0]
                             : null)
 
-                        const formattedDate = rawDate
-                          ? new Date(
-                              `${
-                                rawDate.includes('T')
-                                  ? rawDate
-                                  : rawDate + 'T00:00:00'
-                              }`
-                            ).toLocaleDateString(locale)
-                          : '—'
+                        const formattedDate =
+                          rawDate
+                            ? new Date(
+                                `${
+                                  rawDate.includes('T')
+                                    ? rawDate
+                                    : rawDate +
+                                      'T00:00:00'
+                                }`
+                              ).toLocaleDateString(
+                                locale
+                              )
+                            : '—'
 
                         return (
                           <tr
@@ -609,9 +680,20 @@ export default async function DonationsPage({
                               {formattedDate}
                             </td>
 
+                            {/* ผู้บริจาค + ที่อยู่ */}
                             <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
-                              {donor?.name ??
-                                dict.table.anonymousDonor}
+                              <div>
+                                {donor?.name ??
+                                  dict.table
+                                    .anonymousDonor}
+                              </div>
+
+                              {!donor?.is_anonymous &&
+                                donor?.address && (
+                                  <div className="text-xs text-slate-400 dark:text-slate-500">
+                                    {donor.address}
+                                  </div>
+                                )}
                             </td>
 
                             <td className="p-3 font-medium text-slate-900 dark:text-slate-100">
@@ -631,8 +713,10 @@ export default async function DonationsPage({
                             </td>
 
                             <td className="p-3">
-                              {unitLabel(item.unit, locale) ||
-                                item.unit}
+                              {unitLabel(
+                                item.unit,
+                                locale
+                              ) || item.unit}
                             </td>
 
                             <td className="p-3">
@@ -641,7 +725,10 @@ export default async function DonationsPage({
 
                             <td className="p-3">
                               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                                {dict.table.statusReceived}
+                                {
+                                  dict.table
+                                    .statusReceived
+                                }
                               </span>
                             </td>
 
@@ -653,7 +740,10 @@ export default async function DonationsPage({
                                   href={`/donations/${item.id}/receipt`}
                                   className="text-sky-600 underline hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
                                 >
-                                  {dict.table.receiptLink}
+                                  {
+                                    dict.table
+                                      .receiptLink
+                                  }
                                 </Link>
 
                                 {/* แก้ไข */}
@@ -665,7 +755,11 @@ export default async function DonationsPage({
                                 </Link>
 
                                 {/* ลบ */}
-                                <form action={deleteDonation}>
+                                <form
+                                  action={
+                                    deleteDonation
+                                  }
+                                >
                                   <input
                                     type="hidden"
                                     name="id"
@@ -676,7 +770,10 @@ export default async function DonationsPage({
                                     type="submit"
                                     className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
                                   >
-                                    {dict.common.delete}
+                                    {
+                                      dict.common
+                                        .delete
+                                    }
                                   </button>
                                 </form>
 
