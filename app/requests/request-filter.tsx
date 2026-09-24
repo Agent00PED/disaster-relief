@@ -75,7 +75,7 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
   ];
 
   const statusFilters = [
-    { label: dict.requests.allCategories, value: "" },
+    { label: dict.requests.allStatuses, value: "" },
     { label: dict.requests.statusPending, value: "pending" },
     { label: dict.requests.statusPartial, value: "partial" },
     { label: dict.requests.statusFulfilled, value: "fulfilled" },
@@ -92,11 +92,7 @@ function RequestFilterContent({ centers = [], dict, lang }: RequestFilterProps) 
             type="text"
             value={currentSearch}
             onChange={(e) => handleFilter("q", e.target.value)}
-            placeholder={
-              lang === "en"
-                ? "Search items, shelters, addresses..."
-                : "ค้นหาสิ่งของ, ศูนย์พักพิง, ที่อยู่..."
-            }
+            placeholder={dict.requests.searchPlaceholder}
             className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-1.5 text-sm text-slate-800 placeholder-slate-400 transition focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
           />
         </div>
