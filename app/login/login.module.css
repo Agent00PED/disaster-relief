@@ -125,3 +125,5 @@
 :global(.dark) .tabs { border-color: #465e73; }
 :global(.dark) .tabs button[aria-selected="true"] { background: #315d80; }
 @media (max-width: 700px) { .volunteerMotto { margin: 20px auto 0; font-size: 18px; } .volunteerAccent { font-size: 25px; } }
+
+.fieldHint { margin-top: 8px; color: var(--muted); font-size: 12px; line-height: 1.6; }

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeUnit } from '@/lib/units'
+import { normalizeDietary } from '@/lib/dietary'
 import { resolveCenterId } from '@/lib/center-choice'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
@@ -30,6 +31,7 @@ export async function createRequest(formData: FormData) {
     // หน่วยไม่บังคับ — ถ้าระบุ allocate_items จะจ่ายจากล็อตหน่วยเดียวกันเท่านั้น
     unit: normalizeUnit(String(formData.get('unit') ?? '')) || null,
     urgency: String(formData.get('urgency') || 'medium'),
+    dietary_type: normalizeDietary(String(formData.get('dietary_type') || '')),
     requested_by: user.id,
   })
 
@@ -56,13 +58,11 @@ export async function updateRequest(formData: FormData) {
     redirect('/requests?error=' + encodeURIComponent(dict.requests.invalidUpdate))
   }
 
-  const { data, error } = await supabase
-    .from('requests')
-    .update({ quantity_requested: quantity, urgency })
-    .eq('id', id)
-    .eq('status', 'pending')
-    .select('id')
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('update_request', {
+    p_id: id,
+    p_quantity: quantity,
+    p_urgency: urgency,
+  })
 
   if (error || !data) {
     const dict = getDictionary(await getLocale())

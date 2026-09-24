@@ -78,25 +78,25 @@ begin
     ('ศูนย์พักพิงหอประชุมอำเภอ', 'shelter', 'ถ.นิพัทธ์สงเคราะห์ อ.หาดใหญ่ จ.สงขลา', '074-567890')
     returning id into v_sh_hall;
 
-  -- ---------- donors (บุคคล + องค์กร + ไม่ประสงค์ออกนาม) ----------
+  -- ---------- donors (บุคคล + ไม่ประสงค์ออกนาม) ----------
   insert into public.donors (name, donor_type, phone, email) values
-    ('บริษัท ปตท. จำกัด (มหาชน)', 'organization', '02-111-2222', 'csr@pttplc.example')
+    ('คุณธารา สายรุ้ง (นามสมมติ)', 'individual', '000-000-0001', 'donor-a@example.test')
     returning id into v_donor_ptt;
 
   insert into public.donors (name, donor_type, phone, email) values
-    ('มูลนิธิกระจกเงา', 'organization', '02-333-4444', 'contact@mirror.example')
+    ('คุณฟ้าใส เมฆา (นามสมมติ)', 'individual', '000-000-0002', 'donor-b@example.test')
     returning id into v_donor_mirror;
 
   insert into public.donors (name, donor_type, phone) values
-    ('สมชาย ใจดี', 'individual', '081-234-5678')
+    ('คุณฟ้าใส เมฆา (นามสมมติ)', 'individual', '000-000-0003')
     returning id into v_donor_somchai;
 
   insert into public.donors (name, donor_type, phone) values
-    ('วรรณา รักชาติ', 'individual', '089-876-5432')
+    ('คุณปันน้ำใจ วัฒนา (นามสมมติ)', 'individual', '000-000-0004')
     returning id into v_donor_wanna;
 
   insert into public.donors (name, donor_type, phone, email) values
-    ('เซเว่นอีเลฟเว่น สาขาหาดใหญ่ใน', 'organization', '074-987654', 'branch@cp711.example')
+    ('คุณปันน้ำใจ วัฒนา (นามสมมติ)', 'individual', '000-000-0005', 'donor-c@example.test')
     returning id into v_donor_711;
 
   insert into public.donors (name, donor_type, is_anonymous) values

@@ -2,13 +2,14 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import type { Dictionary } from '@/lib/i18n/dictionaries'
 
 interface Center {
   id: string
   name: string
 }
 
-export default function RequestFilter({ centers }: { centers: Center[] }) {
+export default function RequestFilter({ centers, dict }: { centers: Center[]; dict: Dictionary }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -38,7 +39,7 @@ export default function RequestFilter({ centers }: { centers: Center[] }) {
       <div>
         <input
           type="text"
-          placeholder="ค้นหาชื่อผู้แจ้ง หรือเบอร์โทรศัพท์..."
+          placeholder={dict.helpRequestQueue.searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
@@ -52,7 +53,7 @@ export default function RequestFilter({ centers }: { centers: Center[] }) {
           onChange={(e) => setCenter(e.target.value)}
           className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         >
-          <option value="">ทุกศูนย์พักพิง</option>
+          <option value="">{dict.requests.allCenters}</option>
           {centers.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -68,10 +69,10 @@ export default function RequestFilter({ centers }: { centers: Center[] }) {
           onChange={(e) => setUrgency(e.target.value)}
           className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-sm text-slate-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         >
-          <option value="">ทุกระดับความเร่งด่วน</option>
-          <option value="high">🔴 ด่วนมาก (สูง)</option>
-          <option value="medium">🟡 ปานกลาง</option>
-          <option value="low">🟢 ปกติ</option>
+          <option value="">{dict.requests.allUrgencies}</option>
+          <option value="high">🔴 {dict.requests.urgencyHigh}</option>
+          <option value="medium">🟡 {dict.requests.urgencyMedium}</option>
+          <option value="low">🟢 {dict.requests.urgencyLow}</option>
         </select>
       </div>
     </div>

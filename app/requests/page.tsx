@@ -17,11 +17,19 @@ const URGENCY_STYLE: Record<string, string> = {
   medium: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400',
   low: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
 }
+type RequestFields = {
+  dietary_type?: string
+  centers?: {
+    name?: string | null
+    name_en?: string | null
+    address?: string | null
+  } | null
+}
 
 export default async function RequestsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; q?: string; category?: string; urgency?: string; center_id?: string } & NoticeParams>
+  searchParams: Promise<{ error?: string; q?: string; category?: string; urgency?: string; status?: string; center_id?: string } & NoticeParams>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -59,11 +67,13 @@ export default async function RequestsPage({
   const { data: requestRows } = await supabase
     .from('requests')
     .select(
-      'id, item_name, item_name_en, category, unit, quantity_requested, quantity_fulfilled, urgency, status, cancel_reason, created_at, center_id, centers(name, name_en)',
+      'id, item_name, item_name_en, category, unit, dietary_type, quantity_requested, quantity_fulfilled, urgency, status, cancel_reason, created_at, center_id, centers(name, name_en, address)',
     )
     .order('created_at', { ascending: false })
 
-  const requests = requestRows ? sortByUrgency(requestRows) : null
+  const requests = requestRows
+    ? (sortByUrgency(requestRows) as (Omit<typeof requestRows[number], 'centers'> & RequestFields)[])
+    : null
   const notice = noticeMessage(params, dict, locale)
 
   // คำนวณสถิติภาพรวม
@@ -86,12 +96,18 @@ export default async function RequestsPage({
   const searchQuery = (params.q ?? '').toLowerCase().trim()
   const selectedCategory = params.category ?? ''
   const selectedUrgency = params.urgency ?? ''
-  const selectedCenter = params.center_id ?? ''
+  const selectedStatus = params.status ?? ''
+  const selectedCenterId = params.center_id ?? ''
 
   const filteredRequests = (requests ?? []).filter((r) => {
-    const center = r.centers as unknown as { name?: string; name_en?: string | null } | null
+    const center = r.centers as unknown as {
+      name?: string
+      name_en?: string | null
+      address?: string | null
+    } | null
     const centerName = (center?.name ?? '').toLowerCase()
     const centerNameEnglish = (center?.name_en ?? '').toLowerCase()
+    const centerAddress = (r.centers?.address ?? '').toLowerCase()
     const itemName = (r.item_name ?? '').toLowerCase()
     const itemNameEnglish = (r.item_name_en ?? '').toLowerCase()
 
@@ -100,12 +116,14 @@ export default async function RequestsPage({
       itemName.includes(searchQuery) ||
       itemNameEnglish.includes(searchQuery) ||
       centerName.includes(searchQuery) ||
-      centerNameEnglish.includes(searchQuery)
+      centerNameEnglish.includes(searchQuery) ||
+      centerAddress.includes(searchQuery)
     const matchesCategory = !selectedCategory || r.category === selectedCategory
     const matchesUrgency = !selectedUrgency || r.urgency === selectedUrgency
-    const matchesCenter = !selectedCenter || r.center_id === selectedCenter
+    const matchesStatus = !selectedStatus || r.status === selectedStatus
+    const matchesCenterId = !selectedCenterId || r.center_id === selectedCenterId
 
-    return matchesSearch && matchesCategory && matchesUrgency && matchesCenter
+    return matchesSearch && matchesCategory && matchesUrgency && matchesStatus && matchesCenterId
   })
 
   const rows = filteredRequests.map((r) => ({
@@ -170,7 +188,7 @@ export default async function RequestsPage({
 
       {rows.length === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-          ไม่พบรายการคำขอที่ตรงกับเงื่อนไขการค้นหา
+          {dict.requests.noRequests}
         </p>
       ) : (
         <RequestList

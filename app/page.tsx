@@ -25,7 +25,15 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return <EntryHub dict={dict} />
+    // ยอดสรุป "สิ่งที่ศูนย์ต้องการ" อ่านได้โดยไม่ต้องล็อกอิน (RLS เปิดให้ anon
+    // เฉพาะตารางสรุปนี้ ไม่ใช่ requests ตัวจริง — docs/sql/25_public_needs.sql)
+    // ดึงที่นี่เพื่อให้หน้าแรกมีตัวเลขตั้งแต่ HTML ชุดแรก ไม่กะพริบว่าง
+    // แล้วฝั่งเบราว์เซอร์ค่อย subscribe realtime ต่อเอง
+    const { data: needs } = await supabase
+      .from('public_needs')
+      .select('category, shortage, center_count, pledged_count')
+
+    return <EntryHub dict={dict} needs={needs ?? []} />
   }
 
   // ดึงชื่อและบทบาทจากตาราง profiles มาแสดงหัวหน้าจอ

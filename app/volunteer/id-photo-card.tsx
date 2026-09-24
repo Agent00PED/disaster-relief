@@ -123,7 +123,7 @@ export function IdPhotoCard({
         {path ? (
           <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{t.idPhotoDone}</p>
         ) : (
-          <p className={mutedClass}>{t.idPhotoMissing}</p>
+          <p role="status" className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">{t.idPhotoMissing}</p>
         )}
         <p className={mutedClass}>{t.idPhotoHint}</p>
 

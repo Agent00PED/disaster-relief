@@ -1,14 +1,19 @@
 'use client'
 
-// ปุ่มพิมพ์ต้องแยกเป็น client component เพราะใช้ window.print() ซึ่งต้องมี onClick
-// ส่วนหน้าเอกสารทั้งหมดยังเป็น Server Component ได้ตามปกติ
-export function PrintButton({ label }: { label: string }) {
+interface PrintButtonProps {
+  label: string
+}
+
+export function PrintButton({ label }: PrintButtonProps) {
   return (
     <button
+      type="button"
       onClick={() => window.print()}
-      className="mt-4 w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep print:hidden"
+      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 print:hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
     >
       {label}
     </button>
   )
 }
+
+export default PrintButton

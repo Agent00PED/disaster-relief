@@ -1,30 +1,57 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
-// RLS (centers_write / profiles_admin_all) บังคับ is_admin() อยู่แล้วที่ DB
-// แต่หน้าเรียกฟังก์ชันนี้แสดงเฉพาะกับ admin เท่านั้น (เช็คใน page.tsx)
-export async function addCenter(formData: FormData) {
+async function requireAdmin() {
   const supabase = await createClient()
   const dict = getDictionary(await getLocale())
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: dict.admin.adminOnly }
+  if (!user) return { supabase, dict, error: dict.admin.adminOnly }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return { error: dict.admin.adminOnly }
-  const name = String(formData.get('name') || '').trim()
-  const type = String(formData.get('type') || '')
-  const address = String(formData.get('address') || '').trim()
-  const phone = String(formData.get('contact_phone') || '').trim()
-  if (!name || name.length > 200 || !['warehouse', 'shelter'].includes(type) || address.length > 1000 || phone.length > 50) {
+  if (profile?.role !== 'admin') return { supabase, dict, error: dict.admin.adminOnly }
+  return { supabase, dict, error: '' }
+}
+
+function centerValues(formData: FormData) {
+  const rawPhone = String(formData.get('contact_phone') || '').trim()
+  const phone = rawPhone.replace(/[^0-9]/g, '')
+  return {
+    name: String(formData.get('name') || '').trim(),
+    nameEn: String(formData.get('name_en') || '').trim(),
+    type: String(formData.get('type') || ''),
+    address: String(formData.get('address') || '').trim(),
+    phone,
+    isActive: formData.get('is_active') === 'on',
+  }
+}
+
+function validCenter(values: ReturnType<typeof centerValues>) {
+  return Boolean(values.name)
+    && values.name.length <= 200
+    && values.nameEn.length <= 200
+    && ['warehouse', 'shelter'].includes(values.type)
+    && values.address.length <= 1000
+      && (!values.phone || /^[0-9]{9,10}$/.test(values.phone))
+}
+
+// RLS (centers_write / profiles_admin_all) บังคับ is_admin() อยู่แล้วที่ DB
+// แต่หน้าเรียกฟังก์ชันนี้แสดงเฉพาะกับ admin เท่านั้น (เช็คใน page.tsx)
+export async function addCenter(formData: FormData) {
+  const { supabase, dict, error: authError } = await requireAdmin()
+  if (authError) return { error: authError }
+  const values = centerValues(formData)
+  if (!validCenter(values)) {
     return { error: dict.centerDashboard.invalid }
   }
+  const { data: duplicate } = await supabase.from('centers').select('id').ilike('name', values.name).maybeSingle()
+  if (duplicate) return { error: dict.centerDashboard.duplicate }
   const { error } = await supabase.from('centers').insert({
-    name, type, address: address || null, contact_phone: phone || null,
-    is_active: formData.get('is_active') === 'on',
+    name: values.name, name_en: values.nameEn || null, type: values.type,
+    address: values.address || null, contact_phone: values.phone || null,
+    is_active: values.isActive,
   })
   if (error) {
     return { error: dict.centerDashboard.saveError }
@@ -33,17 +60,53 @@ export async function addCenter(formData: FormData) {
   return { success: true }
 }
 
+export async function updateCenter(formData: FormData) {
+  const { supabase, dict, error: authError } = await requireAdmin()
+  if (authError) return { error: authError }
+  const id = String(formData.get('id') || '')
+  const values = centerValues(formData)
+  if (!id || !validCenter(values)) return { error: dict.centerDashboard.invalid }
+  const { data: duplicate } = await supabase.from('centers').select('id').ilike('name', values.name).neq('id', id).maybeSingle()
+  if (duplicate) return { error: dict.centerDashboard.duplicate }
+  const { error } = await supabase.from('centers').update({
+    name: values.name, name_en: values.nameEn || null, type: values.type,
+    address: values.address || null, contact_phone: values.phone || null,
+    is_active: values.isActive,
+  }).eq('id', id)
+  if (error) return { error: dict.centerDashboard.saveError }
+  revalidatePath('/admin/centers')
+  return { success: true }
+}
+
 export async function updateUser(formData: FormData) {
-  const supabase = await createClient()
+  const { supabase, dict, error: authError } = await requireAdmin()
+  if (authError) return { error: authError }
+  const targetId = String(formData.get('id') || '')
   const centerId = String(formData.get('center_id') || '')
   const firstName = String(formData.get('first_name') || '').trim()
   const lastName = String(formData.get('last_name') || '').trim()
+  const role = String(formData.get('role'))
+  const phone = String(formData.get('phone') || '').trim()
+  if (phone && !/^[0-9]{10}$/.test(phone)) return { error: dict.admin.phoneTenDigits }
+  if (!['admin', 'staff', 'volunteer'].includes(role) || firstName.length > 100 || lastName.length > 100) {
+    return { error: dict.centerDashboard.invalid }
+  }
+  if (centerId) {
+    const { data: center } = await supabase.from('centers').select('is_active').eq('id', centerId).maybeSingle()
+    if (!center?.is_active) return { error: dict.admin.inactiveCenterAssignment }
+  }
+  const { data: target } = await supabase.from('profiles').select('role').eq('id', targetId).maybeSingle()
+  if (!target) return { error: dict.centerDashboard.saveError }
+  if (target.role === 'admin' && role !== 'admin') {
+    const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'admin')
+    if ((count ?? 0) <= 1) return { error: dict.admin.lastAdmin }
+  }
 
   const payload: Record<string, unknown> = {
-    role: String(formData.get('role')),
+    role,
     center_id: centerId || null,
     // เบอร์ติดต่อเจ้าหน้าที่ — อาสาสมัครในศูนย์เดียวกันเห็นที่หน้า /volunteer
-    phone: String(formData.get('phone') || '').trim() || null,
+    phone: phone || null,
     first_name: firstName || null,
     last_name: lastName || null,
   }
@@ -59,9 +122,10 @@ export async function updateUser(formData: FormData) {
   const { error } = await supabase
     .from('profiles')
     .update(payload)
-    .eq('id', String(formData.get('id')))
+    .eq('id', targetId)
   if (error) {
-    redirect('/admin/centers?error=' + encodeURIComponent(error.message))
+    return { error: dict.centerDashboard.saveError }
   }
   revalidatePath('/admin/centers')
+  return { success: true }
 }
