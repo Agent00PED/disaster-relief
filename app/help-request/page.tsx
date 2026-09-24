@@ -12,6 +12,7 @@ import { BrandMark } from '../brand-mark'
 import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { PROVINCES } from '@/lib/provinces' // <-- เพิ่ม Import จังหวัด
 
 export default async function HelpRequestPage({
   searchParams,
@@ -108,6 +109,39 @@ export default async function HelpRequestPage({
                   />
                 </div>
               </div>
+
+              {/* ================= เริ่มส่วนที่อยู่ (ตำบล/จังหวัด) ================= */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="subdistrict" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    {dict.form.subdistrictOptional}
+                  </label>
+                  <input
+                    id="subdistrict"
+                    name="subdistrict"
+                    type="text"
+                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="province_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    {dict.form.provinceOptional}
+                  </label>
+                  <select
+                    id="province_name"
+                    name="province_name"
+                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                  >
+                    <option value="">{dict.form.selectProvince}</option>
+                    {PROVINCES.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {/* ================= สิ้นสุดส่วนที่อยู่ ================= */}
 
               <div>
                 <label htmlFor="center_id" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">

@@ -1,14 +1,17 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // ใช้ร่วมกันโดย app/donations/actions.ts และ app/pledges/actions.ts
-
+//
 // เดิมทั้งสองที่ insert ผู้บริจาคใหม่ทุกครั้งที่กรอกชื่อมา
 // ทำให้คนบริจาคซ้ำกลายเป็นหลายแถวแยกกันใน donors
+//
 // ตั้งใจไว้ว่า donors คือ "ทะเบียน" สะสมประวัติของคนคนเดียว
-
+//
 // เทียบชื่อแบบ case-insensitive เท่านั้น
+//
 // ไม่เทียบเบอร์โทร/อีเมล เพราะฟอร์มรับของบริจาคหน้าเว็บ
 // ไม่ได้บังคับกรอกสองอย่างนี้
+//
 // ถ้าไม่พบค่อยสร้างใหม่
 
 export async function findOrCreateDonor(
@@ -31,7 +34,20 @@ export async function findOrCreateDonor(
     .limit(1)
     .maybeSingle()
 
-  if (existing) return existing.id
+  if (existing) {
+    // ถ้ามีผู้บริจาคเดิม และมีข้อมูล address ใหม่
+    // ให้อัปเดต address ของผู้บริจาคเดิม
+    if (info.address?.trim()) {
+      await supabase
+        .from('donors')
+        .update({
+          address: info.address.trim(),
+        })
+        .eq('id', existing.id)
+    }
+
+    return existing.id
+  }
 
   const { data: created } = await supabase
     .from('donors')

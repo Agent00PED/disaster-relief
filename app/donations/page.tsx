@@ -6,6 +6,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { unitLabel } from '@/lib/units'
 import { deleteDonation } from './actions'
 import PrintButton from './PrintButton'
+import SearchInput from './SearchInput'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,8 +78,38 @@ const CATEGORIES_CONFIG = [
 ]
 
 // ฟังก์ชันระบุ ID ของหมวดหมู่
-function getCategoryId(categoryKey?: string): string {
+function getCategoryId(
+  categoryKey?: string,
+  itemName?: string
+): string {
   const key = categoryKey?.toLowerCase().trim() || ''
+  const name = itemName?.toLowerCase().trim() || ''
+
+  // =====================================================
+  // ตรวจข้าวสารก่อน
+  // เพื่อป้องกันกรณีข้อมูลข้าวสารถูกจัดเข้าหมวดอื่น
+  // =====================================================
+  if (
+    name.includes('ข้าวสาร') ||
+    name.includes('rice')
+  ) {
+    return 'rice'
+  }
+
+  // =====================================================
+  // แก้กรณีนมถูกบันทึก category เป็น food
+  // ให้ตรวจจากชื่อรายการด้วย
+  //
+  // แต่ต้องไม่ให้คำว่า "ขนม" ถูกจัดเป็นหมวดนม
+  // =====================================================
+  if (
+    key === 'milk' ||
+    key === 'นม' ||
+    name.includes('milk') ||
+    (name.includes('นม') && !name.includes('ขนม'))
+  ) {
+    return 'milk'
+  }
 
   const found = CATEGORIES_CONFIG.find((cat) =>
     cat.matchKeys.includes(key)
@@ -105,17 +136,20 @@ export default async function DonationsPage({
 
   const locale = await getLocale()
   const dict = getDictionary(locale)
-  const { search, category, date_from, date_to } = (await searchParams) || {}
+  const { search, category, date_from, date_to } =
+    (await searchParams) || {}
 
   // =====================================================
   // ดึงข้อมูลบริจาค
   // ใช้ received_date และ fallback received_at
+  //
+  // เพิ่ม address และ is_anonymous ของผู้บริจาค
   // =====================================================
 
   const { data: initialDonations, error } = await supabase
     .from('donations')
     .select(
-      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_date, received_at, donors(name)'
+      'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_date, received_at, donors(name, address, is_anonymous)'
     )
     .order('expiry_date', {
       ascending: true,
@@ -124,67 +158,119 @@ export default async function DonationsPage({
 
   let donations = initialDonations
 
-  if (error && error.message && error.message.includes('received_date')) {
+  // =====================================================
+  // fallback กรณีฐานข้อมูลยังไม่มี received_date
+  // =====================================================
+
+  if (
+    error &&
+    error.message &&
+    error.message.includes('received_date')
+  ) {
     const fallback = await supabase
       .from('donations')
       .select(
-        'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_at, donors(name)'
+        'id, item_name, category, unit, quantity_received, quantity_remaining, expiry_date, received_at, donors(name, address, is_anonymous)'
       )
       .order('expiry_date', {
         ascending: true,
         nullsFirst: false,
       })
+
     donations = fallback.data as typeof donations
   } else if (error) {
-    console.error('Error fetching donations:', error.message)
+    console.error(
+      'Error fetching donations:',
+      error.message
+    )
   }
 
   // =====================================================
   // กรองข้อมูลตาม searchParams
   // =====================================================
+
   let filteredDonations = donations || []
 
   if (category) {
     filteredDonations = filteredDonations.filter(
-      (item) => getCategoryId(item.category) === category
+      (item) =>
+        getCategoryId(
+          item.category,
+          item.item_name
+        ) === category
     )
   }
 
   if (search) {
     const q = search.toLowerCase().trim()
+
     filteredDonations = filteredDonations.filter((item) => {
-      const donor = item.donors as unknown as { name?: string } | null
-      const donorName = donor?.name?.toLowerCase() || ''
-      const itemName = (item.item_name || '').toLowerCase()
-      return itemName.includes(q) || donorName.includes(q)
+      const donor = item.donors as unknown as
+        | {
+            name?: string
+            address?: string | null
+            is_anonymous?: boolean | null
+          }
+        | null
+
+      const donorName =
+        donor?.name?.toLowerCase() || ''
+
+      const itemName =
+        (item.item_name || '').toLowerCase()
+
+      return (
+        itemName.includes(q) ||
+        donorName.includes(q)
+      )
     })
   }
 
   if (date_from) {
-    filteredDonations = filteredDonations.filter((item) => {
-      const d =
-        item.received_date ||
-        (item.received_at ? String(item.received_at).split('T')[0] : '')
-      return !d || d >= date_from
-    })
+    filteredDonations = filteredDonations.filter(
+      (item) => {
+        const d =
+          item.received_date ||
+          (item.received_at
+            ? String(item.received_at).split('T')[0]
+            : '')
+
+        return !d || d >= date_from
+      }
+    )
   }
 
   if (date_to) {
-    filteredDonations = filteredDonations.filter((item) => {
-      const d =
-        item.received_date ||
-        (item.received_at ? String(item.received_at).split('T')[0] : '')
-      return !d || d <= date_to
-    })
+    filteredDonations = filteredDonations.filter(
+      (item) => {
+        const d =
+          item.received_date ||
+          (item.received_at
+            ? String(item.received_at).split('T')[0]
+            : '')
+
+        return !d || d <= date_to
+      }
+    )
   }
 
+  // =====================================================
   // จัดกลุ่มข้อมูลตามประเภทสิ่งของ
-  type DonationItem = NonNullable<typeof donations>[number]
+  // =====================================================
 
-  const groupedDonations: Record<string, DonationItem[]> = {}
+  type DonationItem =
+    NonNullable<typeof donations>[number]
+
+  const groupedDonations: Record<
+    string,
+    DonationItem[]
+  > = {}
 
   filteredDonations.forEach((item) => {
-    const catId = getCategoryId(item.category)
+    const catId = getCategoryId(
+      item.category,
+      item.item_name
+    )
 
     if (!groupedDonations[catId]) {
       groupedDonations[catId] = []
@@ -195,9 +281,11 @@ export default async function DonationsPage({
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-8">
+
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
+
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100 text-red-500 dark:bg-red-950/60 dark:text-red-400">
             <svg
               className="h-6 w-6"
@@ -239,13 +327,11 @@ export default async function DonationsPage({
         className="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+
           <div className="relative md:col-span-5">
-            <input
-              type="text"
-              name="search"
+            <SearchInput
               defaultValue={search || ''}
               placeholder={dict.table.searchPlaceholder}
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs text-slate-900 placeholder-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
             />
 
             <svg
@@ -270,46 +356,117 @@ export default async function DonationsPage({
               className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="">
-                {dict.form.category} ({dict.inventory.allCategories})
+                {dict.form.category} (
+                {dict.inventory.allCategories})
               </option>
 
-              <option value="water">💧 {locale === 'th' ? 'น้ำ' : 'Water'}</option>
-              <option value="milk">🍼 {locale === 'th' ? 'นม' : 'Milk'}</option>
-              <option value="rice">🌾 {locale === 'th' ? 'ข้าวสาร' : 'Rice'}</option>
-              <option value="food">📦 {locale === 'th' ? 'อาหารแห้ง' : 'Dry Food'}</option>
-              <option value="supplies">👕 {locale === 'th' ? 'ของใช้' : 'Supplies'}</option>
-              <option value="medicine">💊 {locale === 'th' ? 'ยา' : 'Medicine'}</option>
-              <option value="other">🏷️ {locale === 'th' ? 'อื่นๆ' : 'Other'}</option>
+              <option value="water">
+                💧 {locale === 'th' ? 'น้ำ' : 'Water'}
+              </option>
+
+              <option value="milk">
+                🍼 {locale === 'th' ? 'นม' : 'Milk'}
+              </option>
+
+              <option value="rice">
+                🌾 {locale === 'th' ? 'ข้าวสาร' : 'Rice'}
+              </option>
+
+              <option value="food">
+                📦 {locale === 'th' ? 'อาหารแห้ง' : 'Dry Food'}
+              </option>
+
+              <option value="supplies">
+                👕 {locale === 'th' ? 'ของใช้' : 'Supplies'}
+              </option>
+
+              <option value="medicine">
+                💊 {locale === 'th' ? 'ยา' : 'Medicine'}
+              </option>
+
+              <option value="other">
+                🏷️ {locale === 'th' ? 'อื่นๆ' : 'Other'}
+              </option>
             </select>
           </div>
 
+          {/* =================================================
+              ช่องเลือกวันที่
+              แสดง placeholder ตามภาษาที่เลือก
+          ================================================= */}
           <div className="flex items-center gap-1 md:col-span-3">
-            <input
-              type="date"
-              name="date_from"
-              defaultValue={date_from || ''}
-              aria-label={dict.table.dateFrom}
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            />
+
+            {/* วันที่เริ่มต้น */}
+            <div className="relative w-full">
+              {!date_from && (
+                <span className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+                  {locale === 'th'
+                    ? 'วว/ดด/ปปปป'
+                    : 'mm/dd/yyyy'}
+                </span>
+              )}
+
+              <input
+                type="date"
+                name="date_from"
+                defaultValue={date_from || ''}
+                aria-label={dict.table.dateFrom}
+                lang={
+                  locale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
+                className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
+                  !date_from
+                    ? 'text-transparent'
+                    : 'text-slate-900 dark:text-slate-100'
+                }`}
+              />
+            </div>
 
             <span className="text-slate-400 dark:text-slate-500">
               -
             </span>
 
-            <input
-              type="date"
-              name="date_to"
-              defaultValue={date_to || ''}
-              aria-label={dict.table.dateTo}
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            />
+            {/* วันที่สิ้นสุด */}
+            <div className="relative w-full">
+              {!date_to && (
+                <span className="pointer-events-none absolute left-2 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+                  {locale === 'th'
+                    ? 'วว/ดด/ปปปป'
+                    : 'mm/dd/yyyy'}
+                </span>
+              )}
+
+              <input
+                type="date"
+                name="date_to"
+                defaultValue={date_to || ''}
+                aria-label={dict.table.dateTo}
+                lang={
+                  locale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
+                className={`w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-2 text-xs focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
+                  !date_to
+                    ? 'text-transparent'
+                    : 'text-slate-900 dark:text-slate-100'
+                }`}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2 md:col-span-1">
+
             <button
               type="submit"
               className="flex flex-1 items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-              title={locale === 'th' ? 'ค้นหา' : 'Search'}
+              title={
+                locale === 'th'
+                  ? 'ค้นหา'
+                  : 'Search'
+              }
             >
               <svg
                 className="h-3.5 w-3.5"
@@ -352,7 +509,8 @@ export default async function DonationsPage({
       {/* แถบสรุปจำนวนรายการรวม และ ปุ่มพิมพ์ */}
       <div className="mb-6 flex items-center justify-between">
         <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-          {dict.table.totalPrefix} {filteredDonations.length}{' '}
+          {dict.table.totalPrefix}{' '}
+          {filteredDonations.length}{' '}
           {dict.table.totalSuffix}
         </span>
 
@@ -365,18 +523,26 @@ export default async function DonationsPage({
         </p>
       ) : (
         <div className="space-y-8">
+
           {/* วนลูปสร้างตารางแยกตามแต่ละประเภทสิ่งของ */}
           {CATEGORIES_CONFIG.map((cat) => {
-            const items = groupedDonations[cat.id] || []
+            const items =
+              groupedDonations[cat.id] || []
 
             // หากหมวดหมู่นี้ไม่มีข้อมูล ให้ข้ามไม่แสดงตาราง
             if (items.length === 0) return null
 
             const catLabel =
-              locale === 'th' ? cat.labelTh : cat.labelEn
+              locale === 'th'
+                ? cat.labelTh
+                : cat.labelEn
 
             return (
-              <section key={cat.id} className="space-y-3">
+              <section
+                key={cat.id}
+                className="space-y-3"
+              >
+
                 {/* หัวข้อหมวดหมู่ + ไอคอน */}
                 <div className="flex items-center gap-2">
                   <span
@@ -390,13 +556,15 @@ export default async function DonationsPage({
                   </span>
 
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    ({items.length} {dict.table.totalSuffix})
+                    ({items.length}{' '}
+                    {dict.table.totalSuffix})
                   </span>
                 </div>
 
                 {/* ตารางของหมวดหมู่ */}
                 <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                   <table className="w-full min-w-[1050px] text-left text-xs text-slate-600 dark:text-slate-300">
+
                     <thead className="border-b border-slate-200 bg-slate-50 font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
                       <tr>
                         <th className="p-3">
@@ -416,11 +584,15 @@ export default async function DonationsPage({
                         </th>
 
                         <th className="p-3">
-                          {locale === 'th' ? 'ยี่ห้อ / รายละเอียด' : 'Brand / Detail'}
+                          {locale === 'th'
+                            ? 'ยี่ห้อ / รายละเอียด'
+                            : 'Brand / Detail'}
                         </th>
 
                         <th className="p-3">
-                          {locale === 'th' ? 'ขนาด / ปริมาณ' : 'Size / Volume'}
+                          {locale === 'th'
+                            ? 'ขนาด / ปริมาณ'
+                            : 'Size / Volume'}
                         </th>
 
                         <th className="p-3">
@@ -446,16 +618,22 @@ export default async function DonationsPage({
                     </thead>
 
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+
                       {items.map((item, index) => {
                         const donor =
                           item.donors as unknown as
-                            | { name?: string }
+                            | {
+                                name?: string
+                                address?: string | null
+                                is_anonymous?: boolean | null
+                              }
                             | null
 
                         // ตัดคำจาก item_name โดยใช้ ' - '
-                        const parts = (
-                          item.item_name || ''
-                        ).split(' - ')
+                        const parts =
+                          (item.item_name || '').split(
+                            ' - '
+                          )
 
                         const itemName =
                           parts[0]?.trim() || '—'
@@ -469,14 +647,24 @@ export default async function DonationsPage({
                         const rawDate =
                           item.received_date ||
                           (item.received_at
-                            ? String(item.received_at).split('T')[0]
+                            ? String(
+                                item.received_at
+                              ).split('T')[0]
                             : null)
 
-                        const formattedDate = rawDate
-                          ? new Date(
-                              `${rawDate.includes('T') ? rawDate : rawDate + 'T00:00:00'}`
-                            ).toLocaleDateString(locale)
-                          : '—'
+                        const formattedDate =
+                          rawDate
+                            ? new Date(
+                                `${
+                                  rawDate.includes('T')
+                                    ? rawDate
+                                    : rawDate +
+                                      'T00:00:00'
+                                }`
+                              ).toLocaleDateString(
+                                locale
+                              )
+                            : '—'
 
                         return (
                           <tr
@@ -487,17 +675,25 @@ export default async function DonationsPage({
                               {index + 1}
                             </td>
 
-                            {/* =================================================
-                                วันที่รับบริจาค
-                            ================================================= */}
+                            {/* วันที่รับบริจาค */}
                             <td className="p-3">
                               {formattedDate}
                             </td>
 
+                            {/* ผู้บริจาค + ที่อยู่ */}
                             <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
-                              {donor?.name ??
-                                dict.table
-                                  .anonymousDonor}
+                              <div>
+                                {donor?.name ??
+                                  dict.table
+                                    .anonymousDonor}
+                              </div>
+
+                              {!donor?.is_anonymous &&
+                                donor?.address && (
+                                  <div className="text-xs text-slate-400 dark:text-slate-500">
+                                    {donor.address}
+                                  </div>
+                                )}
                             </td>
 
                             <td className="p-3 font-medium text-slate-900 dark:text-slate-100">
@@ -517,7 +713,10 @@ export default async function DonationsPage({
                             </td>
 
                             <td className="p-3">
-                              {unitLabel(item.unit, locale) || item.unit}
+                              {unitLabel(
+                                item.unit,
+                                locale
+                              ) || item.unit}
                             </td>
 
                             <td className="p-3">
@@ -526,18 +725,25 @@ export default async function DonationsPage({
 
                             <td className="p-3">
                               <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-medium text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">
-                                {dict.table.statusReceived}
+                                {
+                                  dict.table
+                                    .statusReceived
+                                }
                               </span>
                             </td>
 
                             <td className="p-3">
                               <div className="flex items-center justify-center gap-2">
+
                                 {/* ใบรับของ → หน้าใบรับของ */}
                                 <Link
                                   href={`/donations/${item.id}/receipt`}
                                   className="text-sky-600 underline hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
                                 >
-                                  {dict.table.receiptLink}
+                                  {
+                                    dict.table
+                                      .receiptLink
+                                  }
                                 </Link>
 
                                 {/* แก้ไข */}
@@ -564,14 +770,19 @@ export default async function DonationsPage({
                                     type="submit"
                                     className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
                                   >
-                                    {dict.common.delete}
+                                    {
+                                      dict.common
+                                        .delete
+                                    }
                                   </button>
                                 </form>
+
                               </div>
                             </td>
                           </tr>
                         )
                       })}
+
                     </tbody>
                   </table>
                 </div>

@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { Locale } from "@/lib/i18n/locale";
 import { dietaryLabel } from "@/lib/dietary";
 import { CancelRequestButton, type CancelRequestButtonLabels } from "./cancel-request-dialog";
+import { RequestEditForm } from "./request-edit-form";
 
 interface RowData {
   r: {
@@ -90,6 +92,26 @@ export function RequestList({
   statusLabel,
   cancelLabels,
 }: RequestListProps) {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const openRows = rows.filter((row) => row.open);
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(rows.filter((row) => row.open).map((row) => row.r.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectOne = (id: string) => {
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter((itemId) => itemId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
+  };
+
   const progress = (row: RowData) => (
     <div className="min-w-[120px]">
       <p className="tabular-nums text-slate-700 dark:text-slate-300">
@@ -126,7 +148,18 @@ export function RequestList({
         >
           {dict.requests?.allocateAction}
         </Link>
-        <CancelRequestButton id={row.r.id} itemName={row.r.item_name} labels={cancelLabels} />
+        {row.r.status === "pending" && (
+          <>
+            <button
+              type="button"
+              onClick={() => setEditingId(editingId === row.r.id ? null : row.r.id)}
+              className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-brand dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sky-400"
+            >
+              {dict.common?.edit}
+            </button>
+            <CancelRequestButton id={row.r.id} itemName={row.r.item_name} labels={cancelLabels} />
+          </>
+        )}
       </div>
     ) : null;
 
@@ -180,7 +213,28 @@ export function RequestList({
                     </div>
                     {urgencyPill(row)}
                   </div>
-                  <div className="mt-3 text-sm">{progress(row)}</div>
+                  <div className="mt-3 text-sm">
+                    {editingId === row.r.id ? (
+                      <RequestEditForm
+                        id={row.r.id}
+                        quantity={row.r.quantity_requested}
+                        urgency={row.r.urgency}
+                        unit={row.unit}
+                        onCancel={() => setEditingId(null)}
+                        labels={{
+                          quantity: dict.requests?.requested,
+                          urgency: dict.requests?.urgency,
+                          low: dict.requests?.urgencyLow,
+                          medium: dict.requests?.urgencyMedium,
+                          high: dict.requests?.urgencyHigh,
+                          save: dict.common?.save,
+                          cancel: dict.common?.cancel,
+                        }}
+                      />
+                    ) : (
+                      progress(row)
+                    )}
+                  </div>
                   <div className="mt-2 text-sm">{statusCell(row)}</div>
                   {row.open && (
                     <div className="mt-3 border-t border-slate-100 pt-3 dark:border-slate-800">
@@ -237,8 +291,29 @@ export function RequestList({
                       {formatRelativeTime(row.r.created_at, locale, dict.requests)}
                     </span>
                   </td>
-                  <td className="px-4 py-3">{progress(row)}</td>
-                  <td className="px-4 py-3">{urgencyPill(row)}</td>
+                  <td className="px-4 py-3">
+                    {editingId === row.r.id ? (
+                      <RequestEditForm
+                        id={row.r.id}
+                        quantity={row.r.quantity_requested}
+                        urgency={row.r.urgency}
+                        unit={row.unit}
+                        onCancel={() => setEditingId(null)}
+                        labels={{
+                          quantity: dict.requests?.requested,
+                          urgency: dict.requests?.urgency,
+                          low: dict.requests?.urgencyLow,
+                          medium: dict.requests?.urgencyMedium,
+                          high: dict.requests?.urgencyHigh,
+                          save: dict.common?.save,
+                          cancel: dict.common?.cancel,
+                        }}
+                      />
+                    ) : (
+                      progress(row)
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{editingId === row.r.id ? null : urgencyPill(row)}</td>
                   <td className="px-4 py-3">{statusCell(row)}</td>
                   <td className="px-4 py-3">{actions(row)}</td>
                 </tr>
