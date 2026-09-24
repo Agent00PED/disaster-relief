@@ -1074,6 +1074,7 @@ export default function NewDonationForm({
       {/* =========================
           DESTINATION CENTER
       ========================= */}
+
       {centerSelect && (
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4">
@@ -1084,6 +1085,7 @@ export default function NewDonationForm({
               )}
             </h2>
           </div>
+
           {centerSelect}
         </section>
       )}
@@ -1103,7 +1105,6 @@ export default function NewDonationForm({
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -1119,7 +1120,10 @@ export default function NewDonationForm({
               }
               onChange={(e) =>
                 setDonorFirstName(
-                  e.target.value
+                  e.target.value.replace(
+                    /[0-9]/g,
+                    ''
+                  )
                 )
               }
               placeholder={tr(
@@ -1147,7 +1151,10 @@ export default function NewDonationForm({
               }
               onChange={(e) =>
                 setDonorLastName(
-                  e.target.value
+                  e.target.value.replace(
+                    /[0-9]/g,
+                    ''
+                  )
                 )
               }
               placeholder={tr(
@@ -1182,9 +1189,13 @@ export default function NewDonationForm({
               value={phone}
               onChange={(e) =>
                 setPhone(
-                  e.target.value
+                  e.target.value.replace(
+                    /\D/g,
+                    ''
+                  )
                 )
               }
+              inputMode="numeric"
               placeholder={tr(
                 'กรอกเบอร์โทรศัพท์',
                 'Enter phone number'
@@ -1341,7 +1352,7 @@ export default function NewDonationForm({
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-
+          {/* RECEIVED DATE */}
           <div>
             <label className="mb-2 block text-xs font-medium text-slate-700 dark:text-slate-300">
               {tr(
@@ -1353,23 +1364,40 @@ export default function NewDonationForm({
               </span>
             </label>
 
-            <input
-              type="date"
-              name="received_date"
-              value={
-                receivedDate
-              }
-              required
-              onChange={(e) => {
-                setReceivedDate(
-                  e.target.value
-                )
-                setValidationError('')
-              }}
-              className={
-                inputClassName
-              }
-            />
+            <div className="relative">
+              {!receivedDate && (
+                <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+                  {currentLocale === 'th'
+                    ? 'วว/ดด/ปปปป'
+                    : 'mm/dd/yyyy'}
+                </span>
+              )}
+
+              <input
+                type="date"
+                name="received_date"
+                value={
+                  receivedDate
+                }
+                required
+                onChange={(e) => {
+                  setReceivedDate(
+                    e.target.value
+                  )
+                  setValidationError('')
+                }}
+                lang={
+                  currentLocale === 'th'
+                    ? 'th-TH'
+                    : 'en-US'
+                }
+                className={`${inputClassName} ${
+                  !receivedDate
+                    ? 'text-transparent'
+                    : ''
+                }`}
+              />
+            </div>
 
             <p className="mt-1 text-[11px] text-slate-400">
               {formatDisplayDate(
@@ -1507,7 +1535,6 @@ export default function NewDonationForm({
           item.donationType !== ''
       ) && (
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-
           <div className="mb-5">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">
               {tr(
@@ -1541,7 +1568,6 @@ export default function NewDonationForm({
                     }
                     className="relative rounded-xl border border-slate-200 p-5 dark:border-slate-700"
                   >
-
                     {items.length > 1 && (
                       <button
                         type="button"
@@ -1645,7 +1671,6 @@ export default function NewDonationForm({
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-
                           {/* MILK TYPE */}
                           {item.donationType ===
                             'milk' && (
@@ -2177,7 +2202,10 @@ export default function NewDonationForm({
                                   handleItemChange(
                                     item.id,
                                     'otherItemType',
-                                    e.target.value
+                                    e.target.value.replace(
+                                      /[0-9]/g,
+                                      ''
+                                    )
                                   )
                                 }
                                 placeholder={tr(
@@ -2298,7 +2326,10 @@ export default function NewDonationForm({
                                       handleItemChange(
                                         item.id,
                                         'otherBrand',
-                                        e.target.value
+                                        e.target.value.replace(
+                                          /[0-9]/g,
+                                          ''
+                                        )
                                       )
                                     }
                                     placeholder={tr(
@@ -2435,14 +2466,22 @@ export default function NewDonationForm({
                                 )}
                               </option>
 
-                              {UNITS.map((option) => (
-                                <option
-                                  key={option}
-                                  value={option}
-                                >
-                                  {optionLabel(option)}
-                                </option>
-                              ))}
+                              {UNITS.map(
+                                (option) => (
+                                  <option
+                                    key={
+                                      option
+                                    }
+                                    value={
+                                      option
+                                    }
+                                  >
+                                    {optionLabel(
+                                      option
+                                    )}
+                                  </option>
+                                )
+                              )}
                             </select>
                           </div>
 
@@ -2620,6 +2659,14 @@ function ExpiryField({
       </label>
 
       <div className="relative">
+        {!value && (
+          <span className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-xs text-slate-400">
+            {locale === 'th'
+              ? 'วว/ดด/ปปปป'
+              : 'mm/dd/yyyy'}
+          </span>
+        )}
+        
         <input
           type="date"
           value={
@@ -2637,7 +2684,16 @@ function ExpiryField({
               ? 'วันหมดอายุ'
               : 'Expiry Date'
           }
-          className="block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          lang={
+            locale === 'th'
+              ? 'th-TH'
+              : 'en-US'
+          }
+          className={`block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
+            !value
+              ? 'text-transparent'
+              : 'text-slate-900 dark:text-slate-100'
+          }`}
         />
       </div>
     </div>
