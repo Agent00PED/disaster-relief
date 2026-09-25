@@ -11,7 +11,6 @@ import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { requireStaffOrAdmin } from '@/lib/guard'
 
-
 // วันที่วันนี้ตามเขตเวลาไทย ใช้ตรวจช่วงวันที่ฝั่งเซิร์ฟเวอร์
 // ต้องตรวจซ้ำที่นี่ เพราะฟอร์มฝั่งหน้าเว็บถูกข้ามได้
 function todayBangkok() {
@@ -264,7 +263,23 @@ export async function updateDonation(formData: FormData) {
       formData.get('expiry_date') || '',
     ).trim() || null
 
-  if (expiryDate && expiryDate < todayBangkok()) {
+  // ห้ามตั้งวันหมดอายุย้อนหลัง "ที่เป็นค่าใหม่" เท่านั้น
+  // ของที่หมดอายุไปแล้วยังต้องแก้ชื่อหรือหมวดหมู่ได้อยู่
+  // ถ้าบล็อกทุกกรณีจะกลายเป็นว่าล็อตที่หมดอายุแล้วแก้อะไรไม่ได้เลย
+  const { data: current } = await supabase
+    .from('donations')
+    .select('expiry_date')
+    .eq('id', id)
+    .maybeSingle()
+
+  const expiryChanged =
+    (current?.expiry_date ?? null) !== expiryDate
+
+  if (
+    expiryChanged &&
+    expiryDate &&
+    expiryDate < todayBangkok()
+  ) {
     redirect(
       `/donations/${id}/receipt/edit?error=` +
         encodeURIComponent('วันหมดอายุผ่านมาแล้ว กรุณาตรวจสอบอีกครั้ง'),

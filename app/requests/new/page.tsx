@@ -15,13 +15,13 @@ export default async function NewRequestPage({
   searchParams: Promise<{ error?: string }>
 }) {
   // อาสาสมัครไม่มีสิทธิ์สร้างข้อมูลชุดนี้ กันตั้งแต่ก่อน render
-  const supabaseGuard = await createClient()
-  await requireStaffOrAdmin(supabaseGuard)
+  const supabase = await createClient()
+  await requireStaffOrAdmin(supabase)
 
   const { error } = await searchParams
   const locale = await getLocale()
   const dict = getDictionary(locale)
-  const centers = await getCenterPicker(await createClient(), 'shelter')
+  const centers = await getCenterPicker(supabase, 'shelter')
 
   const th = locale === 'th'
 

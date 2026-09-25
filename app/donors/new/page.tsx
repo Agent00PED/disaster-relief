@@ -9,8 +9,8 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 
 export default async function NewDonorPage() {
   // อาสาสมัครไม่มีสิทธิ์สร้างข้อมูลชุดนี้ กันตั้งแต่ก่อน render
-  const supabaseGuard = await createClient()
-  await requireStaffOrAdmin(supabaseGuard)
+  const supabase = await createClient()
+  await requireStaffOrAdmin(supabase)
 
   const locale = await getLocale()
   const dict = await getDictionary(locale)
