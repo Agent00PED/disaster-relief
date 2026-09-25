@@ -62,6 +62,7 @@ const th = {
     activity: 'การจัดสรรล่าสุด', noActivity: 'ยังไม่มีรายการจัดสรร',
     allocated: 'จัดสรรสิ่งของ', menus: 'เมนูจัดการ',
     loadError: 'โหลดข้อมูลบางส่วนไม่สำเร็จ กรุณาลองรีเฟรชหน้าอีกครั้ง',
+    expired: 'หมดอายุแล้ว',
   },
   footer: {
     tagline: 'ระบบติดตามการบริจาคและกระจายสิ่งของช่วยเหลือภัยพิบัติ',
@@ -875,6 +876,7 @@ const en: typeof th = {
     activity: 'Latest allocations', noActivity: 'No allocations yet',
     allocated: 'Items allocated', menus: 'Management',
     loadError: 'Some data could not be loaded. Please refresh the page to try again.',
+    expired: 'Expired',
   },
   footer: {
     tagline: 'Disaster relief donation and distribution tracking system',
