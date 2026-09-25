@@ -63,15 +63,15 @@ export default async function EditDonationPage({
           href="/donations"
           className="text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
         >
-          ← กลับรายการบริจาค
+          ← {dict.donationEdit.back}
         </Link>
 
         <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-slate-100">
-          แก้ไขรายการบริจาค
+          {dict.donationEdit.title}
         </h1>
 
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          แก้ไขข้อมูลรายการบริจาค
+          {dict.donationEdit.subtitle}
         </p>
       </div>
 
@@ -81,7 +81,7 @@ export default async function EditDonationPage({
           role="alert"
           className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
         >
-          ไม่สามารถบันทึกการแก้ไขได้: {errorMessage}
+          {dict.donationEdit.saveError}: {errorMessage}
         </div>
       )}
 
@@ -103,7 +103,7 @@ export default async function EditDonationPage({
               htmlFor="item_name"
               className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              ชื่อสิ่งของ
+              {dict.donationEdit.itemName}
             </label>
 
             <input
@@ -122,7 +122,7 @@ export default async function EditDonationPage({
               htmlFor="category"
               className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              หมวดหมู่
+              {dict.donationEdit.category}
             </label>
 
             <select
@@ -146,7 +146,7 @@ export default async function EditDonationPage({
           {/* จำนวนที่รับ - แสดงอย่างเดียว */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              จำนวนที่รับ
+              {dict.donationEdit.received}
             </label>
 
             <div className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
@@ -154,7 +154,7 @@ export default async function EditDonationPage({
             </div>
 
             <p className="mt-1 text-xs text-slate-400">
-              จำนวนที่รับไม่สามารถแก้ไขจากหน้านี้ได้
+              {dict.donationEdit.receivedLocked}
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default async function EditDonationPage({
               htmlFor="unit"
               className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              หน่วย
+              {dict.donationEdit.unit}
             </label>
 
             <UnitSelect
@@ -179,7 +179,7 @@ export default async function EditDonationPage({
           {/* จำนวนคงเหลือ - แสดงอย่างเดียว */}
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              จำนวนคงเหลือ
+              {dict.donationEdit.remaining}
             </label>
 
             <div className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300">
@@ -187,8 +187,8 @@ export default async function EditDonationPage({
             </div>
 
             <p className="mt-1 text-xs text-slate-400">
-              จำนวนคงเหลือไม่สามารถแก้ไขจากหน้านี้ได้
-              กรุณาแก้ไขผ่านหน้าจัดสรรหากต้องการเปลี่ยนยอด
+              {dict.donationEdit.remainingLocked}
+              {dict.donationEdit.remainingHint}
             </p>
           </div>
 
@@ -198,7 +198,7 @@ export default async function EditDonationPage({
               htmlFor="expiry_date"
               className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300"
             >
-              วันหมดอายุ
+              {dict.donationEdit.expiry}
             </label>
 
             <input
@@ -217,14 +217,14 @@ export default async function EditDonationPage({
             href="/donations"
             className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            ยกเลิก
+            {dict.donationEdit.cancel}
           </Link>
 
           <button
             type="submit"
             className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
           >
-            บันทึกการแก้ไข
+            {dict.donationEdit.save}
           </button>
         </div>
       </form>
