@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const password = String(form.get('password') ?? '')
     const centerId = value('center_id')
     if (!firstName || !lastName || firstName.length > 100 || lastName.length > 100
-      || !/^\+?[0-9]{9,15}$/.test(phone)
+      || !/^[0-9]{10}$/.test(phone)
       || !isValidBirthDate(birthDate)
       || !username || username.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || password.length < 6 || !/^[0-9a-f-]{36}$/i.test(centerId)) return fail('invalid')
