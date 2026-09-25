@@ -38,6 +38,10 @@ export async function confirmPledge(formData: FormData) {
     name: pledge.donor_name,
     phone: pledge.donor_phone,
     email: pledge.donor_email,
+    // ที่อยู่ที่ผู้บริจาคกรอกไว้ตอนแจ้งความประสงค์ ถ้าไม่ส่งต่อตรงนี้
+    // ผู้บริจาคที่เกิดจากการอนุมัติจะไม่มีที่อยู่ หน้า /donors จะขึ้น "-"
+    // และตัวกรองจังหวัดจะกรองไม่เจอ
+    address: pledge.address,
   })
 
   const { data: donation, error: donationError } = await supabase
@@ -54,6 +58,9 @@ export async function confirmPledge(formData: FormData) {
         'ชิ้น',
       quantity_received: pledge.quantity,
       quantity_remaining: pledge.quantity,
+      // ข้อกำหนดด้านอาหารที่ผู้บริจาคระบุไว้ ถ้าไม่ส่งต่อ ปลายทางจะตกเป็น
+      // 'general' ทำให้ของฮาลาลกลายเป็นของทั่วไปและจ่ายให้คำขอฮาลาลไม่ได้
+      dietary_type: pledge.dietary_type ?? 'general',
       received_by: user.id,
     })
     .select('id')
