@@ -28,7 +28,9 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
     ['medicine', dict.form.categoryMedicine], ['clothing', dict.form.categoryClothing],
     ['hygiene', dict.form.categoryHygiene], ['other', dict.form.categoryOther],
   ]
-  const [stock, pending, urgent, delivered, recent, pledges, expiring, activity, ...categoryCounts] = await Promise.all([
+  
+  // เพิ่ม expired ลงใน Promise.all เพื่อดึงข้อมูลล็อตที่หมดอายุแล้ว (lt) และยังมีของเหลืออยู่ (gt 0)
+  const [stock, pending, urgent, delivered, recent, pledges, expiring, expired, activity, ...categoryCounts] = await Promise.all([
     supabase.from('donations').select('id', { count: 'exact', head: true }).gt('quantity_remaining', 0),
     supabase.from('requests').select('id', { count: 'exact', head: true }).in('status', ['pending', 'partial']),
     supabase.from('requests').select('id', { count: 'exact', head: true }).in('status', ['pending', 'partial']).eq('urgency', 'high'),
@@ -36,9 +38,15 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
     supabase.from('requests').select('id, item_name, urgency, status, created_at, centers(name)').order('created_at', { ascending: false }).limit(5),
     supabase.from('donation_pledges').select('id', { count: 'exact', head: true }).in('status', ['pending', 'contacted']),
     supabase.from('donations').select('id', { count: 'exact', head: true }).gt('quantity_remaining', 0).gte('expiry_date', day).lte('expiry_date', new Date(new Date(dayStart).getTime() + 7 * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' })),
+    supabase.from('donations').select('id, quantity_remaining', { count: 'exact' }).gt('quantity_remaining', 0).lt('expiry_date', day), // <--- เพิ่มตรงนี้
     supabase.from('allocations').select('id, allocated_at, requests(item_name)').order('allocated_at', { ascending: false }).limit(4),
     ...categories.map(([category]) => supabase.from('donations').select('id', { count: 'exact', head: true }).gt('quantity_remaining', 0).eq('category', category)),
   ])
+
+  // คำนวณจำนวนล็อตและจำนวนชิ้นของล็อตที่หมดอายุ
+  const expiredCount = expired.count ?? 0
+  const expiredPieces = expired.data?.reduce((sum, item) => sum + (item.quantity_remaining || 0), 0) ?? 0
+
   const count = (result: { count: number | null; error: unknown }) => result.error || result.count === null ? '—' : number.format(result.count)
   const panel = 'rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900'
   const muted = 'text-sm text-slate-500 dark:text-slate-400'
@@ -62,7 +70,9 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
   const status: Record<string, string> = { pending: dict.requests.statusPending, partial: dict.requests.statusPartial, fulfilled: dict.requests.statusFulfilled, cancelled: dict.requests.statusCancelled }
   const urgency: Record<string, string> = { high: dict.requests.urgencyHigh, medium: dict.requests.urgencyMedium, low: dict.requests.urgencyLow }
   const formatDate = (value: string) => new Intl.DateTimeFormat(locale === 'th' ? 'th-TH' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Bangkok' }).format(new Date(value))
-  const hasError = [stock, pending, urgent, delivered, recent, pledges, expiring, activity, ...categoryCounts].some(result => result.error)
+  
+  // อัปเดตเงื่อนไข Error ให้เช็คตัวแปร expired ด้วย
+  const hasError = [stock, pending, urgent, delivered, recent, pledges, expiring, expired, activity, ...categoryCounts].some(result => result.error)
 
   return <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-7 text-brand sm:px-6 dark:text-slate-100">
     <header className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
@@ -81,7 +91,39 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
       <section className={`${panel} min-w-0 lg:col-span-2`}><div className="mb-4 flex items-center justify-between gap-3"><h2 className="font-semibold">{t.recentRequests}</h2><Link className="text-sm text-sky-700 hover:underline dark:text-sky-400" href="/requests">{t.viewAll} →</Link></div>
         {recent.error ? <p className={muted}>{t.loadError}</p> : !recent.data?.length ? <p className={`${muted} py-10 text-center`}>{dict.requests.noRequests}</p> : <div className="overflow-x-auto"><table className="w-full min-w-[580px] text-left text-sm"><thead className="bg-slate-50 dark:bg-slate-800"><tr>{[dict.requests.center, dict.requests.item, dict.requests.urgency, dict.common.status, t.date].map(label => <th key={label} className="px-3 py-3 font-medium">{label}</th>)}</tr></thead><tbody>{recent.data.map(row => <tr key={row.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800"><td className="px-3 py-4">{(row.centers as unknown as { name: string } | null)?.name ?? '—'}</td><td className="px-3 py-4">{row.item_name}</td><td className="px-3 py-4"><span className={`whitespace-nowrap rounded-md px-2 py-1 text-xs ${row.urgency === 'high' ? tones[2] : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>{urgency[row.urgency] ?? row.urgency}</span></td><td className="px-3 py-4">{status[row.status] ?? row.status}</td><td className="whitespace-nowrap px-3 py-4 text-slate-500 dark:text-slate-400">{formatDate(row.created_at)}</td></tr>)}</tbody></table></div>}
       </section>
-      <section className={panel}><h2 className="mb-4 font-semibold">{t.todo}</h2><div className="space-y-2">{[[t.pending, pending, '/requests?status=open'], [dict.home.pledgesLabel, pledges, '/pledges?status=open'], [t.expiring, expiring, '/inventory/lots?expiry=soon']] .map(([label, result, href], i) => <Link key={String(href)} href={String(href)} className="flex min-h-16 items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"><Icon kind={i + 1} /><span className="flex-1 text-sm font-medium">{String(label)}</span><span className="rounded-full bg-slate-100 px-2.5 py-1 text-sm tabular-nums dark:bg-slate-800">{count(result as typeof pending)}</span><span aria-hidden="true" className="text-slate-400">›</span></Link>)}</div><p className={`mt-3 text-xs ${muted}`}>{t.expiryHint}</p></section>
+      
+      <section className={panel}>
+        <h2 className="mb-4 font-semibold">{t.todo}</h2>
+        <div className="space-y-2">
+          {/* แถวเดิม: รอตรวจสอบ, คำร้องบริจาค, ใกล้หมดอายุ */}
+          {[[t.pending, pending, '/requests?status=open'], [dict.home.pledgesLabel, pledges, '/pledges?status=open'], [t.expiring, expiring, '/inventory/lots?expiry=soon']] .map(([label, result, href], i) => 
+            <Link key={String(href)} href={String(href)} className="flex min-h-16 items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800">
+              <Icon kind={i + 1} />
+              <span className="flex-1 text-sm font-medium">{String(label)}</span>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-sm tabular-nums dark:bg-slate-800">{count(result as typeof pending)}</span>
+              <span aria-hidden="true" className="text-slate-400">›</span>
+            </Link>
+          )}
+
+          {/* แถวใหม่: หมดอายุแล้ว (สีแดง) */}
+          <Link 
+            href="/inventory/lots?expiry=expired" 
+            className="flex min-h-16 items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[#d9534f] hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+          >
+            <Icon kind={0} />
+            <span className="flex-1 text-sm font-medium">
+              {(t as any).expired || (locale === 'en' ? 'Expired' : 'หมดอายุแล้ว')}
+            </span>
+            <span className="rounded-full bg-red-100 px-2.5 py-1 text-sm tabular-nums text-red-700 dark:bg-red-900/50 dark:text-red-300">
+              {expired.error ? '—' : `${number.format(expiredCount)} ${t.lots} · ${number.format(expiredPieces)} ${locale === 'en' ? 'items' : 'ชิ้น'}`}
+            </span>
+            <span aria-hidden="true" className="opacity-70">›</span>
+          </Link>
+
+        </div>
+        <p className={`mt-3 text-xs ${muted}`}>{t.expiryHint}</p>
+      </section>
+
     </div>
     <div className="grid gap-4 lg:grid-cols-2">
       <section className={panel}><h2 className="font-semibold">{t.inventory}</h2><p className={`mb-4 mt-1 ${muted}`}>{t.inventoryHint}</p><div className="space-y-3">{categories.map(([key, label], i) => {

@@ -24,10 +24,13 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
+  MapPin, // <-- เพิ่ม MapPin สำหรับช่องที่อยู่
 } from 'lucide-react'
 
 import { submitPledge } from './actions'
 import { UnitSelect } from '@/app/unit-select'
+import { DietarySelect } from '@/app/dietary-select' // <-- นำเข้า DietarySelect
+import { PROVINCES } from '@/lib/provinces' // <-- นำเข้า PROVINCES
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
@@ -39,7 +42,7 @@ function FieldShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[42px] items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 transition focus-within:border-[#1d3b5a] focus-within:ring-2 focus-within:ring-[#1d3b5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
+    <div className="flex min-h-[42px] items-center gap-2.5 rounded-lg border border-slate-200 bg-white px-3 transition focus-within:border-[#1c3d5a] focus-within:ring-2 focus-within:ring-[#1c3d5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
       <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-[#f3f5f6] text-slate-500 dark:bg-slate-700/60 dark:text-slate-400">
         {icon}
       </span>
@@ -240,15 +243,6 @@ export default async function PledgePage({
 
     // Units
 
-
-
-
-
-
-
-
-
-
     // Side Features
     feat1Title:
       isEn ? 'Donate Items' : 'ส่งของบริจาค',
@@ -296,10 +290,10 @@ export default async function PledgePage({
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[#faf7f2] font-sans text-slate-800 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
+    <main className="min-h-screen overflow-hidden bg-[#f5f1e8] font-sans text-slate-800 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
 
       {/* ============================================================
-          HERO SECTION
+         HERO SECTION
       ============================================================ */}
       <section className="relative min-h-[calc(100vh-64px)] overflow-hidden py-8 md:py-12">
 
@@ -315,7 +309,7 @@ export default async function PledgePage({
         />
 
         {/* Overlay เพื่อให้ข้อความอ่านง่าย */}
-        <div className="pointer-events-none absolute inset-0 bg-[#faf7f2]/70 dark:bg-slate-950/75" />
+        <div className="pointer-events-none absolute inset-0 bg-[#f5f1e8]/70 dark:bg-slate-950/75" />
 
         {/* Soft Gradient Overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-[#ebdccb]/30 dark:from-slate-950/20 dark:via-transparent dark:to-slate-950/40" />
@@ -333,14 +327,14 @@ export default async function PledgePage({
             <div className="hidden space-y-6 lg:block">
 
               <div>
-                <p className="text-sm font-bold tracking-wide uppercase text-[#1d3b5a] dark:text-sky-300">
+                <p className="text-sm font-bold tracking-wide uppercase text-[#1c3d5a] dark:text-sky-300">
                   {t.brand}
                 </p>
 
-                <h1 className="mt-1 text-3xl font-extrabold leading-tight text-[#183b59] dark:text-slate-100">
+                <h1 className="mt-1 text-3xl font-extrabold leading-tight text-[#1c3d5a] dark:text-slate-100">
                   {t.title1}
                   <br />
-                  <span className="text-[#4b3d9d] dark:text-violet-300">
+                  <span className="text-[#1c3d5a] dark:text-violet-300">
                     {t.title2}
                   </span>
                 </h1>
@@ -351,15 +345,15 @@ export default async function PledgePage({
               </div>
 
               <div className="pt-2">
-                <p className="text-xl font-bold leading-snug text-[#183b59] dark:text-slate-100">
+                <p className="text-xl font-bold leading-snug text-[#1c3d5a] dark:text-slate-100">
                   {t.givingPower}
 
-                  <span className="ml-1.5 inline-block animate-pulse text-[#4b3d9d] dark:text-violet-300">
+                  <span className="ml-1.5 inline-block animate-pulse text-[#1c3d5a] dark:text-violet-300">
                     ♥
                   </span>
                 </p>
 
-                <div className="mt-2 h-[3px] w-28 rotate-[-3deg] rounded-full bg-[#4b3d9d] dark:bg-violet-400" />
+                <div className="mt-2 h-[3px] w-28 rotate-[-3deg] rounded-full bg-[#1c3d5a] dark:bg-violet-400" />
               </div>
 
               {/* Left Art Box */}
@@ -371,7 +365,7 @@ export default async function PledgePage({
 
                     <div className="flex items-center gap-2.5">
 
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ece7ff] text-[#4b3d9d] dark:bg-violet-500/20 dark:text-violet-300">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ece7ff] text-[#1c3d5a] dark:bg-violet-500/20 dark:text-violet-300">
                         <Heart className="h-4 w-4 fill-current" />
                       </div>
 
@@ -414,15 +408,15 @@ export default async function PledgePage({
 
                   <div className="mb-1 flex items-center justify-center gap-1.5">
 
-                    <Heart className="h-5 w-5 fill-[#4b3d9d] text-[#4b3d9d] dark:fill-violet-400 dark:text-violet-400" />
+                    <Heart className="h-5 w-5 fill-[#d9534f] text-[#d9534f] dark:fill-violet-400 dark:text-violet-400" />
 
-                    <span className="text-lg font-bold tracking-tight text-[#183b59] dark:text-slate-100">
+                    <span className="text-lg font-bold tracking-tight text-[#1c3d5a] dark:text-slate-100">
                       {t.brand}
                     </span>
 
                   </div>
 
-                  <h2 className="text-2xl font-bold text-[#183b59] dark:text-slate-100">
+                  <h2 className="text-2xl font-bold text-[#1c3d5a] dark:text-slate-100">
                     {t.formTitle}
                   </h2>
 
@@ -555,6 +549,58 @@ export default async function PledgePage({
 
                   </div>
 
+                  {/* ================= เริ่มส่วนที่อยู่ (ตำบล/จังหวัด) ================= */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    
+                    {/* Subdistrict */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        {isEn ? 'Subdistrict' : 'ตำบล / แขวง'}{' '}
+                        <span className="font-normal text-slate-400 dark:text-slate-500">
+                          {t.optional}
+                        </span>
+                      </label>
+
+                      <FieldShell icon={<MapPin className="h-3.5 w-3.5" />}>
+                        <input
+                          name="subdistrict"
+                          type="text"
+                          placeholder={isEn ? 'Enter subdistrict' : 'ระบุตำบล'}
+                          className="w-full border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+                        />
+                      </FieldShell>
+                    </div>
+
+                    {/* Province */}
+                    <div>
+                      <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                        {isEn ? 'Province' : 'จังหวัด'}{' '}
+                        <span className="font-normal text-slate-400 dark:text-slate-500">
+                          {t.optional}
+                        </span>
+                      </label>
+
+                      <FieldShell icon={<MapPin className="h-3.5 w-3.5" />}>
+                        <select
+                          name="province_name"
+                          className="w-full cursor-pointer border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none dark:bg-slate-800 dark:text-slate-100"
+                        >
+                          <option value="" className="dark:bg-slate-800">
+                            {isEn ? 'Select province...' : 'เลือกจังหวัด...'}
+                          </option>
+                          {PROVINCES.map((p) => (
+                            <option key={p} value={p} className="dark:bg-slate-800">
+                              {p}
+                            </option>
+                          ))}
+                        </select>
+                      </FieldShell>
+                    </div>
+
+                  </div>
+                  {/* ================= สิ้นสุดส่วนที่อยู่ ================= */}
+
+
                   {/* Item Name */}
                   <div>
 
@@ -657,6 +703,22 @@ export default async function PledgePage({
 
                   </div>
 
+                  {/* Dietary Requirement */}
+                  <div>
+
+                    <label className="mb-1 block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      {isEn ? 'Dietary Requirement (For Food)' : 'ข้อกำหนดด้านอาหาร (กรณีบริจาคอาหาร)'}{' '}
+                      <span className="font-normal text-slate-400 dark:text-slate-500">
+                        {t.optional}
+                      </span>
+                    </label>
+
+                    <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1c3d5a] focus-within:ring-2 focus-within:ring-[#1c3d5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
+                      <DietarySelect name="dietary_type" locale={locale} />
+                    </div>
+
+                  </div>
+
                   {/* Quantity & Unit */}
                   <div className="grid grid-cols-[1fr_110px] gap-3 sm:grid-cols-[1fr_120px]">
 
@@ -697,7 +759,7 @@ export default async function PledgePage({
                         </span>
                       </label>
 
-                      <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1d3b5a] focus-within:ring-2 focus-within:ring-[#1d3b5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
+                      <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1c3d5a] focus-within:ring-2 focus-within:ring-[#1c3d5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
 
                         <UnitSelect
                           locale={locale}
@@ -726,7 +788,7 @@ export default async function PledgePage({
                       name="note"
                       rows={2}
                       placeholder={t.notePlaceholder}
-                      className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#1d3b5a] focus:ring-2 focus:ring-[#1d3b5a]/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-500/20"
+                      className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-800 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#1c3d5a] focus:ring-2 focus:ring-[#1c3d5a]/10 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-500/20"
                     />
 
                   </div>
@@ -736,7 +798,7 @@ export default async function PledgePage({
 
                     <button
                       type="submit"
-                      className="group flex h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#1d3b5a] text-[13px] font-semibold text-white shadow-md transition hover:bg-[#152c44] active:scale-[0.99] dark:bg-sky-600 dark:hover:bg-sky-500"
+                      className="group flex h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#1c3d5a] text-[13px] font-semibold text-white shadow-md transition hover:bg-[#152c44] active:scale-[0.99] dark:bg-sky-600 dark:hover:bg-sky-500"
                     >
                       <span>{t.submitBtn}</span>
 
@@ -776,7 +838,7 @@ export default async function PledgePage({
 
                   <div>
 
-                    <h3 className="text-[12px] font-bold text-[#183b59] dark:text-slate-100">
+                    <h3 className="text-[12px] font-bold text-[#1c3d5a] dark:text-slate-100">
                       {t.feat1Title}
                     </h3>
 
@@ -791,13 +853,13 @@ export default async function PledgePage({
                 {/* Feature 2 */}
                 <div className="flex items-start gap-3 rounded-xl border border-white/60 bg-white/50 p-2.5 backdrop-blur-xs dark:border-slate-800 dark:bg-slate-900/50">
 
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#efeaff] text-[#4b3d9d] dark:bg-violet-900/60 dark:text-violet-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#efeaff] text-[#1c3d5a] dark:bg-violet-900/60 dark:text-violet-300">
                     <Heart className="h-4 w-4" />
                   </div>
 
                   <div>
 
-                    <h3 className="text-[12px] font-bold text-[#183b59] dark:text-slate-100">
+                    <h3 className="text-[12px] font-bold text-[#1c3d5a] dark:text-slate-100">
                       {t.feat2Title}
                     </h3>
 
@@ -818,7 +880,7 @@ export default async function PledgePage({
 
                   <div>
 
-                    <h3 className="text-[12px] font-bold text-[#183b59] dark:text-slate-100">
+                    <h3 className="text-[12px] font-bold text-[#1c3d5a] dark:text-slate-100">
                       {t.feat3Title}
                     </h3>
 
@@ -835,23 +897,23 @@ export default async function PledgePage({
               {/* Thank You Quote */}
               <div className="pt-2">
 
-                <p className="text-lg font-bold leading-snug text-[#183b59] dark:text-slate-100">
+                <p className="text-lg font-bold leading-snug text-[#1c3d5a] dark:text-slate-100">
 
                   {t.thankTitle}
 
                   <br />
 
-                  <span className="text-[#4b3d9d] dark:text-violet-300">
+                  <span className="text-[#1c3d5a] dark:text-violet-300">
                     {t.thankSub}
                   </span>
 
-                  <span className="ml-1 inline-block text-[#4b3d9d] dark:text-violet-300">
+                  <span className="ml-1 inline-block text-[#1c3d5a] dark:text-violet-300">
                     ♥
                   </span>
 
                 </p>
 
-                <div className="mt-2 h-[3px] w-32 rotate-[-2deg] rounded-full bg-[#4b3d9d] dark:bg-violet-400" />
+                <div className="mt-2 h-[3px] w-32 rotate-[-2deg] rounded-full bg-[#1c3d5a] dark:bg-violet-400" />
 
               </div>
 
@@ -860,7 +922,7 @@ export default async function PledgePage({
 
                 <div className="flex h-full flex-col justify-between">
 
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#183b59] dark:text-slate-100">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1c3d5a] dark:text-slate-100">
 
                     <Sparkles className="h-3.5 w-3.5 text-[#f59e0b] dark:text-amber-400" />
 
