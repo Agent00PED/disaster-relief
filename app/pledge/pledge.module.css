@@ -7,6 +7,7 @@
 .panel > header p { margin-top: 4px; }
 /* ฟอร์มอยู่กึ่งกลางจอเสมอ (ใช้ร่วมกับหน้าขอความช่วยเหลือ) — ซ้าย/ขวากว้างเท่ากัน */
 .layout { display: grid; grid-template-columns: minmax(0, 1fr) 480px minmax(0, 1fr); align-items: start; gap: 40px; max-width: 1260px; width: 100%; margin-inline: auto; }
+.layoutStaff { grid-template-columns: minmax(0, 560px); justify-content: center; }
 .intro { padding-top: 44px; justify-self: end; width: 100%; max-width: 360px; }
 .intro h2 { font-size: 25px; font-weight: 700; line-height: 1.6; }
 .intro h2 span { display: block; color: #d9534f; font-size: clamp(26px, 2.5vw, 34px); }
