@@ -14,8 +14,13 @@ import { createClient } from '@/lib/supabase/client'
 import { birthDateBounds } from '@/lib/birth-date'
 import styles from '../login/login.module.css'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
+import { AtSign, Building2, CalendarDays, Camera, LockKeyhole, Mail, Phone, UserRound } from 'lucide-react'
 
 type Center = { id: string; name: string; type: string }
+
+function FieldIcon({ icon: Icon }: { icon: typeof UserRound }) {
+  return <Icon className={styles.fieldIcon} aria-hidden="true" />
+}
 
 export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () => void }) {
   const supabase = createClient()
@@ -85,25 +90,25 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
 
   return <>
     <form onSubmit={handleSubmit} className={styles.form}>
-      <div><label htmlFor="register-first-name">{dict.register.firstName}</label>
-        <input id="register-first-name" name="first_name" autoComplete="given-name" required maxLength={100} value={firstName} onChange={e => setFirstName(e.target.value)} /></div>
-      <div><label htmlFor="register-last-name">{dict.register.lastName}</label>
-        <input id="register-last-name" name="last_name" autoComplete="family-name" required maxLength={100} value={lastName} onChange={e => setLastName(e.target.value)} /></div>
-      <div><label htmlFor="register-phone">{dict.register.phone}</label>
-        <input id="register-phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" required maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} />
+      <div><label htmlFor="register-first-name"><FieldIcon icon={UserRound} />{dict.register.firstName}</label>
+        <input id="register-first-name" name="first_name" autoComplete="given-name" placeholder={dict.register.firstNamePlaceholder} required maxLength={100} value={firstName} onChange={e => setFirstName(e.target.value)} /></div>
+      <div><label htmlFor="register-last-name"><FieldIcon icon={UserRound} />{dict.register.lastName}</label>
+        <input id="register-last-name" name="last_name" autoComplete="family-name" placeholder={dict.register.lastNamePlaceholder} required maxLength={100} value={lastName} onChange={e => setLastName(e.target.value)} /></div>
+      <div><label htmlFor="register-phone"><FieldIcon icon={Phone} />{dict.register.phone}</label>
+        <input id="register-phone" name="phone" type="tel" autoComplete="tel" inputMode="tel" placeholder={dict.register.phonePlaceholder} required maxLength={25} value={phone} onChange={e => setPhone(e.target.value)} />
         <p className={styles.hint}>{dict.register.phoneHint}</p></div>
-      <div><label htmlFor="register-birth-date">{dict.register.birthDate}</label>
+      <div><label htmlFor="register-birth-date"><FieldIcon icon={CalendarDays} />{dict.register.birthDate}</label>
         <input id="register-birth-date" name="birth_date" type="date" autoComplete="bday" required min={birthDateRange.min} max={birthDateRange.max} /></div>
-      <div><label htmlFor="register-photo">{dict.register.identityPhoto}</label>
+      <div><label htmlFor="register-photo"><FieldIcon icon={Camera} />{dict.register.identityPhoto}</label>
         <input id="register-photo" name="identity_photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="register-photo-hint" />
         <p id="register-photo-hint" className={styles.fieldHint}>{dict.register.photoHint}</p></div>
-      <div><label htmlFor="register-username">{dict.register.username}</label>
-        <input id="register-username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} required value={username} onChange={e => setUsername(e.target.value)} /></div>
-      <div><label htmlFor="register-email">{dict.form.email}</label>
-        <input id="register-email" name="email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
-      <div><label htmlFor="register-password">{dict.register.password}</label>
-        <input id="register-password" name="password" type="password" autoComplete="new-password" required minLength={6} value={password} onChange={e => setPassword(e.target.value)} /></div>
-      <div><label htmlFor="register-center">{dict.register.centerWanted}</label>
+      <div><label htmlFor="register-username"><FieldIcon icon={AtSign} />{dict.register.username}</label>
+        <input id="register-username" name="username" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder={dict.register.usernamePlaceholder} required value={username} onChange={e => setUsername(e.target.value)} /></div>
+      <div><label htmlFor="register-email"><FieldIcon icon={Mail} />{dict.form.email}</label>
+        <input id="register-email" name="email" type="email" autoComplete="email" placeholder={dict.register.emailPlaceholder} required value={email} onChange={e => setEmail(e.target.value)} /></div>
+      <div><label htmlFor="register-password"><FieldIcon icon={LockKeyhole} />{dict.register.password}</label>
+        <input id="register-password" name="password" type="password" autoComplete="new-password" placeholder={dict.register.passwordPlaceholder} required minLength={6} value={password} onChange={e => setPassword(e.target.value)} /></div>
+      <div><label htmlFor="register-center"><FieldIcon icon={Building2} />{dict.register.centerWanted}</label>
         <select id="register-center" name="center_id" required value={centerId} onChange={e => setCenterId(e.target.value)}>
           <option value="">{dict.form.selectCenterPlaceholder}</option>
           {centers.map(c => <option key={c.id} value={c.id}>{c.name} ({c.type === 'warehouse' ? dict.register.centerTypeWarehouse : dict.register.centerTypeShelter})</option>)}
