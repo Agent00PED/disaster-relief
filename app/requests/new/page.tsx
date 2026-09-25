@@ -5,6 +5,7 @@ import { UnitSelect } from '@/app/unit-select'
 import { DietarySelect } from '@/app/dietary-select'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import { getCenterPicker } from '@/lib/center-choice'
 import { CenterSelect } from '@/app/center-select'
 
@@ -13,6 +14,10 @@ export default async function NewRequestPage({
 }: {
   searchParams: Promise<{ error?: string }>
 }) {
+  // อาสาสมัครไม่มีสิทธิ์สร้างข้อมูลชุดนี้ กันตั้งแต่ก่อน render
+  const supabaseGuard = await createClient()
+  await requireStaffOrAdmin(supabaseGuard)
+
   const { error } = await searchParams
   const locale = await getLocale()
   const dict = getDictionary(locale)

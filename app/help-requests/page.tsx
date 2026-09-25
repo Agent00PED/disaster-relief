@@ -55,7 +55,7 @@ export default async function HelpRequestsPage({
   } = await searchParams
 
   const supabase = await createClient()
-  await requireStaffOrAdmin(supabase)
+  const user = await requireStaffOrAdmin(supabase)
   const locale = await getLocale()
   const dict = getDictionary(locale)
 
@@ -79,7 +79,19 @@ export default async function HelpRequestsPage({
     dismissed: dict.queue.statusDismissed,
   }
 
-  const { data: centerRows } = await supabase.from('centers').select('id, name')
+  // เจ้าหน้าที่เห็นคำร้องเฉพาะศูนย์ตัวเอง ตัวกรองจึงไม่ควรลิสต์ศูนย์อื่น
+  // เพราะเลือกไปก็ได้ผลลัพธ์ 0 เสมอ ทำให้เข้าใจผิดว่าระบบค้นไม่เจอ
+  const { data: me } = await supabase
+    .from('profiles')
+    .select('role, center_id')
+    .eq('id', user.id)
+    .single()
+
+  let centerQuery = supabase.from('centers').select('id, name')
+  if (me?.role !== 'admin' && me?.center_id) {
+    centerQuery = centerQuery.eq('id', me.center_id)
+  }
+  const { data: centerRows } = await centerQuery
   const centers = centerRows || []
 
   const { data: pledgeRows } = await supabase

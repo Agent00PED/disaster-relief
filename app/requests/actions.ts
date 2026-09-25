@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import { normalizeUnit } from '@/lib/units'
 import { normalizeDietary } from '@/lib/dietary'
 import { resolveCenterId } from '@/lib/center-choice'
@@ -12,6 +13,8 @@ import { withNotice } from '@/lib/notice'
 
 export async function createRequest(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -44,6 +47,8 @@ export async function createRequest(formData: FormData) {
 
 export async function updateRequest(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -78,6 +83,8 @@ export async function updateRequest(formData: FormData) {
 // และคืนยอดรายการจัดสรรที่ยังไม่ส่งมอบให้ใน transaction เดียว
 export async function cancelRequest(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()

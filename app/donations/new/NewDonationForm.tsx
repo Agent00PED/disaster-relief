@@ -1,5 +1,15 @@
 'use client'
 
+// วันที่วันนี้ตามเขตเวลาไทย ใช้เป็นขอบของช่องวันที่
+// วันที่รับของเลือกอนาคตไม่ได้ และวันหมดอายุเลือกย้อนหลังไม่ได้
+const todayBangkok = () =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
 import { formatPhone, phoneDigits, PHONE_LENGTH } from '@/lib/phone'
 
 import { useEffect, useState } from 'react'
@@ -1377,6 +1387,7 @@ export default function NewDonationForm({
               <input
                 type="date"
                 name="received_date"
+                max={todayBangkok()}
                 value={
                   receivedDate
                 }
@@ -2670,6 +2681,7 @@ function ExpiryField({
         
         <input
           type="date"
+          min={todayBangkok()}
           value={
             value || ''
           }
