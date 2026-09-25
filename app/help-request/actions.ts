@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeDietary } from '@/lib/dietary'
+import { formatPhone, isValidPhone, phoneDigits } from '@/lib/phone'
 
 // ไม่ต้อง login — RLS (request_pledges_public_insert) อนุญาต anon insert ได้อยู่แล้ว
 export async function submitHelpRequest(formData: FormData) {
@@ -13,9 +14,13 @@ export async function submitHelpRequest(formData: FormData) {
   const province = String(formData.get('province_name') || '').trim()
   const address = [subdistrict, province].filter(Boolean).join(' ') || null
 
+  // หน้านี้เบอร์เป็นช่องบังคับ เพราะเจ้าหน้าที่ต้องโทรกลับไปยืนยัน
+  const rawPhone = phoneDigits(String(formData.get('requester_phone') || ''))
+  if (!isValidPhone(rawPhone)) redirect('/help-request?error=phone')
+
   const { error } = await supabase.from('request_pledges').insert({
     requester_name: String(formData.get('requester_name')),
-    requester_phone: String(formData.get('requester_phone')),
+    requester_phone: formatPhone(rawPhone),
     requester_email: String(formData.get('requester_email') || '') || null,
     address, // <--- ส่งที่อยู่ที่จัดรูปแบบแล้วเข้า database
     center_id: String(formData.get('center_id')),

@@ -15,12 +15,7 @@ type Center = { id: string; name: string; is_active: boolean }
 const field = 'mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-600 dark:bg-slate-800'
 const button = 'rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:hover:bg-slate-800'
 const filterField = 'min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100'
-const phoneDigits = (value: string) => value.replace(/[^0-9]/g, '')
-function formatPhone(value: string | null) {
-  if (!value) return '—'
-  const digits = phoneDigits(value)
-  return digits.length === 10 ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : value
-}
+import { phoneDigits, formatPhone } from '@/lib/phone'
 
 export function UsersDirectory({ users, centers, dict }: { users: User[]; centers: Center[]; dict: Dictionary }) {
   const router = useRouter()
@@ -52,7 +47,7 @@ export function UsersDirectory({ users, centers, dict }: { users: User[]; center
 
   function openEdit(user: User) {
     setEditing(user)
-    setPhone(phoneDigits(user.phone ?? ''))
+    setPhone(formatPhone(user.phone ?? ''))
     setError('')
     setSaved(false)
     dialog.current?.showModal()
@@ -148,16 +143,16 @@ export function UsersDirectory({ users, centers, dict }: { users: User[]; center
             {centers.filter(item => item.is_active || item.id === editing.center_id).map(item => <option key={item.id} value={item.id}>{item.name}{!item.is_active ? ` (${t.inactiveCenter})` : ''}</option>)}
           </select></label>
           <label className="block text-sm font-medium">{t.userPhone}<input name="phone" type="tel" inputMode="numeric" autoComplete="tel-national"
-            value={phone} onChange={event => setPhone(phoneDigits(event.target.value).slice(0, 10))}
+            value={phone} onChange={event => setPhone(formatPhone(event.target.value))}
             onPaste={event => {
               event.preventDefault()
               const input = event.currentTarget
               const start = input.selectionStart ?? phone.length
               const end = input.selectionEnd ?? start
-              const digits = phoneDigits(event.clipboardData.getData('text'))
-              setPhone((phone.slice(0, start) + digits.slice(0, Math.max(0, 10 - (phone.length - (end - start)))) + phone.slice(end)).slice(0, 10))
+              const pasted = phoneDigits(event.clipboardData.getData('text'))
+              setPhone(formatPhone(phone.slice(0, start) + pasted + phone.slice(end)))
             }}
-            maxLength={10} minLength={10} pattern="[0-9]{10}" title={t.phoneTenDigits} placeholder="0000000000" className={field} />
+            maxLength={12} pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" title="000-000-0000" placeholder="000-000-0000" className={field} />
             <span className="mt-1 block text-xs font-normal text-slate-500 dark:text-slate-400">{t.phoneTenDigits}</span>
           </label>
           {error && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p>}

@@ -1,5 +1,7 @@
 'use client'
 
+import { formatPhone, phoneDigits, PHONE_LENGTH } from '@/lib/phone'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
@@ -1187,18 +1189,17 @@ export default function NewDonationForm({
               type="tel"
               name="phone"
               value={phone}
-              onChange={(e) =>
-                setPhone(
-                  e.target.value.replace(
-                    /\D/g,
-                    ''
-                  )
-                )
-              }
+              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              onKeyDown={(e) => {
+                // พิมพ์ได้เฉพาะตัวเลข และหยุดที่ 10 หลัก
+                if (e.ctrlKey || e.metaKey || e.key.length > 1) return
+                if (!/^[0-9]$/.test(e.key) || phoneDigits(phone).length >= PHONE_LENGTH) e.preventDefault()
+              }}
               inputMode="numeric"
+              maxLength={12}
               placeholder={tr(
-                'กรอกเบอร์โทรศัพท์',
-                'Enter phone number'
+                '000-000-0000',
+                '000-000-0000'
               )}
               className={
                 inputClassName

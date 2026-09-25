@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createClient as createSessionClient } from '@/lib/supabase/server'
 import { isValidBirthDate } from '@/lib/birth-date'
+import { formatPhone, phoneDigits } from '@/lib/phone'
 
 const maxPhotoSize = 3 * 1024 * 1024
 const fail = (error: string, status = 400) => Response.json({ error }, { status })
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     const value = (key: string) => String(form.get(key) ?? '').trim()
     const firstName = value('first_name')
     const lastName = value('last_name')
-    const phone = value('phone').replace(/[\s()-]/g, '')
+    const phone = phoneDigits(value('phone'))
     const birthDate = value('birth_date')
     const username = value('username')
     const email = value('email')
@@ -26,9 +27,12 @@ export async function POST(request: Request) {
     const centerId = value('center_id')
     if (!firstName || !lastName || firstName.length > 100 || lastName.length > 100
       || !/^[0-9]{10}$/.test(phone)
-      || !isValidBirthDate(birthDate)
       || !username || username.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || password.length < 6 || !/^[0-9a-f-]{36}$/i.test(centerId)) return fail('invalid')
+
+    // แยกกรณีอายุไม่ถึงออกมา เพื่อให้หน้าเว็บบอกเหตุผลได้ตรง
+    // ไม่ใช่ขึ้นแค่ว่ากรอกข้อมูลไม่ถูกต้องแล้วผู้สมัครงงว่าผิดตรงไหน
+    if (!isValidBirthDate(birthDate)) return fail('underage')
 
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     const photo = form.get('identity_photo')
@@ -62,7 +66,7 @@ export async function POST(request: Request) {
       email, password,
       options: { data: {
         first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}`,
-        phone, birth_date: birthDate, birth_year: Number(birthDate.slice(0, 4)) + 543,
+        phone: formatPhone(phone), birth_date: birthDate, birth_year: Number(birthDate.slice(0, 4)) + 543,
         username, role: 'volunteer', center_id: centerId,
       } },
     })
@@ -76,7 +80,7 @@ export async function POST(request: Request) {
         email, password, email_confirm: true,
         user_metadata: {
           first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}`,
-          phone, birth_date: birthDate, birth_year: Number(birthDate.slice(0, 4)) + 543,
+          phone: formatPhone(phone), birth_date: birthDate, birth_year: Number(birthDate.slice(0, 4)) + 543,
           username, role: 'volunteer', center_id: centerId,
         }
       })

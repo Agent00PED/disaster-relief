@@ -11,7 +11,9 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { birthDateBounds } from '@/lib/birth-date'
+import { birthDateBounds, isValidBirthDate } from '@/lib/birth-date'
+import { PhoneInput } from '../phone-input'
+import { isValidPhone } from '@/lib/phone'
 import styles from '../login/login.module.css'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import { AtSign, Building2, CalendarDays, Camera, LockKeyhole, Mail, Phone, UserRound } from 'lucide-react'
@@ -22,13 +24,6 @@ function FieldIcon({ icon: Icon }: { icon: typeof UserRound }) {
   return <Icon className={styles.fieldIcon} aria-hidden="true" />
 }
 
-function formatPhoneInput(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 10)
-  if (digits.length <= 3) return digits
-  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
-  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
-}
-
 export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () => void }) {
   const supabase = createClient()
 
@@ -37,7 +32,6 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
   const [lastName, setLastName] = useState('')
   const birthDateRange = birthDateBounds()
   const [username, setUsername] = useState('')
-  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [centerId, setCenterId] = useState('')
@@ -45,93 +39,6 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
   const [loading, setLoading] = useState(false)
   const [photoUploadFailed, setPhotoUploadFailed] = useState(false)
   const [done, setDone] = useState(false)
-
-  function handlePhoneKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.ctrlKey || e.metaKey) return
-
-    const allowedKeys = [
-      'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
-      'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-      'Home', 'End'
-    ]
-
-    if (allowedKeys.includes(e.key)) {
-      if (e.key === 'Backspace') {
-        const input = e.currentTarget
-        const { selectionStart, selectionEnd } = input
-        if (selectionStart !== null && selectionStart === selectionEnd && (selectionStart === 4 || selectionStart === 8)) {
-          e.preventDefault()
-          const currentVal = input.value
-          const nextDigits = (currentVal.slice(0, selectionStart - 2) + currentVal.slice(selectionStart - 1)).replace(/\D/g, '')
-          const formatted = formatPhoneInput(nextDigits)
-          setPhone(formatted)
-          const targetPos = selectionStart - 2
-          requestAnimationFrame(() => {
-            input.setSelectionRange(targetPos, targetPos)
-          })
-        }
-      } else if (e.key === 'Delete') {
-        const input = e.currentTarget
-        const { selectionStart, selectionEnd } = input
-        if (selectionStart !== null && selectionStart === selectionEnd && (selectionStart === 3 || selectionStart === 7)) {
-          e.preventDefault()
-          const currentVal = input.value
-          const nextDigits = (currentVal.slice(0, selectionStart) + currentVal.slice(selectionStart + 2)).replace(/\D/g, '')
-          const formatted = formatPhoneInput(nextDigits)
-          setPhone(formatted)
-          requestAnimationFrame(() => {
-            input.setSelectionRange(selectionStart, selectionStart)
-          })
-        }
-      }
-      return
-    }
-
-    if (!/^[0-9]$/.test(e.key)) {
-      e.preventDefault()
-      return
-    }
-
-    const input = e.currentTarget
-    const { selectionStart, selectionEnd } = input
-    const isReplacing = selectionStart !== null && selectionEnd !== null && selectionStart !== selectionEnd
-    const digitsOnly = input.value.replace(/\D/g, '')
-    if (!isReplacing && digitsOnly.length >= 10) {
-      e.preventDefault()
-    }
-  }
-
-  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const input = e.target
-    const rawVal = input.value
-    const selStart = input.selectionStart ?? rawVal.length
-    const digitsBefore = rawVal.slice(0, selStart).replace(/\D/g, '').length
-
-    const formatted = formatPhoneInput(rawVal)
-    setPhone(formatted)
-
-    requestAnimationFrame(() => {
-      let count = 0
-      let newPos = formatted.length
-      if (digitsBefore === 0) {
-        newPos = 0
-      } else {
-        for (let i = 0; i < formatted.length; i++) {
-          if (/\d/.test(formatted[i])) {
-            count++
-            if (count === digitsBefore) {
-              newPos = i + 1
-              if (formatted[newPos] === '-') {
-                newPos++
-              }
-              break
-            }
-          }
-        }
-      }
-      input.setSelectionRange(newPos, newPos)
-    })
-  }
 
   useEffect(() => {
     supabase
@@ -144,9 +51,14 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const digitsOnly = phone.replace(/\D/g, '')
-    if (digitsOnly.length !== 10) {
+    const form = new FormData(e.currentTarget)
+    if (!isValidPhone(String(form.get('phone') ?? ''))) {
       setError(dict.register.errInvalid)
+      return
+    }
+    // อายุไม่ถึงเกณฑ์ ต้องบอกเหตุผลให้ชัด ไม่ใช่แค่บอกว่ากรอกผิด
+    if (!isValidBirthDate(String(form.get('birth_date') ?? ''))) {
+      setError(dict.register.errUnderage)
       return
     }
     setLoading(true)
@@ -155,12 +67,13 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
     try {
       const response = await fetch('/api/register', {
         method: 'POST',
-        body: new FormData(e.currentTarget),
+        body: form,
       })
       const result = await response.json()
       if (!response.ok) {
         const messages = {
           invalid: dict.register.errInvalid,
+          underage: dict.register.errUnderage,
           photo: dict.register.errPhoto,
           alreadyRegistered: dict.register.errAlreadyRegistered,
           usernameTaken: dict.register.errUsernameTaken,
@@ -194,24 +107,16 @@ export function RegisterForm({ dict, onLogin }: { dict: Dictionary; onLogin: () 
       <div><label htmlFor="register-last-name"><FieldIcon icon={UserRound} />{dict.register.lastName}</label>
         <input id="register-last-name" name="last_name" autoComplete="family-name" placeholder={dict.register.lastNamePlaceholder} required maxLength={100} value={lastName} onChange={e => setLastName(e.target.value)} /></div>
       <div><label htmlFor="register-phone"><FieldIcon icon={Phone} />{dict.register.phone}</label>
-        <input
+        <PhoneInput
           id="register-phone"
           name="phone"
-          type="tel"
-          autoComplete="tel"
-          inputMode="numeric"
           placeholder={dict.register.phonePlaceholder}
           required
-          maxLength={12}
-          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
-          title="000-000-0000"
-          value={phone}
-          onChange={handlePhoneChange}
-          onKeyDown={handlePhoneKeyDown}
         />
         <p className={styles.hint}>{dict.register.phoneHint}</p></div>
       <div><label htmlFor="register-birth-date"><FieldIcon icon={CalendarDays} />{dict.register.birthDate}</label>
-        <input id="register-birth-date" name="birth_date" type="date" autoComplete="bday" required min={birthDateRange.min} max={birthDateRange.max} /></div>
+        <input id="register-birth-date" name="birth_date" type="date" autoComplete="bday" required min={birthDateRange.min} max={birthDateRange.max} aria-describedby="register-birth-hint" />
+        <p id="register-birth-hint" className={styles.fieldHint}>{dict.register.birthDateHint}</p></div>
       <div><label htmlFor="register-photo"><FieldIcon icon={Camera} />{dict.register.identityPhoto}</label>
         <input id="register-photo" name="identity_photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="register-photo-hint" />
         <p id="register-photo-hint" className={styles.fieldHint}>{dict.register.photoHint}</p></div>

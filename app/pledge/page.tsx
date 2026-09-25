@@ -2,6 +2,7 @@ import shared from '../login/login.module.css'
 import styles from './pledge.module.css'
 import { submitPledge } from './actions'
 import { UnitSelect } from '@/app/unit-select'
+import { PhoneInput } from '../phone-input'
 import { DietarySelect } from '@/app/dietary-select'
 import { PROVINCES } from '@/lib/provinces'
 import { BrandMark } from '../brand-mark'
@@ -105,11 +106,9 @@ export default async function PledgePage({
                   <Phone aria-hidden="true" />
                   {dict.form.phone}
                 </label>
-                <input
+                <PhoneInput
                   id="donor-phone"
                   name="donor_phone"
-                  type="tel"
-                  autoComplete="tel"
                   placeholder={dict.pledge.phonePlaceholder}
                 />
               </div>

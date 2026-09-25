@@ -11,7 +11,7 @@ type Center = { id: string; name: string; name_en: string | null; type: string; 
 type User = { id: string; center_id: string | null }
 type Props = { centers: Center[]; users: User[]; dict: Dictionary; children: ReactNode; error?: string; loadError: boolean }
 const defaults = { name: '', name_en: '', type: '', address: '', contact_phone: '', is_active: true }
-const phoneDigits = (value: string) => value.replace(/[^0-9]/g, '').slice(0, 10)
+import { phoneDigits, formatPhone } from '@/lib/phone'
 function formatCenterPhone(value: string | null) {
   const digits = phoneDigits(value ?? '')
   if (digits.length === 9) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
@@ -133,7 +133,7 @@ export function CentersDashboard({ centers, users, dict, children, error, loadEr
   function openEdit(center: Center) {
     const next = {
       name: center.name, name_en: center.name_en ?? '', type: center.type,
-      address: center.address ?? '', contact_phone: phoneDigits(center.contact_phone ?? ''), is_active: center.is_active,
+      address: center.address ?? '', contact_phone: formatPhone(center.contact_phone ?? ''), is_active: center.is_active,
     }
     setEditing(center)
     setDraft(next)
@@ -208,7 +208,7 @@ export function CentersDashboard({ centers, users, dict, children, error, loadEr
           <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.centerName} *</span><input autoFocus required maxLength={200} name="name" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} className={field} /></label>
           <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.centerNameEnglish}</span><input maxLength={200} name="name_en" value={draft.name_en} onChange={e => setDraft({ ...draft, name_en: e.target.value })} className={field} /></label>
           <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.type} *</span><select required name="type" value={draft.type} onChange={e => setDraft({ ...draft, type: e.target.value })} className={field}><option value="">{t.chooseType}</option><option value="shelter">{dict.admin.centerTypeShelter}</option><option value="warehouse">{dict.admin.centerTypeWarehouse}</option></select></label>
-          <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.contactPhone}</span><input type="tel" inputMode="numeric" pattern="[0-9]{9,10}" minLength={9} maxLength={10} name="contact_phone" value={draft.contact_phone} onChange={e => setDraft({ ...draft, contact_phone: phoneDigits(e.target.value) })} placeholder="000000000" title={t.phoneHint} className={field} /><span className="text-xs font-normal text-slate-500 dark:text-slate-400">{t.phoneHint}</span></label>
+          <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.contactPhone}</span><input type="tel" inputMode="numeric" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" maxLength={12} name="contact_phone" value={draft.contact_phone} onChange={e => setDraft({ ...draft, contact_phone: formatPhone(e.target.value) })} placeholder="000-000-0000" title={t.phoneHint} className={field} /><span className="text-xs font-normal text-slate-500 dark:text-slate-400">{t.phoneHint}</span></label>
           <label className="block space-y-2 text-sm font-medium"><span>{dict.admin.address}</span><textarea rows={4} maxLength={1000} name="address" value={draft.address} onChange={e => setDraft({ ...draft, address: e.target.value })} className={field} /></label>
           <label className="flex min-h-11 items-center gap-3 text-sm font-medium"><input type="checkbox" name="is_active" checked={draft.is_active} onChange={e => setDraft({ ...draft, is_active: e.target.checked })} className="h-5 w-5 accent-blue-600" />{t.active}</label>
         </fieldset>

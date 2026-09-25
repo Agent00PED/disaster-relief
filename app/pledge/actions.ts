@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeUnit } from '@/lib/units'
 import { normalizeDietary } from '@/lib/dietary'
+import { formatPhone, isValidPhone, phoneDigits } from '@/lib/phone'
 
 // ไม่ต้อง login — RLS (pledges_public_insert) อนุญาต anon insert ได้อยู่แล้ว
 export async function submitPledge(formData: FormData) {
@@ -15,9 +16,14 @@ export async function submitPledge(formData: FormData) {
   const province = String(formData.get('province_name') || '').trim()
   const address = [subdistrict, province].filter(Boolean).join(' ') || null
 
+  // เบอร์ไม่บังคับ แต่ถ้ากรอกมาต้องเป็นตัวเลขครบ 10 หลัก
+  // ตรวจซ้ำที่ฝั่งเซิร์ฟเวอร์ เพราะฟอร์มฝั่งหน้าเว็บถูกข้ามได้
+  const rawPhone = phoneDigits(String(formData.get('donor_phone') || ''))
+  if (rawPhone && !isValidPhone(rawPhone)) redirect('/pledge?error=phone')
+
   const { error } = await supabase.from('donation_pledges').insert({
     donor_name: String(formData.get('donor_name')),
-    donor_phone: String(formData.get('donor_phone') || '') || null,
+    donor_phone: rawPhone ? formatPhone(rawPhone) : null,
     donor_email: String(formData.get('donor_email') || '') || null,
     address,
     item_name: String(formData.get('item_name')),

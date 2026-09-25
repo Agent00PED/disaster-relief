@@ -9,6 +9,7 @@ import styles from '../pledge/pledge.module.css'
 import helpStyles from './help-request.module.css'
 import { createClient } from '@/lib/supabase/server'
 import { submitHelpRequest } from './actions'
+import { PhoneInput } from '../phone-input'
 import { BrandMark } from '../brand-mark'
 import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
@@ -89,7 +90,7 @@ export default async function HelpRequestPage({
                     <Phone aria-hidden="true" />
                     {dict.form.phoneContact}
                   </label>
-                  <input id="requester_phone" name="requester_phone" type="tel" autoComplete="tel" required placeholder={dict.helpRequest.phonePlaceholder} />
+                  <PhoneInput id="requester_phone" name="requester_phone" required placeholder={dict.helpRequest.phonePlaceholder} />
                 </div>
                 <div>
                   <label htmlFor="requester_email" className={helpStyles.fieldLabel}>

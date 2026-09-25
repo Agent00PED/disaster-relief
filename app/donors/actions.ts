@@ -4,13 +4,17 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStaffOrAdmin } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
+import { formatPhone, isValidPhone, phoneDigits } from "@/lib/phone";
 
 export async function createDonor(formData: FormData) {
   const supabase = await createClient();
   await requireStaffOrAdmin(supabase);
 
   const name = String(formData.get("name") || "").trim();
-  const phone = String(formData.get("phone") || "").trim() || null;
+  // เบอร์ไม่บังคับ แต่ถ้ากรอกต้องครบ 10 หลัก เก็บเป็นรูปแบบ 000-000-0000 เสมอ
+  const digits = phoneDigits(String(formData.get("phone") || ""));
+  if (digits && !isValidPhone(digits)) throw new Error("invalid-phone");
+  const phone = digits ? formatPhone(digits) : null;
   const donorType = formData.get("donor_type") === "organization" ? "organization" : "individual";
   const email = String(formData.get("email") || "").trim() || null;
   
@@ -46,7 +50,10 @@ export async function updateDonor(formData: FormData) {
 
   const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "").trim();
-  const phone = String(formData.get("phone") || "").trim() || null;
+  // เบอร์ไม่บังคับ แต่ถ้ากรอกต้องครบ 10 หลัก เก็บเป็นรูปแบบ 000-000-0000 เสมอ
+  const digits = phoneDigits(String(formData.get("phone") || ""));
+  if (digits && !isValidPhone(digits)) throw new Error("invalid-phone");
+  const phone = digits ? formatPhone(digits) : null;
   const donorType = formData.get("donor_type") === "organization" ? "organization" : "individual";
   const email = String(formData.get("email") || "").trim() || null;
   
