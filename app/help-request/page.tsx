@@ -9,6 +9,7 @@ import styles from '../pledge/pledge.module.css'
 import helpStyles from './help-request.module.css'
 import { createClient } from '@/lib/supabase/server'
 import { submitHelpRequest } from './actions'
+import { PhoneInput } from '../phone-input'
 import { BrandMark } from '../brand-mark'
 import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
@@ -48,18 +49,6 @@ export default async function HelpRequestPage({
         <BrandMark size="lg" />
       </div>
       <div className={styles.layout}>
-        <section className={styles.intro}>
-          <h2>
-            {dict.helpRequest.introTitle}
-            <span>{dict.helpRequest.introAccent}</span>
-          </h2>
-          <p>{dict.helpRequest.introDesc}</p>
-          <blockquote>
-            {dict.helpRequest.motto}
-            <span aria-hidden="true"> &hearts;</span>
-          </blockquote>
-        </section>
-
         <section className={`${shared.panel} ${styles.panel}`} aria-labelledby="help-title">
           <BackHomeLink label={dict.common.backHome} />
           <header className={shared.formHeader}>
@@ -89,7 +78,7 @@ export default async function HelpRequestPage({
                     <Phone aria-hidden="true" />
                     {dict.form.phoneContact}
                   </label>
-                  <input id="requester_phone" name="requester_phone" type="tel" autoComplete="tel" required placeholder={dict.helpRequest.phonePlaceholder} />
+                  <PhoneInput id="requester_phone" name="requester_phone" required placeholder={dict.helpRequest.phonePlaceholder} />
                 </div>
                 <div>
                   <label htmlFor="requester_email" className={helpStyles.fieldLabel}>
@@ -240,35 +229,6 @@ export default async function HelpRequestPage({
           <p className={styles.notice}>{dict.helpRequest.followUp}</p>
         </section>
 
-        <aside className={shared.features}>
-          {features.map((feature) => (
-            <div className={shared.feature} key={feature.icon}>
-              <span className={feature.icon === 'list' ? shared.shield : feature.icon === 'phone' ? shared.heart : shared.people}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  {feature.icon === 'list' && (
-                    <>
-                      <rect x="5" y="2" width="14" height="20" rx="2" />
-                      <path d="M8 7h8M8 11h8M8 15h8M8 19h5" />
-                    </>
-                  )}
-                  {feature.icon === 'phone' && (
-                    <path d="m6 3 3 5-2 3a17 17 0 0 0 6 6l3-2 5 3c-1 4-4 4-7 3C7 19 2 13 2 7c0-2 1-4 4-4Z" />
-                  )}
-                  {feature.icon === 'people' && (
-                    <>
-                      <circle cx="12" cy="7" r="3" />
-                      <path d="M6 21v-3a6 6 0 0 1 12 0v3H6ZM4 4a3 3 0 0 0 0 6m16-6a3 3 0 0 1 0 6M3 15a4 4 0 0 0-2 4v1m20-5a4 4 0 0 1 2 4v1" />
-                    </>
-                  )}
-                </svg>
-              </span>
-              <div>
-                <h2>{feature.title}</h2>
-                <p>{feature.desc}</p>
-              </div>
-            </div>
-          ))}
-        </aside>
       </div>
     </main>
   )

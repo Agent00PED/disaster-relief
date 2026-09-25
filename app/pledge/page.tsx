@@ -2,6 +2,7 @@ import shared from '../login/login.module.css'
 import styles from './pledge.module.css'
 import { submitPledge } from './actions'
 import { UnitSelect } from '@/app/unit-select'
+import { PhoneInput } from '../phone-input'
 import { DietarySelect } from '@/app/dietary-select'
 import { PROVINCES } from '@/lib/provinces'
 import { BrandMark } from '../brand-mark'
@@ -50,24 +51,7 @@ export default async function PledgePage({
         <BrandMark size="lg" />
       </div>
       
-      {/* ใช้ Class เพิ่มเติม .layoutStaff เพื่อจัดฟอร์มให้อยู่ตรงกลางตอนไม่มีแผงด้านข้าง */}
-      <div className={`${styles.layout} ${isStaffView ? styles.layoutStaff : ''}`}>
-        
-        {/* ซ่อนแผงโฆษณาด้านซ้าย ถ้า Login อยู่ */}
-        {!isStaffView && (
-          <section className={styles.intro}>
-            <h2>
-              {dict.pledge.introTitle}
-              <span>{dict.pledge.introAccent}</span>
-            </h2>
-            <p>{dict.pledge.introDesc}</p>
-            <blockquote>
-              {dict.pledge.motto}
-              <span aria-hidden="true"> &hearts;</span>
-            </blockquote>
-          </section>
-        )}
-
+      <div className={styles.layout}>
         <section className={`${shared.panel} ${styles.panel}`} aria-labelledby="pledge-title">
           <BackHomeLink label={dict.common.backHome} />
           <header className={shared.formHeader}>
@@ -105,11 +89,9 @@ export default async function PledgePage({
                   <Phone aria-hidden="true" />
                   {dict.form.phone}
                 </label>
-                <input
+                <PhoneInput
                   id="donor-phone"
                   name="donor_phone"
-                  type="tel"
-                  autoComplete="tel"
                   placeholder={dict.pledge.phonePlaceholder}
                 />
               </div>
@@ -262,40 +244,6 @@ export default async function PledgePage({
           </form>
           <p className={styles.notice}>{dict.pledge.followUp}</p>
         </section>
-
-        {/* ซ่อนแผงโฆษณาดด้านขวา ถ้า Login อยู่ */}
-        {!isStaffView && (
-          <aside className={shared.features}>
-            {features.map((feature) => (
-              <div className={shared.feature} key={feature.title}>
-                <span className={feature.icon === 'shield' ? shared.shield : feature.icon === 'heart' ? shared.heart : shared.people}>
-                  <svg viewBox="0 0 24 24" fill={feature.icon === 'heart' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    {feature.icon === 'shield' && (
-                      <path d="m12 2 10 5v10l-10 5-10-5V7l10-5Zm0 10v10M2 7l10 5 10-5M7 4.5l10 5V15" />
-                    )}
-                    {feature.icon === 'heart' && (
-                      <path d="M12 21S2 15 2 8a5.5 5.5 0 0 1 10-3 5.5 5.5 0 0 1 10 3c0 7-10 13-10 13Z" />
-                    )}
-                    {feature.icon === 'people' && (
-                      <>
-                        <circle cx="12" cy="7" r="3" />
-                        <path d="M6 21v-3a6 6 0 0 1 12 0v3H6ZM4 4a3 3 0 0 0 0 6m16-6a3 3 0 0 1 0 6M3 15a4 4 0 0 0-2 4v1m20-5a4 4 0 0 1 2 4v1" />
-                      </>
-                    )}
-                  </svg>
-                </span>
-                <div>
-                  <h2>{feature.title}</h2>
-                  <p>{feature.desc}</p>
-                </div>
-              </div>
-            ))}
-            <p className={styles.thanks}>
-              {dict.pledge.thanks}
-              <span aria-hidden="true"> &hearts;</span>
-            </p>
-          </aside>
-        )}
       </div>
     </main>
   )

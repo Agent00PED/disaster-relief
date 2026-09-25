@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PhoneInput } from '@/app/phone-input'
 import { createDonor } from '../actions'
 import { PROVINCES } from '@/lib/provinces'
 import { getLocale } from '@/lib/i18n/locale'
@@ -84,10 +85,9 @@ export default async function NewDonorPage() {
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
             {dict.form?.phone ?? 'Phone number'}
           </label>
-          <input
+          <PhoneInput
             name="phone"
-            inputMode="numeric"
-            placeholder="0xxxxxxxx"
+            placeholder="000-000-0000"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           />
         </div>

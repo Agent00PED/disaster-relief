@@ -102,13 +102,6 @@ export function LoginForm({ dict, embedded = false, onRegister }: { dict: Dictio
       <div className={styles.artwork} aria-hidden="true" />
       <div className={styles.back}><BackHomeLink label={dict.common.backHome} /></div>
       <div className={styles.layout}>
-        <section className={styles.intro} aria-labelledby="login-intro">
-          <div className={styles.brand}><BrandMark size="lg" /></div>
-          <h2 id="login-intro">{dict.login.welcomeTitle}</h2>
-          <p className={styles.tagline}>{dict.entryHub.title}</p>
-          <p className={styles.description}>{dict.entryHub.subtitle}</p>
-        </section>
-
         <section className={styles.panel} aria-labelledby="login-title">
           <header className={styles.formHeader}>
             <BrandMark size="lg" />
@@ -118,12 +111,6 @@ export function LoginForm({ dict, embedded = false, onRegister }: { dict: Dictio
           {formContent}
         </section>
 
-        <aside className={styles.features}>
-          {features.map((feature) => <div className={styles.feature} key={feature.icon}>
-            <span className={styles[feature.icon]}><LoginIcon name={feature.icon} /></span>
-            <div><h2>{feature.title}</h2><p>{feature.desc}</p></div>
-          </div>)}
-        </aside>
       </div>
     </main>
   )
