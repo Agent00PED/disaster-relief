@@ -52,7 +52,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
   const muted = 'text-sm text-slate-500 dark:text-slate-400'
   const tones = ['bg-lime-100 text-lime-700 dark:bg-lime-950 dark:text-lime-300', 'bg-sky-100 text-sky-600 dark:bg-sky-950 dark:text-sky-300', 'bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-300', 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300']
   const stats = [
-    { label: t.stock, hint: t.stockHint, result: stock, href: '/inventory/lots' },
+    { label: t.stock, hint: t.stockHint, result: stock, href: '/inventory' },
     { label: t.pending, hint: t.pendingHint, result: pending, href: '/requests?status=open' },
     { label: t.urgent, hint: t.urgentHint, result: urgent, href: '/requests?status=open&urgency=high' },
     { label: t.delivered, hint: t.deliveredHint, result: delivered, href: '/allocations/history?status=delivered&from=' + day + '&to=' + day },
@@ -96,7 +96,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
         <h2 className="mb-4 font-semibold">{t.todo}</h2>
         <div className="space-y-2">
           {/* แถวเดิม: รอตรวจสอบ, คำร้องบริจาค, ใกล้หมดอายุ */}
-          {[[t.pending, pending, '/requests?status=open'], [dict.home.pledgesLabel, pledges, '/pledges?status=open'], [t.expiring, expiring, '/inventory/lots?expiry=soon']] .map(([label, result, href], i) => 
+          {[[t.pending, pending, '/requests?status=open'], [dict.home.pledgesLabel, pledges, '/pledges?status=open'], [t.expiring, expiring, '/inventory?expiry=soon']] .map(([label, result, href], i) => 
             <Link key={String(href)} href={String(href)} className="flex min-h-16 items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800">
               <Icon kind={i + 1} />
               <span className="flex-1 text-sm font-medium">{String(label)}</span>
@@ -107,12 +107,12 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
 
           {/* แถวใหม่: หมดอายุแล้ว (สีแดง) */}
           <Link 
-            href="/inventory/lots?expiry=expired" 
+            href="/inventory?expiry=expired" 
             className="flex min-h-16 items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[#d9534f] hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
           >
             <Icon kind={0} />
             <span className="flex-1 text-sm font-medium">
-              {(t as any).expired || (locale === 'en' ? 'Expired' : 'หมดอายุแล้ว')}
+              {t.expired}
             </span>
             <span className="rounded-full bg-red-100 px-2.5 py-1 text-sm tabular-nums text-red-700 dark:bg-red-900/50 dark:text-red-300">
               {expired.error ? '—' : `${number.format(expiredCount)} ${t.lots} · ${number.format(expiredPieces)} ${locale === 'en' ? 'items' : 'ชิ้น'}`}
