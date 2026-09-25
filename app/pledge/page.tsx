@@ -25,6 +25,7 @@ import {
   AlertCircle,
   Sparkles,
   MapPin, // <-- เพิ่ม MapPin สำหรับช่องที่อยู่
+  Utensils, // <-- ไอคอนช่องข้อกำหนดด้านอาหาร
 } from 'lucide-react'
 
 import { submitPledge } from './actions'
@@ -713,9 +714,13 @@ export default async function PledgePage({
                       </span>
                     </label>
 
-                    <div className="flex min-h-[42px] items-center rounded-lg border border-slate-200 bg-white px-2.5 transition focus-within:border-[#1c3d5a] focus-within:ring-2 focus-within:ring-[#1c3d5a]/10 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-sky-500 dark:focus-within:ring-sky-500/20 dark:hover:border-slate-600">
-                      <DietarySelect name="dietary_type" locale={locale} />
-                    </div>
+                    <FieldShell icon={<Utensils className="h-3.5 w-3.5" />}>
+                      <DietarySelect
+                        name="dietary_type"
+                        locale={locale}
+                        className="w-full cursor-pointer border-0 bg-transparent p-0 text-[12px] text-slate-800 outline-none dark:bg-slate-800 dark:text-slate-100"
+                      />
+                    </FieldShell>
 
                   </div>
 

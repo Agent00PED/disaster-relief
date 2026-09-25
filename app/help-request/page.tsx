@@ -16,7 +16,7 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 import { PROVINCES } from '@/lib/provinces' // <-- เพิ่ม Import จังหวัด
 import { DietarySelect } from '@/app/dietary-select'
 import { CategoryDietaryFields } from './category-dietary-fields'
-import { AtSign, FileText, Hash, MapPin, Package, Phone, Send, UserRound } from 'lucide-react'
+import { AtSign, ClipboardList, FileText, Hash, MapPin, Package, Phone, Salad, Send, UserRound } from 'lucide-react'
 
 export default async function HelpRequestPage({
   searchParams,
@@ -163,7 +163,13 @@ export default async function HelpRequestPage({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <CategoryDietaryFields
-                  categoryLabel={dict.form.category}
+                  labelClassName={helpStyles.fieldLabel}
+                  categoryLabel={
+                    <>
+                      <ClipboardList aria-hidden="true" />
+                      {dict.form.category}
+                    </>
+                  }
                   options={[
                     { value: 'food', label: dict.form.categoryFood },
                     { value: 'water', label: dict.form.categoryWater },
@@ -175,6 +181,7 @@ export default async function HelpRequestPage({
                   dietaryField={
                     <div>
                       <label htmlFor="help-request-dietary" className={helpStyles.fieldLabel}>
+                        <Salad aria-hidden="true" />
                         {dict.requests.dietary}
                       </label>
                       <DietarySelect

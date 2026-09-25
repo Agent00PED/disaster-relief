@@ -4,10 +4,14 @@ import { useState, type ReactNode } from 'react'
 
 export function CategoryDietaryFields({
   categoryLabel,
+  labelClassName,
   options,
   dietaryField,
 }: {
-  categoryLabel: string
+  // รับเป็น ReactNode ไม่ใช่ string เพื่อให้ส่งไอคอนมาพร้อมข้อความได้
+  // เหมือนช่องอื่นในฟอร์มนี้ที่มีไอคอนนำหน้าทุกช่อง
+  categoryLabel: ReactNode
+  labelClassName?: string
   options: { value: string; label: string }[]
   dietaryField: ReactNode
 }) {
@@ -16,7 +20,7 @@ export function CategoryDietaryFields({
   return (
     <>
       <div>
-        <label htmlFor="category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+        <label htmlFor="category" className={labelClassName}>
           {categoryLabel}
         </label>
         <select
