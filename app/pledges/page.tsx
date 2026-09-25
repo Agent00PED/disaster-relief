@@ -310,7 +310,7 @@ export default async function PledgesPage({
                   placeholder={
                     locale === 'en'
                       ? 'Search donor name, requested item...'
-                      : 'ค้นหาชื่อผู้ขอ, รายการขอ...'
+                      : 'ค้นหาชื่อผู้บริจาค, สิ่งของ...'
                   }
                   className="w-full border-0 bg-transparent text-[12px] text-slate-700 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
                 />
@@ -494,20 +494,20 @@ export default async function PledgesPage({
 
                     <th className="px-3 py-3">
                       {locale === 'en'
-                        ? 'Received date'
-                        : 'วันที่รับของ'}
+                        ? 'Submitted on'
+                        : 'วันที่แจ้ง'}
                     </th>
 
                     <th className="px-3 py-3">
                       {locale === 'en'
-                        ? 'Requester'
-                        : 'ชื่อผู้ขอ'}
+                        ? 'Donor'
+                        : 'ชื่อผู้บริจาค'}
                     </th>
 
                     <th className="px-3 py-3">
                       {locale === 'en'
-                        ? 'Requested item'
-                        : 'รายการขอ'}
+                        ? 'Item offered'
+                        : 'สิ่งของที่จะบริจาค'}
                     </th>
 
                     <th className="px-3 py-3">
@@ -520,12 +520,6 @@ export default async function PledgesPage({
                       {locale === 'en'
                         ? 'Unit'
                         : 'หน่วย'}
-                    </th>
-
-                    <th className="px-3 py-3">
-                      {locale === 'en'
-                        ? 'Required date'
-                        : 'วันที่ต้องการ'}
                     </th>
 
                     <th className="px-3 py-3">
@@ -610,12 +604,6 @@ export default async function PledgesPage({
                         {p.unit
                           ? unitLabel(p.unit, locale)
                           : '—'}
-                      </td>
-
-                      {/* วันที่ต้องการ */}
-
-                      <td className="px-3 py-3 text-[11px] text-slate-600 dark:text-slate-300">
-                        —
                       </td>
 
                       {/* Status */}

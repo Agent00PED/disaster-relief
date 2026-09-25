@@ -3,11 +3,14 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 
 // ยืนยันคำขอ = สร้างแถวจริงใน requests โดยใช้ center_id ที่ผู้ขอเลือกไว้
 // เอง (ไม่ใช่ศูนย์ของ staff ผู้ตรวจ) แล้วผูก converted_request_id ไว้ย้อนดูได้
 export async function confirmHelpRequest(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -68,6 +71,8 @@ export async function confirmHelpRequest(formData: FormData) {
 
 export async function dismissHelpRequest(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()

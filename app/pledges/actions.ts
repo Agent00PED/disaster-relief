@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import { normalizeUnit } from '@/lib/units'
 import { findOrCreateDonor } from '@/lib/supabase/find-or-create-donor'
 import { resolveCenterId } from '@/lib/center-choice'
@@ -13,6 +14,8 @@ import { getDictionary } from '@/lib/i18n/dictionaries'
 // ไว้ย้อนดูได้ ตรงกับความสัมพันธ์ "แปลงเป็น" ใน ER diagram
 export async function confirmPledge(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -92,6 +95,8 @@ export async function confirmPledge(formData: FormData) {
 
 export async function dismissPledge(formData: FormData) {
   const supabase = await createClient()
+  // งานชุดนี้เป็นของเจ้าหน้าที่ อาสาสมัครเรียกไม่ได้
+  await requireStaffOrAdmin(supabase)
   const {
     data: { user },
   } = await supabase.auth.getUser()

@@ -11,6 +11,18 @@ import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { requireStaffOrAdmin } from '@/lib/guard'
 
+
+// วันที่วันนี้ตามเขตเวลาไทย ใช้ตรวจช่วงวันที่ฝั่งเซิร์ฟเวอร์
+// ต้องตรวจซ้ำที่นี่ เพราะฟอร์มฝั่งหน้าเว็บถูกข้ามได้
+function todayBangkok() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+}
+
 export async function createDonation(formData: FormData) {
   const supabase = await createClient()
 
@@ -133,6 +145,26 @@ export async function createDonation(formData: FormData) {
         row.quantity_received > 0,
     )
 
+  // ของที่หมดอายุไปแล้วรับเข้าคลังไม่ได้ เพราะจ่ายต่อไม่ได้อยู่แล้ว
+  const today = todayBangkok()
+  const expired = rows.find(
+    (r) => r.expiry_date && r.expiry_date < today,
+  )
+  if (expired) {
+    redirect(
+      '/donations/new?error=' +
+        encodeURIComponent(
+          'วันหมดอายุของ "' + expired.item_name + '" ผ่านมาแล้ว กรุณาตรวจสอบอีกครั้ง',
+        ),
+    )
+  }
+  if (receivedDate && receivedDate > today) {
+    redirect(
+      '/donations/new?error=' +
+        encodeURIComponent('วันที่รับของเป็นวันในอนาคตไม่ได้'),
+    )
+  }
+
   if (rows.length === 0) {
     redirect(
       '/donations/new?error=' +
@@ -232,7 +264,17 @@ export async function updateDonation(formData: FormData) {
       formData.get('expiry_date') || '',
     ).trim() || null
 
-  const { error } = await supabase
+  if (expiryDate && expiryDate < todayBangkok()) {
+    redirect(
+      `/donations/${id}/receipt/edit?error=` +
+        encodeURIComponent('วันหมดอายุผ่านมาแล้ว กรุณาตรวจสอบอีกครั้ง'),
+    )
+  }
+
+  // ขอ .select() กลับมาด้วย เพื่อรู้ว่ามีแถวถูกแก้จริงหรือไม่
+  // ถ้าเป็นล็อตของศูนย์อื่น RLS จะกรองทิ้งเงียบ ๆ โดยไม่คืน error
+  // เดิมโค้ดเช็คแค่ error จึงพาไปหน้าใบรับของเหมือนบันทึกสำเร็จ
+  const { data: updated, error } = await supabase
     .from('donations')
     .update({
       item_name: itemName,
@@ -241,6 +283,16 @@ export async function updateDonation(formData: FormData) {
       expiry_date: expiryDate,
     })
     .eq('id', id)
+    .select('id')
+
+  if (!error && (!updated || updated.length === 0)) {
+    redirect(
+      `/donations/${id}/receipt/edit?error=` +
+        encodeURIComponent(
+          'แก้ไขไม่สำเร็จ รายการนี้เป็นของศูนย์อื่น คุณแก้ไขได้เฉพาะของศูนย์ที่ตัวเองสังกัด',
+        ),
+    )
+  }
 
   if (error) {
     redirect(

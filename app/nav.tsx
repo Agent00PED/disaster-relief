@@ -63,7 +63,7 @@ export function Nav({
   const LINKS = isVolunteer ? VOLUNTEER_LINKS : STAFF_LINKS
 
   return (
-    <nav className="bg-brand dark:bg-slate-900">
+    <nav className="bg-brand print:hidden dark:bg-slate-900">
       <div className="mx-auto w-full max-w-5xl px-6 py-3">
         {/* จอกว้าง (md+): แสดงลิงก์ทั้งหมดแถวเดียว ไม่ต้องกดเปิด */}
         <div className="hidden md:flex md:items-center md:justify-between md:gap-x-6">

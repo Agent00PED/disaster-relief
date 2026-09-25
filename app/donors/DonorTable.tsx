@@ -256,7 +256,7 @@ export default function DonorTable({ donors, dict }: Props) {
               <th className="px-4 py-3">{dict.donors?.provinceArea ?? 'จังหวัด / พื้นที่'}</th>
               <th className="px-4 py-3 cursor-pointer select-none hover:text-brand" onClick={toggleSort}>
                 <div className="flex items-center gap-1">
-                  <span>บริจาคแล้ว (ครั้ง)</span>
+                  <span>{dict.donors?.donationCount ?? 'Donations'}</span>
                   <span className="text-xs">
                     {sortOrder === 'desc' ? '▼' : sortOrder === 'asc' ? '▲' : '↕'}
                   </span>
@@ -274,7 +274,7 @@ export default function DonorTable({ donors, dict }: Props) {
                 </td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
                   <Link href={`/donors/${donor.id}`} className="hover:text-brand hover:underline">
-                    {donor.is_anonymous ? 'ไม่ประสงค์ออกนาม' : donor.name}
+                    {donor.is_anonymous ? (dict.donors?.anonymousLabel ?? 'Anonymous') : donor.name}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
@@ -285,7 +285,7 @@ export default function DonorTable({ donors, dict }: Props) {
                 </td>
                 <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-200">
                   <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                    {donor.donation_count} ครั้ง
+                    {donor.donation_count} {dict.donors?.timesUnit ?? ''}
                   </span>
                 </td>
                 <td className="px-4 py-3">

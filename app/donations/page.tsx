@@ -214,7 +214,7 @@ export default async function DonationsPage({
         | null
 
       const donorName =
-        donor?.name?.toLowerCase() || ''
+        donor?.is_anonymous ? '' : (donor?.name?.toLowerCase() || '')
 
       const itemName =
         (item.item_name || '').toLowerCase()
@@ -683,9 +683,12 @@ export default async function DonationsPage({
                             {/* ผู้บริจาค + ที่อยู่ */}
                             <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
                               <div>
-                                {donor?.name ??
-                                  dict.table
-                                    .anonymousDonor}
+                                {donor?.is_anonymous
+                                  ? dict.table
+                                      .anonymousDonor
+                                  : (donor?.name ??
+                                    dict.table
+                                      .anonymousDonor)}
                               </div>
 
                               {!donor?.is_anonymous &&

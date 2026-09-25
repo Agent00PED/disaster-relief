@@ -84,8 +84,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // ล็อกอินแล้ว แต่ยังวนอยู่หน้า login → ส่งเข้าหน้าหลัก
-  if (user && path === '/login') {
+  // ล็อกอินแล้ว แต่ยังวนอยู่หน้า login หรือหน้าสมัครสมาชิก → ส่งเข้าหน้าหลัก
+  // เดิมกันแค่ /login ทำให้คนที่ล็อกอินอยู่เปิดหน้าสมัครสมาชิกค้างได้
+  if (user && (path === '/login' || path === '/register')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     return NextResponse.redirect(url)

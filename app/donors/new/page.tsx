@@ -1,3 +1,5 @@
+import { createClient } from '@/lib/supabase/server'
+import { requireStaffOrAdmin } from '@/lib/guard'
 import Link from 'next/link'
 import { PhoneInput } from '@/app/phone-input'
 import { createDonor } from '../actions'
@@ -6,6 +8,10 @@ import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 
 export default async function NewDonorPage() {
+  // อาสาสมัครไม่มีสิทธิ์สร้างข้อมูลชุดนี้ กันตั้งแต่ก่อน render
+  const supabaseGuard = await createClient()
+  await requireStaffOrAdmin(supabaseGuard)
+
   const locale = await getLocale()
   const dict = await getDictionary(locale)
 
@@ -23,7 +29,7 @@ export default async function NewDonorPage() {
             ← {th ? 'กลับไปหน้าทะเบียนผู้บริจาค' : 'Back to donor registry'}
           </Link>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
-            {dict.donors?.addNew ?? 'Add donor'}
+            {(dict.donors?.addNew ?? 'Add donor').replace(/^[+＋]\s*/, '')}
           </h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {th
