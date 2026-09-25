@@ -2,6 +2,8 @@ import shared from '../login/login.module.css'
 import styles from './pledge.module.css'
 import { submitPledge } from './actions'
 import { UnitSelect } from '@/app/unit-select'
+import { DietarySelect } from '@/app/dietary-select'
+import { PROVINCES } from '@/lib/provinces'
 import { BrandMark } from '../brand-mark'
 import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
@@ -11,10 +13,12 @@ import {
   ClipboardList,
   FileText,
   Hash,
+  MapPin,
   Package,
   Phone,
   Scale,
   UserRound,
+  Utensils,
 } from 'lucide-react'
 
 export default async function PledgePage({
@@ -107,6 +111,39 @@ export default async function PledgePage({
               </div>
             </div>
 
+            {/* ที่อยู่ผู้บริจาค — ส่งต่อไปสร้างทะเบียนผู้บริจาคตอนเจ้าหน้าที่อนุมัติ
+                ตำบลต้องมาก่อนจังหวัดเสมอ เพราะหน้าอื่นอ่านจังหวัดจากคำสุดท้าย */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="subdistrict" className={styles.fieldLabel}>
+                  <MapPin aria-hidden="true" />
+                  {dict.form.subdistrictOptional}
+                </label>
+                <input
+                  id="subdistrict"
+                  name="subdistrict"
+                  placeholder={dict.donors.subdistrictPlaceholder}
+                />
+              </div>
+              <div>
+                <label htmlFor="province_name" className={styles.fieldLabel}>
+                  <MapPin aria-hidden="true" />
+                  {dict.form.provinceOptional}
+                </label>
+                <select
+                  id="province_name"
+                  name="province_name"
+                  defaultValue=""
+                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                >
+                  <option value="">{dict.donors.selectProvince}</option>
+                  {PROVINCES.map((province) => (
+                    <option key={province} value={province}>{province}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             <div>
               <label htmlFor="item-name" className={styles.fieldLabel}>
                 <Package aria-hidden="true" />
@@ -140,6 +177,20 @@ export default async function PledgePage({
                   <option value="hygiene">{dict.form.categoryHygiene}</option>
                   <option value="other">{dict.form.categoryOther}</option>
                 </select>
+              </div>
+              {/* ข้อกำหนดด้านอาหาร — ต้องมี ไม่งั้นของฮาลาลจะถูกบันทึกเป็นของทั่วไป
+                  แล้วเอาไปจ่ายให้คำขอที่ระบุฮาลาลไม่ได้ */}
+              <div>
+                <label htmlFor="pledge-dietary" className={styles.fieldLabel}>
+                  <Utensils aria-hidden="true" />
+                  {dict.requests.dietary}
+                </label>
+                <DietarySelect
+                  id="pledge-dietary"
+                  name="dietary_type"
+                  locale={locale}
+                  className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                />
               </div>
               <div>
                 <label htmlFor="quantity" className={styles.fieldLabel}>
