@@ -537,6 +537,10 @@ const th = {
   },
   inventory: {
     title: 'คลังสินค้า',
+    filterShowing: 'กำลังแสดงเฉพาะ',
+    filterExpired: 'หมดอายุแล้ว',
+    filterSoon: 'ใกล้หมดอายุ (ภายใน 7 วัน)',
+    filterClear: 'ล้างตัวกรอง',
     overviewAll: 'ภาพรวมทุกศูนย์',
     yourCenter: 'ศูนย์ของคุณ',
     nearExpirySection: 'ของใกล้หมดอายุ / ยอดคงเหลือ',
@@ -1352,6 +1356,10 @@ const en: typeof th = {
   },
   inventory: {
     title: 'Inventory',
+    filterShowing: 'Showing only',
+    filterExpired: 'Expired',
+    filterSoon: 'Nearing expiry (within 7 days)',
+    filterClear: 'Clear filter',
     overviewAll: 'Overview of all centers',
     yourCenter: 'Your center',
     nearExpirySection: 'Nearing expiry / stock levels',

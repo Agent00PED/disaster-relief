@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/locale'
 import { unitLabel } from '@/lib/units' 
@@ -219,13 +219,18 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
       {expiryFilterMode !== 'all' && (
         <div className="mb-4 flex items-center justify-between rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
           <span>
-            กำลังแสดงผลเฉพาะ: <strong>{expiryFilterMode === 'expired' ? 'หมดอายุแล้ว' : 'ใกล้หมดอายุ (ภายใน 7 วัน)'}</strong>
+            {dict.inventory.filterShowing}:{' '}
+            <strong>
+              {expiryFilterMode === 'expired'
+                ? dict.inventory.filterExpired
+                : dict.inventory.filterSoon}
+            </strong>
           </span>
-          <button 
-            onClick={() => setExpiryFilterMode('all')} 
+          <button
+            onClick={() => setExpiryFilterMode('all')}
             className="text-blue-500 hover:text-blue-800 underline dark:hover:text-blue-100"
           >
-            ล้างตัวกรอง
+            {dict.inventory.filterClear}
           </button>
         </div>
       )}
