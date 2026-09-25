@@ -18,7 +18,8 @@
 .intro blockquote span, .thanks span { color: #d9534f; }
 .thanks { font-size: 18px; }
 .form { display: grid; gap: 10px; margin-top: 12px; }
-.form label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.form label { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.fieldLabel svg { width: 17px; height: 17px; color: #8ca2b8; }
 .form input, .form select, .form textarea { display: block; width: 100%; min-width: 0; min-height: 40px; border: 1px solid #cedbe5; border-radius: 8px; padding: 9px 11px; font-size: 14px; background: #fff9; color: var(--ink); outline: none; }
 .form textarea { resize: vertical; }
 .form input::placeholder, .form textarea::placeholder { color: #75899c; }
@@ -27,9 +28,10 @@
 .notice { margin-top: 14px; padding: 12px; border-radius: 8px; background: #e5f3fc; color: #315f7c; font-size: 12px; line-height: 1.8; }
 :global(.dark) .form input, :global(.dark) .form select, :global(.dark) .form textarea { background: #102131; border-color: #465e73; }
 :global(.dark) .form input::placeholder, :global(.dark) .form textarea::placeholder { color: #93a9bc; }
+:global(.dark) .fieldLabel svg { color: #91a8bd; }
 :global(.dark) .notice { background: #243e53; color: #bedbef; }
 @media (max-width: 1100px) { .layout { max-width: 850px; grid-template-columns: minmax(0, 1fr) 450px; gap: 28px; } .thanks { grid-column: 1 / -1; margin: 0 auto; transform: none; } }
-@media (max-width: 700px) { .brand { top: 20px; left: 20px; } .layout { max-width: 460px; grid-template-columns: minmax(0, 1fr); gap: 26px; } .intro { padding-top: 0; text-align: center; justify-self: stretch; max-width: none; } .intro h2 { font-size: 20px; } .intro h2 span { font-size: 28px; } .intro > p { font-size: 14px; } .intro blockquote { margin: 20px auto 0; font-size: 18px; transform: none; } .intro blockquote::after { transform: none; } .form input, .form select, .form textarea { font-size: 16px; } }
+@media (max-width: 700px) { .brand { position: static; margin: 4px auto 28px; text-align: center; } .layout { max-width: 460px; grid-template-columns: minmax(0, 1fr); gap: 26px; } .intro { display: none; } .hero .panel { padding: 0; border: 0; background: transparent; box-shadow: none; } .hero .panel > a { margin-bottom: 28px; } .hero .panel > header > span { display: none; } .hero .panel > header { margin-bottom: 22px; text-align: center; } .hero .panel > header h1 { font-size: 24px; } .hero .panel > header p { font-size: 13px; } .form input, .form select, .form textarea { font-size: 16px; } .form input, .form select { min-height: 42px; } }
 @media (max-width: 400px) { .row { grid-template-columns: 1fr; gap: 14px; } }
 @media (min-width: 1101px) {
   .hero.hero { height: 100svh; min-height: 0; padding: 68px 32px 16px; }
