@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createRequest } from '../actions'
 import { getLocale } from '@/lib/i18n/locale'
 import { UnitSelect } from '@/app/unit-select'
@@ -17,9 +18,35 @@ export default async function NewRequestPage({
   const dict = getDictionary(locale)
   const centers = await getCenterPicker(await createClient(), 'shelter')
 
+  const th = locale === 'th'
+
   return (
-    <main className="mx-auto w-full max-w-lg px-6 py-12">
-      <h1 className="mb-6 text-2xl font-semibold text-slate-900 dark:text-slate-100">{dict.requests.newTitle}</h1>
+    <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+      {/* หัวข้อและทางกลับ — ใช้โครงเดียวกับ /donations/new เพื่อให้ทุกหน้าฟอร์มหน้าตาตรงกัน */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Link
+            href="/requests"
+            className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+          >
+            ← {th ? 'กลับไปหน้ารายการคำขอ' : 'Back to request list'}
+          </Link>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            {dict.requests.newTitle}
+          </h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {th
+              ? 'แจ้งสิ่งของที่ศูนย์พักพิงต้องการ พร้อมระดับความเร่งด่วน'
+              : 'Tell us what the shelter needs, with its urgency level.'}
+          </p>
+        </div>
+        <Link
+          href="/requests"
+          className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        >
+          ← {th ? 'รายการคำขอ' : 'Request List'}
+        </Link>
+      </div>
 
       {error && (
         <p role="alert" className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-500/10 dark:text-red-400">
@@ -27,13 +54,20 @@ export default async function NewRequestPage({
         </p>
       )}
 
-      <form
-        action={createRequest}
-        className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900"
-      >
+      <form action={createRequest} className="space-y-5">
         {centers && (
-          <CenterSelect centers={centers} label={dict.common.center} placeholder={dict.common.selectCenter} />
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <h2 className="mb-4 text-base font-semibold text-slate-900 dark:text-slate-100">
+              {th ? 'ศูนย์ที่ต้องการของ' : 'Requesting center'}
+            </h2>
+            <CenterSelect centers={centers} label={dict.common.center} placeholder={dict.common.selectCenter} />
+          </section>
         )}
+
+        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+          {th ? 'รายละเอียดสิ่งของที่ขอ' : 'Requested item'}
+        </h2>
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{dict.requests.itemWanted}</label>
           <input
@@ -108,9 +142,11 @@ export default async function NewRequestPage({
             <option value="high">{dict.requests.urgencyHigh}</option>
           </select>
         </div>
+        </section>
+
         <button
           type="submit"
-          className="w-full rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-deep"
+          className="w-full rounded-lg bg-brand px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-deep"
         >
           {dict.requests.submit}
         </button>

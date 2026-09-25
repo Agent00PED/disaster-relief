@@ -48,6 +48,13 @@ export default async function EditDonorPage({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-lg px-6 py-12">
       <div className="mb-6">
+        {/* ทางกลับ — เข้าหน้านี้จากทะเบียนหรือหน้าประวัติ ต้องมีทางออกที่ไม่ใช่ปุ่ม Back */}
+        <Link
+          href="/donors"
+          className="mb-2 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+        >
+          ← {locale === 'th' ? 'กลับไปหน้าทะเบียนผู้บริจาค' : 'Back to donor registry'}
+        </Link>
         <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           {dict.donors?.editTitle ?? dict.common?.edit ?? 'Edit Donor'}
         </h1>

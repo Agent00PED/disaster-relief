@@ -104,6 +104,14 @@ export default async function DonorDetailPage({ params }: Props) {
 
     <main className="mx-auto w-full max-w-4xl px-6 py-12 space-y-8">
 
+      {/* ทางกลับ — เข้าหน้านี้จากทะเบียนผู้บริจาค ต้องมีทางออกที่ไม่ใช่ปุ่ม Back ของเบราว์เซอร์ */}
+      <Link
+        href="/donors"
+        className="-mb-4 inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+      >
+        ← {locale === 'th' ? 'กลับไปหน้าทะเบียนผู้บริจาค' : 'Back to donor registry'}
+      </Link>
+
       {/* ส่วนบน — ข้อมูลผู้บริจาค */}
 
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
