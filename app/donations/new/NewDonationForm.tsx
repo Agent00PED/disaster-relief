@@ -114,7 +114,7 @@ const donationTypes = [
 ]
 
 const inputClassName =
-  'block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500'
+  'block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-brand-navy focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500'
 
 const API_BASE =
   'https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest'
@@ -1515,7 +1515,7 @@ export default function NewDonationForm({
                   }
                   className={`rounded-xl border p-4 text-center transition ${
                     selected
-                      ? 'border-[#0E2A47] bg-[#0E2A47]/5 dark:border-slate-400 dark:bg-slate-800'
+                      ? 'border-brand-navy bg-brand-navy/5 dark:border-slate-400 dark:bg-slate-800'
                       : 'border-slate-200 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500'
                   }`}
                 >
@@ -1642,7 +1642,7 @@ export default function NewDonationForm({
                                 }
                                 className={`rounded-lg border px-3 py-3 text-center transition ${
                                   selected
-                                    ? 'border-[#0E2A47] bg-[#0E2A47]/5 dark:border-slate-400 dark:bg-slate-800'
+                                    ? 'border-brand-navy bg-brand-navy/5 dark:border-slate-400 dark:bg-slate-800'
                                     : 'border-slate-200 hover:border-slate-400 dark:border-slate-700 dark:hover:border-slate-500'
                                 }`}
                               >
@@ -2634,7 +2634,7 @@ export default function NewDonationForm({
           disabled={
             !createDonationAction
           }
-          className="rounded-lg bg-[#0E2A47] px-6 py-3 text-xs font-medium text-white hover:bg-[#12395f] disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-lg bg-brand-navy px-6 py-3 text-xs font-medium text-white hover:bg-brand-navy-deep disabled:cursor-not-allowed disabled:opacity-50"
         >
           {tr(
             'บันทึกการรับบริจาค',
@@ -2702,7 +2702,7 @@ function ExpiryField({
               ? 'th-TH'
               : 'en-US'
           }
-          className={`block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-[#0E2A47] focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
+          className={`block h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs focus:border-brand-navy focus:outline-none dark:border-slate-700 dark:bg-slate-800 ${
             !value
               ? 'text-transparent'
               : 'text-slate-900 dark:text-slate-100'

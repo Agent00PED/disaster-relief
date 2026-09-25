@@ -40,7 +40,7 @@ export default async function DonorsPage() {
   }));
 
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6 px-6 py-10">
+    <main className="mx-auto w-full max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <DonorTable donors={donors} dict={dict} />
     </main>
   );

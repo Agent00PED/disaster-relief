@@ -229,7 +229,7 @@ export default async function PledgesPage({
   // ============================================================
 
   return (
-    <main className="mx-auto w-full max-w-7xl min-h-screen bg-[#f5f1e8] text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
+    <main className="mx-auto w-full max-w-7xl min-h-screen px-4 py-8 sm:px-6 bg-brand-cream text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
       <section className="mx-auto w-full px-5 py-8 md:px-7">
 
         {/* ========================================================
@@ -238,12 +238,12 @@ export default async function PledgesPage({
 
         <header className="mb-5 flex flex-wrap items-center justify-between gap-4 print:mb-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#fff0ee] text-[#e65f5a] shadow-sm print:hidden dark:bg-red-500/10 dark:text-red-400">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-tint text-accent-soft shadow-sm print:hidden dark:bg-red-500/10 dark:text-red-400">
               <FileText className="h-6 w-6" />
             </div>
 
             <div>
-              <h1 className="text-[25px] font-bold leading-tight text-[#1d2935] dark:text-slate-100 print:text-black">
+              <h1 className="text-2xl font-semibold leading-tight text-ink dark:text-slate-100 print:text-black">
                 {dict.pledgeQueue?.title ||
                   'รายการแจ้งความประสงค์บริจาค'}
               </h1>
@@ -259,7 +259,7 @@ export default async function PledgesPage({
 
           <Link
             href="/pledge"
-            className="flex items-center gap-1.5 rounded-lg bg-[#e65f5a] px-4 py-2.5 text-[12px] font-medium text-white shadow-sm transition hover:bg-[#d64e49] print:hidden dark:bg-red-600 dark:hover:bg-red-500"
+            className="flex items-center gap-1.5 rounded-lg bg-accent-soft px-4 py-2.5 text-[12px] font-medium text-white shadow-sm transition hover:bg-accent-soft-deep print:hidden dark:bg-red-600 dark:hover:bg-red-500"
           >
             <Plus className="h-4 w-4" />
 
@@ -290,7 +290,7 @@ export default async function PledgesPage({
 
         <form
           method="GET"
-          className="mb-4 rounded-lg border border-[#e7e1d7] bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)] print:hidden dark:border-slate-700 dark:bg-slate-900 dark:shadow-none"
+          className="mb-4 rounded-lg border border-cream-line bg-white p-4 shadow-[0_2px_8px_rgba(15,23,42,0.03)] print:hidden dark:border-slate-700 dark:bg-slate-900 dark:shadow-none"
         >
           <div className="grid gap-4 lg:grid-cols-[1.25fr_0.9fr_0.9fr_0.9fr_auto] lg:items-end">
 
@@ -302,7 +302,7 @@ export default async function PledgesPage({
               </label>
 
               <div className="flex h-[40px] items-center gap-2 rounded-md border border-slate-200 bg-white px-3 dark:border-slate-700 dark:bg-slate-800">
-                <Search className="h-4 w-4 shrink-0 text-[#31556c] dark:text-blue-400" />
+                <Search className="h-4 w-4 shrink-0 text-ink-soft dark:text-blue-400" />
 
                 <input
                   name="q"
@@ -383,7 +383,7 @@ export default async function PledgesPage({
                   className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
 
-                <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#31556c] dark:text-blue-400" />
+                <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft dark:text-blue-400" />
               </div>
             </div>
 
@@ -411,7 +411,7 @@ export default async function PledgesPage({
                   className="h-[40px] w-full rounded-md border border-slate-200 bg-white px-3 pr-9 text-[12px] text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 />
 
-                <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#31556c] dark:text-blue-400" />
+                <CalendarDays className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft dark:text-blue-400" />
               </div>
             </div>
 
@@ -431,7 +431,7 @@ export default async function PledgesPage({
 
               <button
                 type="submit"
-                className="flex h-[40px] items-center justify-center rounded-md bg-[#1c3d5a] px-4 text-[12px] font-medium text-white transition hover:bg-[#142a3d] dark:bg-blue-700 dark:hover:bg-blue-600"
+                className="flex h-[40px] items-center justify-center rounded-md bg-brand px-4 text-[12px] font-medium text-white transition hover:bg-brand-deep dark:bg-blue-700 dark:hover:bg-blue-600"
               >
                 {locale === 'en'
                   ? 'Search'
@@ -445,7 +445,7 @@ export default async function PledgesPage({
             TABLE CARD
         ======================================================== */}
 
-        <section className="overflow-hidden rounded-lg border border-[#e7e1d7] bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
+        <section className="overflow-hidden rounded-lg border border-cream-line bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-none">
 
           {/* Table header */}
 
@@ -483,7 +483,7 @@ export default async function PledgesPage({
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1050px] text-left">
-                <thead className="border-b border-slate-200 bg-[#faf9f6] dark:border-slate-700 dark:bg-slate-800">
+                <thead className="border-b border-slate-200 bg-cream-50 dark:border-slate-700 dark:bg-slate-800">
                   <tr className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
 
                     <th className="w-[55px] px-3 py-3 text-center">
@@ -541,7 +541,7 @@ export default async function PledgesPage({
                   {pledges.map((p, index) => (
                     <tr
                       key={p.id}
-                      className="border-b border-slate-100 last:border-0 hover:bg-[#fcfbf8] dark:border-slate-800 dark:hover:bg-slate-800/60"
+                      className="border-b border-slate-100 last:border-0 hover:bg-cream-100 dark:border-slate-800 dark:hover:bg-slate-800/60"
                     >
 
                       {/* ลำดับ */}
@@ -676,7 +676,7 @@ export default async function PledgesPage({
 
                               <button
                                 type="submit"
-                                className="flex items-center gap-1 rounded-md border border-red-100 bg-[#ffffff] px-2.5 py-1.5 text-[10px] font-medium text-red-600 shadow-sm transition hover:bg-red-50 dark:border-red-500/20 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
+                                className="flex items-center gap-1 rounded-md border border-red-100 bg-white px-2.5 py-1.5 text-[10px] font-medium text-red-600 shadow-sm transition hover:bg-red-50 dark:border-red-500/20 dark:bg-slate-800 dark:text-red-400 dark:hover:bg-red-500/10"
                               >
                                 <Trash2 className="h-3 w-3" />
 
@@ -687,7 +687,7 @@ export default async function PledgesPage({
                             </form>
                           </div>
                         ) : (
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">
                             {locale === 'en'
                               ? 'Completed'
                               : 'ดำเนินการแล้ว'}
