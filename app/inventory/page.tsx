@@ -178,7 +178,12 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
           {dict.inventory.title}
         </h1>
         <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-          {isAdmin ? dict.inventory.overviewAll : `${dict.inventory.yourCenter}: ${centerLabel ?? '—'}`}
+          {/* หน้านี้แสดงยอดคลังของทุกศูนย์เสมอ เพราะเจ้าหน้าที่ต้องเห็นว่าศูนย์อื่น
+              มีของอะไรเหลือ จึงจะเลือกมาจัดสรรได้ ป้ายเดิมเขียนว่า "ศูนย์ของคุณ"
+              ซึ่งไม่ตรงกับสิ่งที่แสดงจริง เลยบอกทั้งสองอย่างให้ชัด */}
+          {isAdmin
+            ? dict.inventory.overviewAll
+            : `${dict.inventory.overviewAll} · ${dict.inventory.assignedTo} ${centerLabel ?? '—'}`}
         </p>
       </header>
 
