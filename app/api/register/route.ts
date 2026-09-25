@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       || !username || username.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
       || password.length < 6 || !/^[0-9a-f-]{36}$/i.test(centerId)) return fail('invalid')
 
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
     const photo = form.get('identity_photo')
     if (photo !== null && photo !== '' && !(photo instanceof File)) return fail('photo')
     const hasPhoto = photo instanceof File && (photo.size > 0 || photo.name !== '')
@@ -42,7 +43,6 @@ export async function POST(request: Request) {
         : bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) ? 'image/png'
           : bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP' ? 'image/webp' : null
       if (!type || photo.type !== type) return fail('photo')
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
       if (!serviceKey) return fail('configuration', 503)
       storageClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
         auth: { persistSession: false, autoRefreshToken: false },
@@ -52,7 +52,13 @@ export async function POST(request: Request) {
     const supabase = await createSessionClient()
     const { data: center } = await supabase.from('centers').select('id').eq('id', centerId).eq('is_active', true).maybeSingle()
     if (!center) return fail('invalid')
-    const { data, error } = await supabase.auth.signUp({
+
+    if (typeof supabase.rpc === 'function') {
+      const { data: existingEmail } = await supabase.rpc('get_email_by_username', { p_username: username })
+      if (existingEmail) return fail('usernameTaken')
+    }
+
+    let { data, error } = await supabase.auth.signUp({
       email, password,
       options: { data: {
         first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}`,
@@ -60,9 +66,31 @@ export async function POST(request: Request) {
         username, role: 'volunteer', center_id: centerId,
       } },
     })
+
+    if (error && (error.message?.includes('rate limit') || (error as { code?: string }).code === 'over_email_send_rate_limit') && serviceKey) {
+      const adminClient = storageClient ?? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+      storageClient = adminClient
+      const adminRes = await adminClient.auth.admin.createUser({
+        email, password, email_confirm: true,
+        user_metadata: {
+          first_name: firstName, last_name: lastName, full_name: `${firstName} ${lastName}`,
+          phone, birth_date: birthDate, birth_year: Number(birthDate.slice(0, 4)) + 543,
+          username, role: 'volunteer', center_id: centerId,
+        }
+      })
+      if (!adminRes.error && adminRes.data?.user) {
+        data = { user: adminRes.data.user, session: null }
+        error = null
+      } else if (adminRes.error) {
+        error = adminRes.error
+      }
+    }
+
     if (error) {
-      return fail(error.message.includes('already registered') ? 'alreadyRegistered'
-        : /duplicate|unique/.test(error.message) ? 'usernameTaken' : 'registration')
+      return fail(error.message.includes('already registered') || /already.*registered/i.test(error.message) ? 'alreadyRegistered'
+        : /duplicate|unique/.test(error.message) || error.message.includes('Database error') ? 'usernameTaken' : 'registration')
     }
     // Supabase can return an obfuscated user for an existing confirmed account.
     if (!data.user || !data.user.identities?.length) return Response.json({ success: true })
