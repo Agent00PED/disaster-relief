@@ -229,8 +229,8 @@ export default async function PledgesPage({
   // ============================================================
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
-      <section className="mx-auto w-full max-w-[1180px] px-5 py-8 md:px-7">
+    <main className="mx-auto w-full max-w-7xl min-h-screen bg-[#f5f1e8] text-slate-800 transition-colors dark:bg-slate-950 dark:text-slate-100">
+      <section className="mx-auto w-full px-5 py-8 md:px-7">
 
         {/* ========================================================
             TITLE & ADD BUTTON
@@ -431,7 +431,7 @@ export default async function PledgesPage({
 
               <button
                 type="submit"
-                className="flex h-[40px] items-center justify-center rounded-md bg-[#1d3b5a] px-4 text-[12px] font-medium text-white transition hover:bg-[#142d45] dark:bg-blue-700 dark:hover:bg-blue-600"
+                className="flex h-[40px] items-center justify-center rounded-md bg-[#1c3d5a] px-4 text-[12px] font-medium text-white transition hover:bg-[#142a3d] dark:bg-blue-700 dark:hover:bg-blue-600"
               >
                 {locale === 'en'
                   ? 'Search'
