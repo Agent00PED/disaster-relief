@@ -95,8 +95,14 @@ export default async function ReceiptPage({
   const receiverName =
     receiver?.full_name || receiver?.username || '—'
 
-  const donorName = donor?.name || dict.table.anonymousDonor
-  const donorPhone = donor?.phone || '—'
+  // แก้ไขตรงนี้: เช็ก is_anonymous ให้ครอบคลุมทั้งชื่อและเบอร์โทรศัพท์
+  const donorName = donor?.is_anonymous
+    ? dict.table.anonymousDonor
+    : (donor?.name || dict.table.anonymousDonor)
+
+  const donorPhone = donor?.is_anonymous
+    ? '—'
+    : (donor?.phone || '—')
   
   // ที่อยู่ผู้บริจาค (แสดงเครื่องหมาย — หากไม่มีข้อมูล หรือเป็น is_anonymous)
   const donorAddress = donor?.is_anonymous
