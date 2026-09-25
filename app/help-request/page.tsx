@@ -14,7 +14,9 @@ import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { PROVINCES } from '@/lib/provinces' // <-- เพิ่ม Import จังหวัด
-import { AtSign, ClipboardList, FileText, Hash, MapPin, Package, Phone, Send, UserRound } from 'lucide-react'
+import { DietarySelect } from '@/app/dietary-select'
+import { CategoryDietaryFields } from './category-dietary-fields'
+import { AtSign, FileText, Hash, MapPin, Package, Phone, Send, UserRound } from 'lucide-react'
 
 export default async function HelpRequestPage({
   searchParams,
@@ -160,25 +162,29 @@ export default async function HelpRequestPage({
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="category" className={helpStyles.fieldLabel}>
-                    <ClipboardList aria-hidden="true" />
-                    {dict.form.category}
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-                  >
-                    <option value="food">{dict.form.categoryFood}</option>
-                    <option value="water">{dict.form.categoryWater}</option>
-                    <option value="medicine">{dict.form.categoryMedicine}</option>
-                    <option value="clothing">{dict.form.categoryClothing}</option>
-                    <option value="hygiene">{dict.form.categoryHygiene}</option>
-                    <option value="other">{dict.form.categoryOther}</option>
-                  </select>
-                </div>
+                <CategoryDietaryFields
+                  categoryLabel={dict.form.category}
+                  options={[
+                    { value: 'food', label: dict.form.categoryFood },
+                    { value: 'water', label: dict.form.categoryWater },
+                    { value: 'medicine', label: dict.form.categoryMedicine },
+                    { value: 'clothing', label: dict.form.categoryClothing },
+                    { value: 'hygiene', label: dict.form.categoryHygiene },
+                    { value: 'other', label: dict.form.categoryOther },
+                  ]}
+                  dietaryField={
+                    <div>
+                      <label htmlFor="help-request-dietary" className={helpStyles.fieldLabel}>
+                        {dict.requests.dietary}
+                      </label>
+                      <DietarySelect
+                        id="help-request-dietary"
+                        locale={locale}
+                        className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                  }
+                />
                 <div>
                   <label htmlFor="quantity" className={helpStyles.fieldLabel}>
                     <Hash aria-hidden="true" />
