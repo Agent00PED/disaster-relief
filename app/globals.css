@@ -36,6 +36,19 @@
   --color-brand-accent: #d9534f;
   --color-brand-accent-deep: #b8433f;
   --color-brand-cream: #f5f1e8;
+
+  /* โทนที่หน้าคำร้องบริจาคและฟอร์มรับของเคยเขียนสีตรง ๆ ไว้
+     ย้ายมาเป็นโทเคนเพื่อให้แก้ที่เดียวแล้วเปลี่ยนทั้งเว็บ ค่าเท่าเดิมทุกสี */
+  --color-brand-navy: #0e2a47;
+  --color-ink: #1d2935;
+  --color-ink-soft: #31556c;
+  --color-accent-soft: #c0403c;
+  --color-accent-soft-deep: #a3332f;
+  --color-cream-line: #e7e1d7;
+  --color-cream-50: #faf9f6;
+  --color-cream-100: #fcfbf8;
+  --color-brand-navy-deep: #12395f;
+  --color-accent-tint: #fff0ee;
 }
 
 body {

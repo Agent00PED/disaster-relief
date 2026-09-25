@@ -74,7 +74,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
   // อัปเดตเงื่อนไข Error ให้เช็คตัวแปร expired ด้วย
   const hasError = [stock, pending, urgent, delivered, recent, pledges, expiring, expired, activity, ...categoryCounts].some(result => result.error)
 
-  return <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-7 text-brand sm:px-6 dark:text-slate-100">
+  return <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-8 text-brand sm:px-6 dark:text-slate-100">
     <header className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
       <div><h1 className="text-2xl font-semibold sm:text-3xl">{t.greeting}, {name}</h1><p className={`mt-2 ${muted}`}>{t.subtitle}</p></div>
       <div className="flex flex-wrap gap-2 text-sm font-semibold">
@@ -108,7 +108,7 @@ export async function Dashboard({ supabase, dict, locale, name, isAdmin }: Props
           {/* แถวใหม่: หมดอายุแล้ว (สีแดง) */}
           <Link 
             href="/inventory?expiry=expired" 
-            className="flex min-h-16 items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[#d9534f] hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
+            className="flex min-h-16 items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-brand-accent hover:bg-red-100 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-950/40"
           >
             <Icon kind={0} />
             <span className="flex-1 text-sm font-medium">

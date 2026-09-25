@@ -27,7 +27,7 @@ export function Nav({
     href === badgeHref && pendingReceipts > 0 ? (
       <span
         aria-label={dict.nav.pendingReceipt.replace('{n}', String(pendingReceipts))}
-        className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-brand-accent px-1.5 text-xs font-semibold leading-5 text-white"
+        className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-brand-accent-deep px-1.5 text-xs font-semibold leading-5 text-white"
       >
         {pendingReceipts}
       </span>

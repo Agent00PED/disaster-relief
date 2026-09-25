@@ -106,7 +106,7 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, requests
     }}
   />
 
-  return <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-7 text-brand sm:px-6 dark:text-slate-100">
+  return <main className="mx-auto w-full max-w-7xl space-y-5 px-4 py-8 text-brand sm:px-6 dark:text-slate-100">
     <header className="flex flex-wrap items-center justify-between gap-4">
       <div>
         <h1 className="text-2xl font-semibold leading-relaxed sm:text-3xl">{v.greeting} {name} <span aria-hidden="true">👋</span></h1>

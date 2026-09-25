@@ -280,7 +280,7 @@ export default async function DonationsPage({
   })
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-6 py-8">
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
 
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
@@ -303,7 +303,7 @@ export default async function DonationsPage({
           </div>
 
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
               {dict.donationsPage.title}
             </h1>
 
