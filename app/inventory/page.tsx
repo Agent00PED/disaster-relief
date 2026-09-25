@@ -172,7 +172,7 @@ export default async function InventoryPage({ searchParams }: { searchParams: Pr
   })
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-6 py-12">
+    <main className="mx-auto w-full max-w-7xl px-6 py-12">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 drop-shadow-sm dark:text-slate-100">
           {dict.inventory.title}
