@@ -10,13 +10,13 @@
 | 02_pledge.png | `/pledge` | ไม่ต้องเข้าสู่ระบบ |
 | 03_help_request.png | `/help-request` | ไม่ต้องเข้าสู่ระบบ |
 | 04_login.png | `/login` | ไม่ต้องเข้าสู่ระบบ |
-| 05_dashboard.png | `/dashboard` | adminTest |
+| 05_dashboard.png | `/` (หน้าเดียวกับ 01 แต่ตอน login แล้ว จะกลายเป็นแดชบอร์ด) | adminTest |
 | 06_pledges.png | `/pledges` | adminTest |
 | 07_donations.png | `/donations` | adminTest |
 | 08_inventory.png | `/inventory` | adminTest |
 | 09_requests.png | `/requests` | adminTest |
 | 10_allocations.png | `/allocations` | adminTest |
-| 11_receipt.png | `/donations/{id}/receipt` | adminTest |
+| 11_receipt.png | `/donations/58853bb4-b29c-442c-a9aa-1fb693172ca0/receipt` | adminTest |
 | 12_admin.png | `/admin/centers` | adminTest |
 
 ข้อแนะนำตอนถ่าย
