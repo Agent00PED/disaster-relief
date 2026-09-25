@@ -26,12 +26,6 @@ export function VolunteerAuth({ dict }: { dict: Dictionary }) {
     <div className={styles.artwork} aria-hidden="true" />
     <div className={styles.back}><BackHomeLink label={dict.common.backHome} /></div>
     <div className={styles.layout}>
-      <section className={styles.intro}>
-        <div className={styles.brand}><BrandMark size="lg" /></div>
-        <h2>{dict.login.welcomeBack}<span className={styles.volunteerAccent}>{dict.entryHub.volunteerLabel}</span></h2>
-        <p className={styles.description}>{dict.entryHub.subtitle}</p>
-        <p className={styles.volunteerMotto}>{dict.entryHub.motto} <span aria-hidden="true">♡</span></p>
-      </section>
       <section className={`${styles.panel} ${styles.volunteerPanel}`} aria-labelledby="volunteer-title">
         <header className={styles.formHeader}>
           <BrandMark size="lg" /><h1 id="volunteer-title">{dict.entryHub.volunteerLabel}</h1>
@@ -52,12 +46,6 @@ export function VolunteerAuth({ dict }: { dict: Dictionary }) {
           <RegisterForm dict={dict} onLogin={() => setTab('login')} />
         </div>
       </section>
-      <aside className={styles.features}>
-        {features.map(feature => <div className={styles.feature} key={feature.icon}>
-          <span className={styles[feature.icon]}><LoginIcon name={feature.icon} /></span>
-          <div><h2>{feature.title}</h2><p>{feature.desc}</p></div>
-        </div>)}
-      </aside>
     </div>
   </main>
 }
