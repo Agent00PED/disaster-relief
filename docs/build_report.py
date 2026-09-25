@@ -7,13 +7,13 @@
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
-from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from pathlib import Path
 import subprocess
 
-FONT = "Leelawadee UI"
+FONT = "Angsana New"
 ROOT = Path(__file__).resolve().parent.parent
 IMG = ROOT / "docs" / "images"
 
@@ -59,13 +59,28 @@ def _font(style, size, bold=False, color=None):
     rpr.append(szcs)
 
 
-_font(doc.styles['Normal'], 14)
+# ---------- ลำดับขนาดตัวอักษร ----------
+# Angsana New เป็นฟอนต์ที่ตัวเล็กกว่าฟอนต์อังกฤษที่ขนาดเท่ากัน
+# เอกสารไทยจึงนิยมใช้เนื้อความ 16pt ไม่ใช่ 12pt แบบเอกสารอังกฤษ
+BODY, H1, H2, H3 = 16, 20, 18, 16
+CELL, SMALL = 14, 14
+
+_font(doc.styles['Normal'], BODY)
 doc.styles['Normal'].paragraph_format.space_after = Pt(6)
-doc.styles['Normal'].paragraph_format.line_spacing = 1.15
-_font(doc.styles['Title'], 26, True)
-_font(doc.styles['Heading 1'], 19, True, RGBColor(0x1F, 0x3B, 0x63))
-_font(doc.styles['Heading 2'], 16, True, RGBColor(0x2E, 0x5A, 0x8C))
-_font(doc.styles['Heading 3'], 14, True, RGBColor(0x33, 0x33, 0x33))
+doc.styles['Normal'].paragraph_format.line_spacing = 1.2
+doc.styles['Normal'].paragraph_format.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+_font(doc.styles['Title'], 40, True)
+_font(doc.styles['Heading 1'], H1, True, RGBColor(0x1F, 0x3B, 0x63))
+_font(doc.styles['Heading 2'], H2, True, RGBColor(0x2E, 0x5A, 0x8C))
+_font(doc.styles['Heading 3'], H3, True, RGBColor(0x33, 0x33, 0x33))
+
+# เว้นระยะเหนือหัวข้อให้หายใจได้ ไม่ให้ติดกับย่อหน้าก่อนหน้า
+for _name, _before, _after in (('Heading 1', 20, 8), ('Heading 2', 14, 6), ('Heading 3', 10, 4)):
+    _pf = doc.styles[_name].paragraph_format
+    _pf.space_before = Pt(_before)
+    _pf.space_after = Pt(_after)
+    _pf.keep_with_next = True
+    _pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
 
 
 def H(text, lvl=1):
@@ -89,22 +104,32 @@ def B(text):
     return p
 
 
+def _cell(cell, text, size, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT):
+    cell.text = ""
+    cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+    p = cell.paragraphs[0]
+    p.alignment = align
+    p.paragraph_format.space_before = Pt(2)
+    p.paragraph_format.space_after = Pt(2)
+    run = p.add_run(str(text))
+    run.bold = bold
+    run.font.size = Pt(size)
+
+
 def TABLE(headers, rows, widths=None):
     t = doc.add_table(rows=1, cols=len(headers))
     t.style = 'Light Grid Accent 1'
     t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = False
     for i, h in enumerate(headers):
-        c = t.rows[0].cells[i]
-        c.text = ""
-        run = c.paragraphs[0].add_run(h)
-        run.bold = True
-        run.font.size = Pt(12)
+        _cell(t.rows[0].cells[i], h, CELL, bold=True)
     for row in rows:
         cells = t.add_row().cells
         for i, v in enumerate(row):
-            cells[i].text = ""
-            run = cells[i].paragraphs[0].add_run(str(v))
-            run.font.size = Pt(12)
+            # คอลัมน์แรกที่เป็นตัวเลขล้วน เช่น ลำดับหรือรหัสเคส จัดกึ่งกลางอ่านง่ายกว่า
+            numeric = i == 0 and str(v).strip().isdigit()
+            _cell(cells[i], v, CELL,
+                  align=WD_ALIGN_PARAGRAPH.CENTER if numeric else WD_ALIGN_PARAGRAPH.LEFT)
     if widths:
         for r_ in t.rows:
             for i, w in enumerate(widths):
@@ -191,15 +216,15 @@ P("เมื่อเกิดภัยพิบัติ เช่น อุท
 P("ระบบนี้จึงถูกออกแบบให้เป็นเครื่องมือทำงานของเจ้าหน้าที่ศูนย์รับบริจาค โดยบันทึกของที่รับเข้า "
   "ติดตามยอดคงเหลือตามการตัดจ่าย รับคำขอจากศูนย์พักพิงพร้อมระดับความเร่งด่วน "
   "และจัดสรรของออกโดยตรวจสอบยอดคงเหลือและวันหมดอายุก่อนอนุมัติทุกครั้ง "
-  "ผลลัพธ์คือความโปร่งใสในการกระจายทรัพยากร ลดของเสียจากการหมดอายุ "
-  "และทำให้การตัดสินใจว่าจะส่งของไปที่ไหนก่อนอยู่บนพื้นฐานของข้อมูลจริงแทนการคาดเดา")
+  "ผลที่ทีมอยากให้เกิดคือ ตอบได้ว่าของแต่ละชิ้นมาจากใครและไปอยู่ที่ไหน ของไม่ค้างจนหมดอายุ "
+  "และเวลาต้องเลือกว่าจะส่งของไปศูนย์ไหนก่อน ก็ดูจากตัวเลขจริงแทนการเดา")
 
 H("ขอบเขตและข้อจำกัดที่ตัดออกโดยตั้งใจ", 2)
 P("ทีมพิจารณาการใช้การแจ้งเตือนแบบ Web Push สำหรับคำขอเร่งด่วนแล้ว แต่ตัดออกด้วยเหตุผล 2 ข้อ")
-B("บน iOS Safari ผู้ใช้ต้องติดตั้งเว็บเป็นแอปบนหน้าจอหลักก่อนจึงจะรับการแจ้งเตือนได้ "
-  "ซึ่งไม่สอดคล้องกับพฤติกรรมผู้ใช้จริง")
-B("ผู้ใช้หลักของระบบคือเจ้าหน้าที่ที่ทำงานหน้าจออยู่แล้ว การออกแบบให้ผู้ใช้เปิดดูเอง "
-  "ผ่านหน้าสรุปภาพรวมและการเรียงลำดับตามความเร่งด่วน จึงเพียงพอโดยไม่เพิ่มความซับซ้อน")
+B("บน iPhone ผู้ใช้ต้องกดเพิ่มเว็บลงหน้าจอหลักก่อน ถึงจะได้รับการแจ้งเตือน "
+  "ซึ่งทีมคิดว่าคนส่วนใหญ่คงไม่ทำ")
+B("คนที่ใช้ระบบนี้จริง ๆ คือเจ้าหน้าที่ที่นั่งอยู่หน้าจออยู่แล้ว แค่ทำหน้าสรุปให้เรียงเรื่องด่วน "
+  "ไว้บนสุดก็พอ ไม่ต้องเพิ่มของที่ทำให้ระบบซับซ้อนขึ้นโดยไม่จำเป็น")
 P("สิ่งที่อยู่นอกขอบเขตของโครงงานนี้ ได้แก่ แผนที่และการวางแผนเส้นทางขนส่ง การสแกนบาร์โค้ด "
   "และระบบรับบริจาคเงิน")
 
@@ -509,9 +534,8 @@ P("เหตุผลที่เลือก การตัดจ่ายเ�
   "การใช้กล่องยืนยันบังคับให้ผู้ใช้หยุดอ่านสรุปก่อนกด ว่าจ่ายอะไร จำนวนเท่าไร จากล็อตไหน "
   "ไปศูนย์ใด และจะเหลือเท่าไรหลังจ่าย แทนที่จะกดปุ่มในตารางแล้วเกิดผลทันที "
   "ซึ่งช่วยลดความเสี่ยงการกดพลาดในสถานการณ์ที่เจ้าหน้าที่ทำงานเร่งรีบ")
-P("นอกจากนี้กล่องยืนยันยังเปิดโอกาสให้แสดงคำเตือนตามบริบทได้ เช่น เตือนเมื่อล็อตที่เลือก "
-  "ใกล้หมดอายุ หรือเตือนเมื่อประเภทอาหารไม่ตรงกับที่ศูนย์ปลายทางระบุไว้ "
-  "โดยผู้ใช้ไม่ต้องเปลี่ยนหน้า จึงไม่หลุดจากขั้นตอนการทำงานที่กำลังทำอยู่")
+P("อีกข้อคือกล่องยืนยันใส่คำเตือนเพิ่มได้ เช่น บอกว่าล็อตที่เลือกใกล้หมดอายุแล้ว "
+  "หรือประเภทอาหารไม่ตรงกับที่ศูนย์ปลายทางขอไว้ โดยไม่ต้องพาผู้ใช้เปลี่ยนหน้าไปไหน")
 PAGEBREAK()
 
 # ================= 10 =================
@@ -550,14 +574,14 @@ P("บทเรียนที่ชัดที่สุดคือ การ�
 P("ในช่วงแรกระบบตรวจสอบความถูกต้องไว้ที่ฟอร์มเท่านั้น ซึ่งกันได้เฉพาะผู้ใช้ที่กรอกผ่านหน้าเว็บ "
   "ทีมจึงย้ายกฎสำคัญทั้งหมดลงไปไว้ที่ฐานข้อมูล ทั้งการกำหนดสิทธิ์ระดับแถว ตัวดักจับก่อนบันทึก "
   "และการรวมทุกขั้นตอนของการตัดจ่ายไว้ในฟังก์ชันเดียว ผลคือแม้จะมีผู้เขียนโค้ดผิดในภายหลัง "
-  "ยอดในคลังก็ยังเพี้ยนไม่ได้")
+  "ยอดในคลังก็ยังเพี้ยนไม่ได้อยู่ดี")
 P("บทเรียนที่สองคือ ตารางที่จับคู่กันต้องมีคอลัมน์ครบเท่ากัน", bold=True)
 P("ระบบเก็บคำร้องจากประชาชนไว้คนละตารางกับข้อมูลจริง แล้วค่อยแปลงเมื่อเจ้าหน้าที่อนุมัติ "
   "ตอนเพิ่มข้อกำหนดด้านอาหาร ทีมเพิ่มให้เฉพาะตารางจริง ลืมตารางคำร้อง "
   "พอกดอนุมัติจึงไม่มีค่าจะส่ง ปลายทางตกไปใช้ค่าตั้งต้นคือ ทั่วไป ทุกใบ "
   "ผลคือคำขออาหารฮาลาลจากประชาชนกลายเป็นอาหารทั่วไป และกฎตรวจสอบที่เขียนไว้ก็ไม่ทำงาน "
   "ทั้งที่โค้ดทุกบรรทัดถูกต้องและไม่มีข้อความแจ้งข้อผิดพลาดใด ๆ "
-  "ข้อผิดพลาดที่เงียบแบบนี้อันตรายกว่าข้อผิดพลาดที่ทำให้ระบบหยุดทำงาน")
+  "ทีมมาเจอตอนไล่ตรวจก่อนส่งงาน ซึ่งถ้าไม่ได้ไล่ก็คงไม่รู้")
 P("บทเรียนที่สามคือ การแบ่งงานต้องมาคู่กับการตรวจงาน", bold=True)
 P("การให้ทุกคนส่งงานผ่านการขอรวมโค้ด ทำให้ตรวจพบข้อผิดพลาดหลายจุดก่อนเข้าสู่เส้นหลัก "
   "เช่น ค่าคำแปลภาษาอังกฤษที่ยังเป็นภาษาไทย และการแยกที่อยู่ผิดในกรณีที่ชื่อตำบล "
