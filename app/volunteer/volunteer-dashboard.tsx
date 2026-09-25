@@ -8,6 +8,7 @@ import type { Dictionary } from '@/lib/i18n/dictionaries'
 import type { Locale } from '@/lib/i18n/locale'
 import { ErrorDialog } from '../allocations/error-dialog'
 import { DeliverButton } from '../allocations/deliver-dialog'
+import { IdPhotoCard } from './id-photo-card'
 import { FlashNotice } from '../flash-notice'
 import { confirmReceipt } from './actions'
 
@@ -21,6 +22,8 @@ type Delivery = {
   requests: unknown; donations: unknown
 }
 type Props = {
+  userId: string
+  idPhotoPath: string | null
   dict: Dictionary; locale: Locale; name: string; error?: string
   updatedAt: string | null
   allHistory: boolean; historyPage: number; historyTotal: number | null
@@ -42,7 +45,7 @@ function Icon({ kind = 0 }: { kind?: number }) {
   return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[kind]} /></svg>
 }
 
-export function VolunteerDashboard({ dict, locale, name, center, staff, requests, pending, history, counts, error, failed, loadError, notice, updatedAt, allHistory, historyPage, historyTotal }: Props) {
+export function VolunteerDashboard({ dict, locale, name, center, staff, requests, pending, history, counts, error, failed, loadError, notice, updatedAt, allHistory, historyPage, historyTotal, userId, idPhotoPath }: Props) {
   const router = useRouter()
   const [refreshing, startRefresh] = useTransition()
   const t = dict.volunteerDashboard
@@ -192,6 +195,12 @@ export function VolunteerDashboard({ dict, locale, name, center, staff, requests
         </ul>
       )}
     </section>
+
+      {/* รูปยืนยันตัวตนของตัวเอง — เจ้าของบัญชีต้องเห็นและแก้ไขได้
+          ไม่ได้เอาไปแปะเป็นไอคอนโปรไฟล์ เพราะตอนสมัครบอกผู้ใช้ไว้ว่า
+          "รูปจะถูกเก็บเป็นส่วนตัว" */}
+      <IdPhotoCard dict={dict} userId={userId} initialPath={idPhotoPath}
+        panelClass={panel} headingClass={heading} mutedClass={muted} buttonClass={button} />
 
       <section className={panel}>
         <div className={`${heading} flex-wrap`}><h2 className="flex items-center gap-3"><Icon kind={2} />{v.openRequestsSection}</h2><select aria-label={t.urgencyFilter} value={urgencyFilter} onChange={event => setUrgencyFilter(event.target.value)} className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="all">{t.allUrgencies}</option><option value="high">{urgency.high}</option><option value="medium">{urgency.medium}</option><option value="low">{urgency.low}</option></select></div>

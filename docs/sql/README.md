@@ -59,8 +59,10 @@ Run SQL files in numeric order in Supabase Dashboard > SQL Editor.
 | 33 | 33_dietary_type.sql | เพิ่มระบบแยกข้อกำหนดด้านอาหาร (ฮาลาล/ทั่วไป) |
 | 34 | 34_sanitize_demo_donors.sql | ล้างข้อมูลผู้บริจาคตัวอย่างให้ปลอดภัย |
 | 35 | `35_stock_summary_dietary.sql` | แยกยอดคลังตามข้อกำหนดด้านอาหาร (drop view แล้ว create ใหม่) |
+| 36 | `36_help_request_address.sql` | เพิ่มคอลัมน์ที่อยู่ให้ request_pledges (หน้าขอความช่วยเหลือ) |
 | 37 | `37_sanitize_personal_data.sql` | ล้างอีเมล/เบอร์/ชื่อจริงของคนในทีมออกจากข้อมูลเดโม 3 ตาราง |
-| 38 | `38_profile_display_names.sql` | เติมชื่อ-นามสกุลให้บัญชีผู้ใช้ (ส่วน B ยังไม่ได้รัน รอเจ้าของบัญชีกรอกชื่อ) |
+| 38 | `38_profile_display_names.sql` | เติมชื่อ-นามสกุลให้บัญชีผู้ใช้ |
+| 39 | `39_update_request.sql` | ฟังก์ชัน update_request สำหรับแก้จำนวน/ความเร่งด่วนของคำขอที่ยังไม่เริ่มจ่ายของ |
 
 หลังรันครบ 1–6 แล้ว:
 

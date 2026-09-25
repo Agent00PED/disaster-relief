@@ -6,6 +6,7 @@
  */
 import shared from '../login/login.module.css'
 import styles from '../pledge/pledge.module.css'
+import helpStyles from './help-request.module.css'
 import { createClient } from '@/lib/supabase/server'
 import { submitHelpRequest } from './actions'
 import { BrandMark } from '../brand-mark'
@@ -13,6 +14,9 @@ import { BackHomeLink } from '../back-home-link'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { PROVINCES } from '@/lib/provinces' // <-- เพิ่ม Import จังหวัด
+import { DietarySelect } from '@/app/dietary-select'
+import { CategoryDietaryFields } from './category-dietary-fields'
+import { AtSign, ClipboardList, FileText, Hash, MapPin, Package, Phone, Salad, Send, UserRound } from 'lucide-react'
 
 export default async function HelpRequestPage({
   searchParams,
@@ -72,41 +76,27 @@ export default async function HelpRequestPage({
           ) : (
             <form action={submitHelpRequest} className={`${styles.form} space-y-4`}>
               <div>
-                <label htmlFor="requester_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="requester_name" className={helpStyles.fieldLabel}>
+                  <UserRound aria-hidden="true" />
                   {dict.form.name}
                 </label>
-                <input
-                  id="requester_name"
-                  name="requester_name"
-                  autoComplete="name"
-                  required
-                />
+                <input id="requester_name" name="requester_name" autoComplete="name" required placeholder={dict.helpRequest.namePlaceholder} />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="requester_phone" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="requester_phone" className={helpStyles.fieldLabel}>
+                    <Phone aria-hidden="true" />
                     {dict.form.phoneContact}
                   </label>
-                  <input
-                    id="requester_phone"
-                    name="requester_phone"
-                    type="tel"
-                    autoComplete="tel"
-                    required
-                  />
+                  <input id="requester_phone" name="requester_phone" type="tel" autoComplete="tel" required placeholder={dict.helpRequest.phonePlaceholder} />
                 </div>
                 <div>
-                  <label htmlFor="requester_email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="requester_email" className={helpStyles.fieldLabel}>
+                    <AtSign aria-hidden="true" />
                     {dict.form.email}
                   </label>
-                  <input
-                    id="requester_email"
-                    name="requester_email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder={dict.pledge.emailPlaceholder}
-                  />
+                  <input id="requester_email" name="requester_email" type="email" autoComplete="email" placeholder={dict.helpRequest.emailPlaceholder} />
                 </div>
               </div>
 
@@ -144,7 +134,8 @@ export default async function HelpRequestPage({
               {/* ================= สิ้นสุดส่วนที่อยู่ ================= */}
 
               <div>
-                <label htmlFor="center_id" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="center_id" className={helpStyles.fieldLabel}>
+                  <MapPin aria-hidden="true" />
                   {dict.helpRequest.nearestShelter}
                 </label>
                 <select
@@ -163,51 +154,56 @@ export default async function HelpRequestPage({
               </div>
 
               <div>
-                <label htmlFor="item_name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="item_name" className={helpStyles.fieldLabel}>
+                    <Package aria-hidden="true" />
                   {dict.helpRequest.itemNeeded}
                 </label>
-                <input
-                  id="item_name"
-                  name="item_name"
-                  required
-                />
+                <input id="item_name" name="item_name" required placeholder={dict.helpRequest.itemPlaceholder} />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <CategoryDietaryFields
+                  labelClassName={helpStyles.fieldLabel}
+                  categoryLabel={
+                    <>
+                      <ClipboardList aria-hidden="true" />
+                      {dict.form.category}
+                    </>
+                  }
+                  options={[
+                    { value: 'food', label: dict.form.categoryFood },
+                    { value: 'water', label: dict.form.categoryWater },
+                    { value: 'medicine', label: dict.form.categoryMedicine },
+                    { value: 'clothing', label: dict.form.categoryClothing },
+                    { value: 'hygiene', label: dict.form.categoryHygiene },
+                    { value: 'other', label: dict.form.categoryOther },
+                  ]}
+                  dietaryField={
+                    <div>
+                      <label htmlFor="help-request-dietary" className={helpStyles.fieldLabel}>
+                        <Salad aria-hidden="true" />
+                        {dict.requests.dietary}
+                      </label>
+                      <DietarySelect
+                        id="help-request-dietary"
+                        locale={locale}
+                        className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+                      />
+                    </div>
+                  }
+                />
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    {dict.form.category}
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-                  >
-                    <option value="food">{dict.form.categoryFood}</option>
-                    <option value="water">{dict.form.categoryWater}</option>
-                    <option value="medicine">{dict.form.categoryMedicine}</option>
-                    <option value="clothing">{dict.form.categoryClothing}</option>
-                    <option value="hygiene">{dict.form.categoryHygiene}</option>
-                    <option value="other">{dict.form.categoryOther}</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="quantity" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="quantity" className={helpStyles.fieldLabel}>
+                    <Hash aria-hidden="true" />
                     {dict.form.quantity}
                   </label>
-                  <input
-                    id="quantity"
-                    name="quantity"
-                    type="number"
-                    min={1}
-                    required
-                  />
+                  <input id="quantity" name="quantity" type="number" min={1} required placeholder={dict.helpRequest.quantityPlaceholder} />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="urgency" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="urgency" className={helpStyles.fieldLabel}>
+                  <Send aria-hidden="true" />
                   {dict.helpRequest.urgency}
                 </label>
                 <select
@@ -223,13 +219,15 @@ export default async function HelpRequestPage({
               </div>
 
               <div>
-                <label htmlFor="note" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="note" className={helpStyles.fieldLabel}>
+                  <FileText aria-hidden="true" />
                   {dict.form.noteOptional}
                 </label>
                 <textarea
                   id="note"
                   name="note"
                   rows={2}
+                  placeholder={dict.helpRequest.notePlaceholder}
                   className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
                 />
               </div>

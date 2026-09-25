@@ -43,7 +43,9 @@ const CATEGORY_COLORS: Record<string, { bg: string; hex: string }> = {
 }
 const DEFAULT_COLOR = { bg: 'bg-slate-400 dark:bg-slate-500', hex: '#94a3b8' }
 
-export default async function InventoryPage() {
+// เพิ่มรับ searchParams
+export default async function InventoryPage({ searchParams }: { searchParams: Promise<{ expiry?: string }> }) {
+  const { expiry } = await searchParams
   const supabase = await createClient()
   await requireStaffOrAdmin(supabase)
   
@@ -373,6 +375,7 @@ export default async function InventoryPage() {
         </div>
       </section>
 
+      {/* ส่ง initialExpiryFilter เข้าไปให้ InventoryTable */}
       <InventoryTable 
         stockRows={stockRows} 
         isAdmin={isAdmin} 
@@ -380,6 +383,7 @@ export default async function InventoryPage() {
         categoryLabels={CATEGORY_LABEL}
         dict={dict} 
         locale={locale}
+        initialExpiryFilter={expiry}
       />
 
     </main>

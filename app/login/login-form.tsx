@@ -44,7 +44,13 @@ export function LoginForm({ dict, embedded = false, onRegister }: { dict: Dictio
     })
 
     if (error) {
-      setError(dict.login.invalidCreds)
+      // แยกกรณี "ยังไม่ได้ยืนยันอีเมล" ออกจาก "รหัสผ่านผิด"
+      // ถ้าบอกว่ารหัสผ่านผิด ผู้ใช้จะนั่งลองรหัสซ้ำไปเรื่อย ๆ ทั้งที่รหัสถูกแล้ว
+      // กรณีนี้ไม่ได้เปิดเผยอะไรเพิ่ม เพราะคนที่รู้รหัสผ่านคือเจ้าของบัญชีอยู่แล้ว
+      const notConfirmed =
+        error.code === 'email_not_confirmed' ||
+        /email not confirmed/i.test(error.message)
+      setError(notConfirmed ? dict.login.emailNotConfirmed : dict.login.invalidCreds)
       setLoading(false)
       return
     }

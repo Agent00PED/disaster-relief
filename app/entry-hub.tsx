@@ -22,7 +22,7 @@ export function EntryHub({ dict, needs }: { dict: Dictionary; needs: NeedRow[] }
   const copy = dict.entryHub
   const choices = [
     { href: '/register', icon: 'people', tone: 'green', label: copy.volunteerLabel, desc: copy.volunteerDesc, action: copy.volunteerAction, steps: [copy.volunteerStep1, copy.volunteerStep2, copy.volunteerStep3] },
-    { href: '/help-request', icon: 'heart', tone: 'red', label: copy.helpLabel, desc: copy.helpDesc, action: copy.helpAction, steps: [] },
+    { href: '/help-request', icon: 'heart', tone: 'red', label: copy.helpLabel, desc: copy.helpDesc, action: copy.helpAction, steps: [copy.helpStep1, copy.helpStep2, copy.helpStep3] },
     { href: '/pledge', icon: 'box', tone: 'blue', label: copy.donateLabel, desc: copy.donateDesc, action: copy.donateAction, steps: [copy.donateStep1, copy.donateStep2, copy.donateStep3] },
   ] as const
   return <main className={styles.hero}>

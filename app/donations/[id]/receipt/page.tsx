@@ -5,6 +5,7 @@ import PrintButton from './print-button'
 import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { unitLabel } from '@/lib/units'
+import { dietaryLabel } from '@/lib/dietary'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,7 +32,8 @@ export default async function ReceiptPage({
         expiry_date,
         received_at,
         received_date,
-        donors(name, phone),
+        dietary_type,
+        donors(name, phone, address, is_anonymous),
         centers(name),
         profiles(full_name, username)
       `,
@@ -46,6 +48,8 @@ export default async function ReceiptPage({
   const donor = donation.donors as unknown as {
     name?: string
     phone?: string
+    address?: string
+    is_anonymous?: boolean
   } | null
 
   const center = donation.centers as unknown as {
@@ -91,12 +95,27 @@ export default async function ReceiptPage({
   const receiverName =
     receiver?.full_name || receiver?.username || '—'
 
-  const donorName = donor?.name || dict.table.anonymousDonor
-  const donorPhone = donor?.phone || '—'
+  // แก้ไขตรงนี้: เช็ก is_anonymous ให้ครอบคลุมทั้งชื่อและเบอร์โทรศัพท์
+  const donorName = donor?.is_anonymous
+    ? dict.table.anonymousDonor
+    : (donor?.name || dict.table.anonymousDonor)
+
+  const donorPhone = donor?.is_anonymous
+    ? '—'
+    : (donor?.phone || '—')
+  
+  // ที่อยู่ผู้บริจาค (แสดงเครื่องหมาย — หากไม่มีข้อมูล หรือเป็น is_anonymous)
+  const donorAddress = donor?.is_anonymous
+    ? '—'
+    : (donor?.address && donor.address.trim() !== '' ? donor.address : '—')
 
   const quantity = `${donation.quantity_received} ${
     unitLabel(donation.unit, locale) || donation.unit
   }`
+
+  // ข้อกำหนดด้านอาหาร (แสดงเฉพาะ ฮาลาล หรือ มังสวิรัติ)
+  const dietaryText = dietaryLabel(donation.dietary_type, locale)
+  const showDietary = donation.dietary_type && donation.dietary_type !== 'general'
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 text-slate-900 dark:text-white print:max-w-none print:bg-white print:px-0 print:py-0 print:text-black">
@@ -282,6 +301,16 @@ export default async function ReceiptPage({
                 </dd>
               </div>
 
+              {/* ที่อยู่ผู้บริจาค */}
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-slate-500 dark:text-slate-400">
+                  {locale === 'en' ? 'Address' : 'ที่อยู่'}
+                </dt>
+                <dd className="text-right font-medium text-slate-900 dark:text-white whitespace-pre-line">
+                  {donorAddress}
+                </dd>
+              </div>
+
               <div className="flex items-start justify-between gap-4">
                 <dt className="text-slate-500 dark:text-slate-400">
                   {locale === 'en' ? 'Phone' : 'โทรศัพท์'}
@@ -307,11 +336,20 @@ export default async function ReceiptPage({
             รายการของที่รับบริจาค
             =================================================== */}
         <section className="bg-slate-50 px-8 pb-6 dark:bg-slate-950">
-          <h3 className="mb-3 text-base font-bold text-slate-900 dark:text-white">
-            {locale === 'en'
-              ? 'Donated Items'
-              : 'รายการของที่รับบริจาค'}
-          </h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              {locale === 'en'
+                ? 'Donated Items'
+                : 'รายการของที่รับบริจาค'}
+            </h3>
+
+            {/* ข้อกำหนดด้านอาหาร (แสดงเฉพาะ ฮาลาล / มังสวิรัติ) */}
+            {showDietary && (
+              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                {dietaryText}
+              </span>
+            )}
+          </div>
 
           <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
             <table className="w-full text-sm">

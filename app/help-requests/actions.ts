@@ -32,6 +32,10 @@ export async function confirmHelpRequest(formData: FormData) {
       item_name: pledge.item_name,
       category: pledge.category,
       quantity_requested: pledge.quantity,
+      // ข้อกำหนดด้านอาหารที่ผู้ขอระบุไว้ ถ้าไม่ส่งต่อ คำขอจะตกเป็น 'general'
+      // แล้วกฎใน allocate_items จะไม่ตรวจอะไรเลย เท่ากับจ่ายของไม่ฮาลาล
+      // ให้คนที่ขอฮาลาลได้โดยระบบไม่เตือน
+      dietary_type: pledge.dietary_type ?? 'general',
       urgency: pledge.urgency,
       requested_by: user.id,
     })

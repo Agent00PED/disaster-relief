@@ -9,6 +9,7 @@ import { confirmHelpRequest, dismissHelpRequest } from './actions'
 import { getLocale } from '@/lib/i18n/locale'
 import type { Locale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
+import { dietaryLabel } from '@/lib/dietary'
 import { sortByUrgency } from '@/lib/urgency'
 import RequestFilter from './request-filter'
 
@@ -208,7 +209,16 @@ export default async function HelpRequestsPage({
 
                 <div className="rounded-lg bg-slate-50 p-2.5 text-xs text-slate-700 dark:bg-slate-800/50 dark:text-slate-300 space-y-1">
                   <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.center}:</span> {(p.centers as unknown as { name?: string } | null)?.name ?? '—'}</p>
-                  <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.item}:</span> {p.item_name} ({CATEGORY_LABEL[p.category] ?? p.category})</p>
+                  <p>
+                    <span className="font-medium text-slate-500">{dict.helpRequestQueue.item}:</span>{' '}
+                    {p.item_name}
+                    {p.dietary_type && p.dietary_type !== 'general' && (
+                      <span className="ml-2 whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                        {dietaryLabel(p.dietary_type, locale)}
+                      </span>
+                    )}{' '}
+                    ({CATEGORY_LABEL[p.category] ?? p.category})
+                  </p>
                   <p><span className="font-medium text-slate-500">{dict.helpRequestQueue.quantity}:</span> {p.quantity}</p>
                 </div>
 
@@ -276,7 +286,12 @@ export default async function HelpRequestsPage({
                       {(p.centers as unknown as { name?: string } | null)?.name ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{p.item_name}</span>{' '}
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{p.item_name}</span>
+                      {p.dietary_type && p.dietary_type !== 'general' && (
+                        <span className="ml-2 whitespace-nowrap rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                          {dietaryLabel(p.dietary_type, locale)}
+                        </span>
+                      )}{' '}
                       <span className="text-xs text-slate-400">
                         ({CATEGORY_LABEL[p.category] ?? p.category})
                       </span>

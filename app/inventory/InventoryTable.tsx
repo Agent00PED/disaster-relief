@@ -24,6 +24,7 @@ type Props = {
   categoryLabels: Record<string, string>
   dict: Dictionary
   locale: Locale
+  initialExpiryFilter?: string // <-- รับค่า expiry จาก searchParams
 }
 
 function daysUntil(dateStr: string) {
@@ -36,29 +37,47 @@ const SortIcon = ({ columnKey, sortConfig }: { columnKey: string, sortConfig: { 
   return <span className="ml-1 text-brand font-bold">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
 }
 
-export default function InventoryTable({ stockRows, isAdmin, centers, categoryLabels, dict, locale }: Props) {
+export default function InventoryTable({ stockRows, isAdmin, centers, categoryLabels, dict, locale, initialExpiryFilter }: Props) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedDietary, setSelectedDietary] = useState('all')
-  const [hideExpired, setHideExpired] = useState(false)
+  // ตั้งค่า hideExpired เริ่มต้นตามเงื่อนไข (ถ้าส่ง soon มา ให้ซ่อนอันที่หมดอายุแล้วไปเลย จะได้โชว์แค่ของที่ใกล้หมด)
+  const [hideExpired, setHideExpired] = useState(initialExpiryFilter === 'soon')
   
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+  
+  // สร้าง state ใหม่สำหรับกรองเฉพาะ "ของหมดอายุแล้ว" หรือ "ของใกล้หมดอายุ" ตามที่เลือกมาจาก Dashboard
+  const [expiryFilterMode, setExpiryFilterMode] = useState<'all' | 'soon' | 'expired'>(
+    initialExpiryFilter === 'soon' ? 'soon' : initialExpiryFilter === 'expired' ? 'expired' : 'all'
+  )
 
   // เปลี่ยนเป็นเก็บ Object ทั้งก้อนเพื่อให้ดึง address มาใช้ได้
   const centerData = new Map(centers.map((c) => [c.id, c]))
 
   const filteredRows = useMemo(() => {
     return stockRows.filter((row) => {
-      if (hideExpired && row.nearest_expiry !== null && daysUntil(row.nearest_expiry) < 0) {
+      const days = row.nearest_expiry !== null ? daysUntil(row.nearest_expiry) : null;
+      
+      // การกรองจาก Checkbox (ซ่อนของที่หมดอายุไปแล้ว)
+      if (hideExpired && days !== null && days < 0) {
         return false
       }
+      
+      // การกรองจากปุ่มในหน้า Dashboard
+      if (expiryFilterMode === 'expired') {
+        if (days === null || days >= 0) return false;
+      }
+      if (expiryFilterMode === 'soon') {
+        if (days === null || days < 0 || days > 7) return false;
+      }
+
       const matchSearch = row.item_name.toLowerCase().includes(searchTerm.toLowerCase())
       const matchCategory = selectedCategory === 'all' || row.category === selectedCategory
       const matchDietary = selectedDietary === 'all' || row.dietary_type === selectedDietary
       
       return matchSearch && matchCategory && matchDietary
     })
-  }, [stockRows, searchTerm, selectedCategory, hideExpired, selectedDietary])
+  }, [stockRows, searchTerm, selectedCategory, hideExpired, selectedDietary, expiryFilterMode])
 
   const sortedRows = useMemo(() => {
     const sortableItems = [...filteredRows]
@@ -195,6 +214,26 @@ export default function InventoryTable({ stockRows, isAdmin, centers, categoryLa
           />
         </div>
       </div>
+
+      {/* เพิ่มส่วนแสดงสถานะการกรองจาก Dashboard */}
+      {expiryFilterMode !== 'all' && (
+        <div className="mb-4 flex items-center justify-between rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          <span>
+            {dict.inventory.filterShowing}:{' '}
+            <strong>
+              {expiryFilterMode === 'expired'
+                ? dict.inventory.filterExpired
+                : dict.inventory.filterSoon}
+            </strong>
+          </span>
+          <button
+            onClick={() => setExpiryFilterMode('all')}
+            className="text-blue-500 hover:text-blue-800 underline dark:hover:text-blue-100"
+          >
+            {dict.inventory.filterClear}
+          </button>
+        </div>
+      )}
 
       {sortedRows.length === 0 ? (
         <div className="flex h-32 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 shadow-inner dark:border-slate-700 dark:bg-slate-900">
