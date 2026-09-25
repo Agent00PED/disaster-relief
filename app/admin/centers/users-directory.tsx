@@ -22,7 +22,7 @@ function formatPhone(value: string | null) {
   return digits.length === 10 ? `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : value
 }
 
-export function UsersDirectory({ users, centers, dict }: { users: User[]; centers: Center[]; dict: Dictionary }) {
+export function UsersDirectory({ users, centers, dict, currentUserId }: { users: User[]; centers: Center[]; dict: Dictionary; currentUserId?: string }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [center, setCenter] = useState('all')
@@ -62,6 +62,10 @@ export function UsersDirectory({ users, centers, dict }: { users: User[]; center
     if (editing) {
       const nextRole = String(form.get('role') || '')
       const nextCenter = String(form.get('center_id') || '')
+      if (editing.id === currentUserId && nextRole !== editing.role) {
+        setError(t.cannotChangeOwnRole)
+        return
+      }
       if ((nextRole !== editing.role || nextCenter !== (editing.center_id ?? ''))
         && !window.confirm(t.confirmUserChange)) return
     }
@@ -140,9 +144,24 @@ export function UsersDirectory({ users, centers, dict }: { users: User[]; center
             <label className="text-sm font-medium">{dict.register.firstName}<input autoFocus name="first_name" defaultValue={editing.first_name ?? ''} maxLength={100} className={field} /></label>
             <label className="text-sm font-medium">{dict.register.lastName}<input name="last_name" defaultValue={editing.last_name ?? ''} maxLength={100} className={field} /></label>
           </div>
-          <label className="block text-sm font-medium">{t.role}<select name="role" defaultValue={editing.role} className={field}>
-            {roles.map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
-          </select></label>
+          <label className="block text-sm font-medium">
+            {t.role}
+            {editing.id === currentUserId ? (
+              <>
+                <input type="hidden" name="role" value={editing.role} />
+                <select disabled value={editing.role} className={`${field} cursor-not-allowed opacity-60`}>
+                  {roles.map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
+                </select>
+                <span className="mt-1 block text-xs font-normal text-amber-600 dark:text-amber-400">
+                  {t.cannotChangeOwnRole}
+                </span>
+              </>
+            ) : (
+              <select name="role" defaultValue={editing.role} className={field}>
+                {roles.map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
+              </select>
+            )}
+          </label>
           <label className="block text-sm font-medium">{t.center}<select name="center_id" defaultValue={editing.center_id ?? ''} className={field}>
             <option value="">{t.noCenter}</option>
             {centers.filter(item => item.is_active || item.id === editing.center_id).map(item => <option key={item.id} value={item.id}>{item.name}{!item.is_active ? ` (${t.inactiveCenter})` : ''}</option>)}

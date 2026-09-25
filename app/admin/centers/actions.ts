@@ -9,10 +9,10 @@ async function requireAdmin() {
   const supabase = await createClient()
   const dict = getDictionary(await getLocale())
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { supabase, dict, error: dict.admin.adminOnly }
+  if (!user) return { supabase, dict, user: null, error: dict.admin.adminOnly }
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return { supabase, dict, error: dict.admin.adminOnly }
-  return { supabase, dict, error: '' }
+  if (profile?.role !== 'admin') return { supabase, dict, user: null, error: dict.admin.adminOnly }
+  return { supabase, dict, user, error: '' }
 }
 
 function centerValues(formData: FormData) {
@@ -79,7 +79,7 @@ export async function updateCenter(formData: FormData) {
 }
 
 export async function updateUser(formData: FormData) {
-  const { supabase, dict, error: authError } = await requireAdmin()
+  const { supabase, dict, user, error: authError } = await requireAdmin()
   if (authError) return { error: authError }
   const targetId = String(formData.get('id') || '')
   const centerId = String(formData.get('center_id') || '')
@@ -90,6 +90,9 @@ export async function updateUser(formData: FormData) {
   if (phone && !/^[0-9]{10}$/.test(phone)) return { error: dict.admin.phoneTenDigits }
   if (!['admin', 'staff', 'volunteer'].includes(role) || firstName.length > 100 || lastName.length > 100) {
     return { error: dict.centerDashboard.invalid }
+  }
+  if (targetId === user?.id && role !== 'admin') {
+    return { error: dict.admin.cannotChangeOwnRole }
   }
   if (centerId) {
     const { data: center } = await supabase.from('centers').select('is_active').eq('id', centerId).maybeSingle()

@@ -52,7 +52,7 @@ export default async function AdminCentersPage({
 
   return (
     <CentersDashboard centers={centers ?? []} users={sortedUsers} dict={dict} error={error} loadError={!!centersError || !!usersError}>
-      <UsersDirectory users={sortedUsers} centers={centers ?? []} dict={dict} />
+      <UsersDirectory users={sortedUsers} centers={centers ?? []} dict={dict} currentUserId={user.id} />
     </CentersDashboard>
   )
 }

@@ -767,7 +767,7 @@ const th = {
     name: 'ชื่อ',
     role: 'บทบาท',
     center: 'ศูนย์',
-    noCenter: '— ไม่มีศูนย์ —', inactiveCenter: 'ปิดใช้งาน', inactiveCenterAssignment: 'ไม่สามารถผูกผู้ใช้กับศูนย์ที่ปิดใช้งานได้', lastAdmin: 'ต้องมีผู้ดูแลระบบอย่างน้อยหนึ่งคน', confirmUserChange: 'การเปลี่ยนบทบาทหรือศูนย์มีผลต่อสิทธิ์การใช้งาน ต้องการดำเนินการต่อหรือไม่?',
+    noCenter: '— ไม่มีศูนย์ —', inactiveCenter: 'ปิดใช้งาน', inactiveCenterAssignment: 'ไม่สามารถผูกผู้ใช้กับศูนย์ที่ปิดใช้งานได้', lastAdmin: 'ต้องมีผู้ดูแลระบบอย่างน้อยหนึ่งคน', cannotChangeOwnRole: 'ไม่สามารถเปลี่ยนบทบาทบัญชีของตนเองได้', confirmUserChange: 'การเปลี่ยนบทบาทหรือศูนย์มีผลต่อสิทธิ์การใช้งาน ต้องการดำเนินการต่อหรือไม่?',
   },
   volunteer: {
     greeting: 'สวัสดี',
@@ -1581,7 +1581,7 @@ const en: typeof th = {
     name: 'Name',
     role: 'Role',
     center: 'Center',
-    noCenter: '— No center —', inactiveCenter: 'Inactive', inactiveCenterAssignment: 'Users cannot be assigned to an inactive center.', lastAdmin: 'At least one administrator must remain.', confirmUserChange: 'Changing the role or center affects access permissions. Continue?',
+    noCenter: '— No center —', inactiveCenter: 'Inactive', inactiveCenterAssignment: 'Users cannot be assigned to an inactive center.', lastAdmin: 'At least one administrator must remain.', cannotChangeOwnRole: 'You cannot change the role of your own account.', confirmUserChange: 'Changing the role or center affects access permissions. Continue?',
   },
   volunteer: {
     greeting: 'Hello',
