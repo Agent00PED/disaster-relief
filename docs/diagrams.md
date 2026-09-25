@@ -134,9 +134,11 @@ erDiagram
         text    donor_name
         text    donor_phone
         text    donor_email
+        text    address       "ส่งต่อไป donors ตอนอนุมัติ"
         text    item_name
         text    category
         text    unit
+        text    dietary_type  "general | halal | vegetarian"
         int     quantity
         text    note
         text    status        "pending | approved | rejected"
@@ -155,6 +157,7 @@ erDiagram
         uuid    center_id FK
         text    item_name
         text    category
+        text    dietary_type  "general | halal | vegetarian"
         int     quantity
         text    urgency
         text    note
@@ -190,6 +193,12 @@ erDiagram
 คนทั่วไปที่ไม่ได้ล็อกอินเขียนลงได้แค่ 2 ตารางนี้ ยังไม่กระทบยอดคลัง
 ต่อเมื่อเจ้าหน้าที่กดอนุมัติจึงถูกแปลงเป็น `donations` / `requests`
 เป็นการกันไม่ให้ข้อมูลที่ยังไม่ตรวจสอบเข้าไปปนกับข้อมูลจริง
+
+**ตารางคู่ต้องมีคอลัมน์ครบเท่ากัน ไม่งั้นข้อมูลหายตอนแปลง**
+บทเรียนจริงจากโปรเจกต์นี้ ตอนแรก `dietary_type` มีเฉพาะในตารางจริง
+ตารางคำร้องไม่มี พอกดอนุมัติจึงไม่มีค่าจะส่ง ปลายทางตกไปใช้ค่าตั้งต้น
+`general` ทุกใบ ทำให้คำขออาหารฮาลาลจากประชาชนกลายเป็นอาหารทั่วไป
+และกฎตรวจสอบก็ไม่ทำงาน แก้แล้วในไฟล์ `docs/sql/42`
 
 **`donations.donor_id` เป็น NULL ได้**
 ตั้งเป็น ON DELETE SET NULL ตั้งใจให้ลบผู้บริจาคได้โดยที่ใบรับของ
