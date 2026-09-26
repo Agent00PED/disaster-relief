@@ -338,22 +338,33 @@ export async function deleteDonation(formData: FormData) {
 
   if (!id) return
 
-  const { error } = await supabase
+  // ขอ .select() กลับมานับแถว เพราะถ้า RLS กันไว้ จะลบได้ 0 แถวโดยไม่มี error
+  const { data: deleted, error } = await supabase
     .from('donations')
     .delete()
     .eq('id', id)
+    .select('id')
 
+  // เดิมเจอ error แล้วแค่ log ลง console แล้วจบ หน้าจอเลยนิ่งเหมือนปุ่มเสีย
+  // ตอนนี้ส่งเหตุผลกลับไปแสดงบนหน้า
   if (error) {
-    console.error(
-      'Error deleting donation:',
-      error.message,
-    )
+    // ล็อตที่เคยถูกจัดสรรแล้วลบไม่ได้ ถูกต้องตามออกแบบ
+    // เพราะต้องเก็บประวัติว่าของล็อตนี้ถูกจ่ายไปที่ไหน
+    const reason = error.message.includes('allocations_donation_id_fkey')
+      ? 'ลบไม่ได้ เพราะล็อตนี้เคยถูกจัดสรรไปแล้ว ระบบต้องเก็บไว้เป็นประวัติการจ่ายของ'
+      : 'ลบไม่สำเร็จ: ' + error.message
+    redirect('/donations?error=' + encodeURIComponent(reason))
+  }
 
-    return
+  if (!deleted || deleted.length === 0) {
+    redirect(
+      '/donations?error=' +
+        encodeURIComponent('ลบไม่สำเร็จ รายการนี้เป็นของศูนย์อื่น คุณลบได้เฉพาะของศูนย์ที่ตัวเองสังกัด'),
+    )
   }
 
   revalidatePath('/donations')
   revalidatePath('/inventory')
 
-  redirect('/donations')
+  redirect('/donations?notice=' + encodeURIComponent('ลบรายการเรียบร้อยแล้ว'))
 }
