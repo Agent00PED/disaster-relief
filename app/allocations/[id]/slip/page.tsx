@@ -76,7 +76,7 @@ export default async function AllocationSlipPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-lg px-6 py-12 print:py-0">
+    <main className="mx-auto w-full max-w-lg px-6 py-12 print:max-w-none print:p-0">
       <Link
         href="/allocations/history"
         className="mb-4 inline-block text-sm font-medium text-slate-600 underline hover:text-slate-900 print:hidden dark:text-slate-300 dark:hover:text-white"
@@ -84,7 +84,7 @@ export default async function AllocationSlipPage({
         {dict.allocations.backToHistory}
       </Link>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:border-0 print:shadow-none dark:border-slate-700 dark:bg-slate-900">
+      <div className="rounded-lg border border-slate-200 bg-white p-8 shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none dark:border-slate-700 dark:bg-slate-900">
         <h1 className="mb-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{dict.allocations.slipTitle}</h1>
         <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">WalaiTrack</p>
 
@@ -97,19 +97,22 @@ export default async function AllocationSlipPage({
           ))}
         </dl>
 
-        <div className="mt-12 grid grid-cols-2 gap-8 text-center text-xs text-slate-500 dark:text-slate-400">
-          <div>
-            <div className="mb-2 border-b border-slate-400 pb-8" />
-            {dict.allocations.slipSignDeliver}
-          </div>
-          <div>
-            <div className="mb-2 border-b border-slate-400 pb-8" />
-            {dict.allocations.slipSignReceive}
-          </div>
+        {/* ช่องลงชื่อแบบเอกสารราชการ: เส้นเซ็น / ชื่อตัวบรรจงในวงเล็บ / ตำแหน่ง / วันที่ */}
+        <div className="mt-14 grid grid-cols-2 gap-10 text-center text-sm text-slate-700 dark:text-slate-300 print:mt-20 print:text-black">
+          {[dict.allocations.slipSignDeliver, dict.allocations.slipSignReceive].map((role) => (
+            <div key={role} className="space-y-2">
+              <div className="border-b border-dotted border-slate-500 pb-10" />
+              <p>(........................................)</p>
+              <p className="font-medium">{role}</p>
+              <p className="text-xs text-slate-500 print:text-black">{dict.allocations.slipDate} ........ / ........ / ........</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      <PrintButton label={dict.allocations.printSlip} />
+      <div className="mt-4 print:hidden">
+        <PrintButton label={dict.allocations.printSlip} />
+      </div>
     </main>
   )
 }
