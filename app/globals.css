@@ -122,3 +122,10 @@ body {
   background: #1c2b3f;
   opacity: 0.6;
 }
+
+/* ตอนสั่งพิมพ์ ใช้พื้นขาวแทนพื้นครีม และจัดเป็นกระดาษ A4 แนวตั้ง
+   เดิมพิมพ์ใบส่งมอบแล้วได้พื้นครีมเต็มหน้าและเบราว์เซอร์เลือกแนวนอน */
+@media print {
+  html, body { background: #fff !important; }
+  @page { size: A4 portrait; margin: 18mm; }
+}
