@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/i18n/locale'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { unitLabel } from '@/lib/units'
 import { deleteDonation } from './actions'
+import DeleteButton from './DeleteButton'
 import PrintButton from './PrintButton'
 import SearchInput from './SearchInput'
 
@@ -124,6 +125,8 @@ type DonationsPageProps = {
     category?: string
     date_from?: string
     date_to?: string
+    error?: string
+    notice?: string
   }>
 }
 
@@ -136,7 +139,7 @@ export default async function DonationsPage({
 
   const locale = await getLocale()
   const dict = getDictionary(locale)
-  const { search, category, date_from, date_to } =
+  const { search, category, date_from, date_to, error: actionError, notice } =
     (await searchParams) || {}
 
   // =====================================================
@@ -281,6 +284,17 @@ export default async function DonationsPage({
 
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6">
+
+      {actionError && (
+        <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+          {actionError}
+        </p>
+      )}
+      {notice && (
+        <p role="status" className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {notice}
+        </p>
+      )}
 
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
@@ -769,15 +783,10 @@ export default async function DonationsPage({
                                     value={item.id}
                                   />
 
-                                  <button
-                                    type="submit"
-                                    className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
-                                  >
-                                    {
-                                      dict.common
-                                        .delete
-                                    }
-                                  </button>
+                                  <DeleteButton
+                                    label={dict.common.delete}
+                                    confirmText={`ยืนยันลบ "${item.item_name}" ? ลบแล้วย้อนกลับไม่ได้`}
+                                  />
                                 </form>
 
                               </div>
